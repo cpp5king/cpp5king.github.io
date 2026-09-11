@@ -46,9 +46,16 @@ window.INSPECTION_CONFIG = {
       "directTemplateId": "noise-main"
     },
     {
+      "id": "water-field-inspection",
+      "categoryId": "water",
+      "title": "現場稽查",
+      "status": "active",
+      "directTemplateId": "water-field"
+    },
+    {
       "id": "water-inspection",
       "categoryId": "water",
-      "title": "水污染案件",
+      "title": "案件研判（完整母法）",
       "status": "active",
       "directTemplateId": "water-main"
     }
@@ -73,6 +80,10 @@ window.INSPECTION_CONFIG = {
     {
       "id": "noise-neighbor",
       "file": "noise-neighbor.js"
+    },
+    {
+      "id": "water-field",
+      "file": "water-field.js"
     },
     {
       "id": "water-main",

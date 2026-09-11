@@ -24,6 +24,18 @@
         if (!config.templates.some(item => item.id === id && item.categoryId === state.categoryId && item.caseTypeId === state.caseTypeId)) throw new Error("模板與目前案件類型不符。");
         state.templateId = id; clearDraft();
       },
+      handoff(caseTypeId, templateId, input = {}) {
+        const targetCase = config.caseTypes.find(item => item.id === caseTypeId && item.status === "active");
+        if (!targetCase) throw new Error("找不到可接續的案件類型。");
+        const targetTemplate = config.templates.find(item => item.id === templateId && item.categoryId === targetCase.categoryId && item.caseTypeId === targetCase.id);
+        if (!targetTemplate) throw new Error("找不到可接續的案件模板。");
+        state.categoryId = targetCase.categoryId;
+        state.caseTypeId = targetCase.id;
+        state.templateId = targetTemplate.id;
+        state.outputs = null;
+        state.stale = false;
+        state.inputs = root.DraftEngine.normalize(targetTemplate, copy(input));
+      },
       setInputs(input) {
         const workflow = root.TemplateWorkflows?.[template().workflow];
         if (workflow?.clearDraft(state.inputs, input)) { state.outputs = null; state.stale = false; }

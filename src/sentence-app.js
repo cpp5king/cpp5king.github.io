@@ -67,6 +67,7 @@
       const heading = app.querySelector('h2'); if (heading) { heading.tabIndex = -1; heading.focus(); }
     }
     function renderForm(template) {
+      const draftActionLabel = template.draftActionLabel || '填入兩份草稿';
       const form = el('form'); form.autocomplete = 'off';
       form.addEventListener('submit', event => event.preventDefault());
       form.append(el('h2', template.formTitle || '填寫案件事實'));
@@ -87,7 +88,7 @@
           drafts.record.value = ''; drafts.reply.value = '';
           status.textContent = '';
         }
-        if (session.snapshot().stale) status.textContent = '輸入已變更，下方仍為上次草稿；請重新填入兩份草稿。';
+        if (session.snapshot().stale) status.textContent = `輸入已變更，下方仍為上次草稿；請重新${draftActionLabel}。`;
       });
       form.append(fields.element);
       const outputs = el('div'); outputs.hidden = true;
@@ -115,9 +116,9 @@
       if(template.initialGate)actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,root.DraftEngine.normalize(template,{}));
       if (template.demo && template.demoLabel) actions.append(button(template.demoLabel, () => {
         session.setInputs(fields.write(template.demo));
-        status.textContent = session.snapshot().outputs ? '已套用範例選項；下方仍為上次草稿，請重新填入。' : '已套用範例選項，請按「填入兩份草稿」。';
+        status.textContent = session.snapshot().outputs ? `已套用範例選項；下方仍為上次草稿，請重新${draftActionLabel}。` : `已套用範例選項，請按「${draftActionLabel}」。`;
       }, true));
-      actions.append(button('填入兩份草稿', () => {
+      actions.append(button(draftActionLabel, () => {
         if(!template.validateOnSubmit&&template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,fields.read()))return;
         if (session.snapshot().outputs && !window.confirm('重新填入將覆蓋下方兩份草稿及手動修改，是否繼續？')) return;
         try {
@@ -141,7 +142,29 @@
         finish.hidden=!template.finishWhen||!root.DraftEngine.matches(template.finishWhen,facts);retry.hidden=finish.hidden;
         outputs.hidden=true;drafts.record.value='';drafts.reply.value='';status.textContent='';
       },true);finish.hidden=true;
-      form.append(actions,retry,finish); app.append(form, status, outputs);
+      const handoffActions=el('div','','actions');
+      if(template.handoff){
+        const handoff=button(template.handoff.label||'繼續下一步',()=>{
+          const facts=fields.read();
+          if(template.handoff.confirmMessage&&!window.confirm(template.handoff.confirmMessage))return;
+          session.handoff(template.handoff.caseTypeId,template.handoff.templateId,facts);
+          render();
+        });
+        handoffActions.append(handoff);
+        const updateHandoff=facts=>{handoffActions.hidden=!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts);};
+        updateHandoff(session.snapshot().inputs);
+        form.addEventListener('change',()=>updateHandoff(session.snapshot().inputs));
+        form.addEventListener('input',()=>updateHandoff(session.snapshot().inputs));
+      }else handoffActions.hidden=true;
+      form.append(actions,retry,finish,handoffActions); app.append(form, status, outputs);
+      const existing=session.snapshot().inputs;
+      if(Object.values(existing).some(value=>Array.isArray(value)?value.length:value!=='')){
+        const facts=fields.write(existing);
+        finish.hidden=!template.finishWhen||!root.DraftEngine.matches(template.finishWhen,facts);
+        retry.hidden=finish.hidden;
+        actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen&&root.DraftEngine.matches(template.previewOnlyWhen,facts);
+        if(template.handoff)handoffActions.hidden=!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts);
+      }
     }
     render();
   }

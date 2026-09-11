@@ -9,8 +9,8 @@
   const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
   const permit=[['valid','有有效許可'],['none','查無有效許可'],['expired','許可已逾有效期間'],['unknown','許可狀態尚待確認']];
   const template={
-    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.1',workflow:'waterMain',choiceStyle:'cards',formTitle:T.main.formTitle,instructions:T.main.instructions,
-    initialGate:true,validateOnSubmit:false,previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'本階段為判斷流程，不產生公文草稿。',
+    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.2.1',workflow:'waterMain',choiceStyle:'cards',formTitle:T.main.formTitle,instructions:T.main.instructions,
+    initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'本階段為判斷流程，目前不直接產生案件文字。',
     fields:[
       computed('waterNoDrafts'),
       computed('waterShowSubjectConfirmed'),computed('waterShowArticle13Details'),computed('waterShowArticle14'),computed('waterShowMatterType'),computed('waterShowWastewater'),computed('waterShowDischarge'),computed('waterShowDestination'),computed('waterShowSurfaceDetails'),computed('waterShowDitchDetails'),computed('waterShowPermit'),
