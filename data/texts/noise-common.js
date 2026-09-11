@@ -1,0 +1,9 @@
+// Noise display text only. No legal conditions or numerical standards.
+(function(root){root.NOISE_TEXTS={common:{
+  "invalidTemplate":"噪音文字模板格式無效。",
+"invalidVariable":"噪音文字模板變數無效：",
+"replyPrefix": "有關臺端反映事項，",
+  "replyEnding": "若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。",
+  "noMeasurementPatrol": "於周界外巡查未發現有明顯噪音擾鄰情形，爾後將不定期派員巡查，以維當地環境品質。",
+  "missing": "尚待確認"
+}};})(window);

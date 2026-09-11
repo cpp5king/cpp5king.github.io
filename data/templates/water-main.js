@@ -1,0 +1,131 @@
+(function(root){
+  'use strict';
+  const T=root.WATER_TEXTS,missing=T.common.missing,when=(field,value='yes')=>({field,value});
+  const field=(id,label,type,extra={})=>({id,label,type,missing,...extra});
+  const computed=(id,label='',extra={})=>field(id,label||id,'computed',extra);
+  const checklist=(id,label,items,extra={})=>field(id,label,'checklist',{separator:'、',items:items.map(([id,label,opts])=>({id,label,...(opts||{})})),...extra});
+  const select=(id,label,options,extra={})=>field(id,label,'select',{allowCustom:false,options:options.map(([id,label])=>({id,label,value:label})),...extra});
+  const tri=[['yes','是，已確認'],['no','否，已確認不是／不符合'],['unknown','已查證但目前仍無法確認']];
+  const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
+  const permit=[['valid','有有效許可'],['none','查無有效許可'],['expired','許可已逾有效期間'],['unknown','許可狀態尚待確認']];
+  const template={
+    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.1',workflow:'waterMain',choiceStyle:'cards',formTitle:T.main.formTitle,instructions:T.main.instructions,
+    initialGate:true,validateOnSubmit:false,previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'本階段為判斷流程，不產生公文草稿。',
+    fields:[
+      computed('waterNoDrafts'),
+      computed('waterShowSubjectConfirmed'),computed('waterShowArticle13Details'),computed('waterShowArticle14'),computed('waterShowMatterType'),computed('waterShowWastewater'),computed('waterShowDischarge'),computed('waterShowDestination'),computed('waterShowSurfaceDetails'),computed('waterShowDitchDetails'),computed('waterShowPermit'),
+      computed('waterShowStorageDetails'),computed('waterShowStorageMismatch'),computed('waterShowArticle7'),computed('waterShowSampleDetails'),computed('waterShowLabDetails'),computed('waterShowEffluentResult'),
+      computed('waterShowArticle181'),computed('waterShowBypassRoute'),computed('waterShowBypassQuestion'),computed('waterShowBypassEmergency'),computed('waterShowDilutionDetails'),computed('waterShowDilutionMismatch'),computed('waterShowDilutionEmergency'),computed('waterShowTreatmentDetails'),
+      computed('waterShowArticle18Noncompliance'),computed('waterShowArticle28'),computed('waterShowArticle28Details'),computed('waterShowArticle28LeakChecks'),computed('waterShowArticle28Prevention'),computed('waterShowArticle28Emergency'),
+      computed('waterShowArticle27'),computed('waterShowArticle27Actions'),computed('waterShowArticle32'),computed('waterShowSoilPermit'),computed('waterShowGroundwaterCheck'),computed('waterShowArticle30'),computed('waterShowArticle30Details'),
+      computed('waterShowReportingNoncompliance'),computed('waterShowReportedMismatch'),computed('waterShowFalseDetails'),computed('waterShowArticle26Obstruction'),computed('waterShowArticle59Details'),computed('waterShowPolluter'),computed('waterShowAssessment'),computed('waterRuleStatus'),computed('waterArticle14ElementsText'),computed('waterAssessmentText'),computed('waterMissingText'),computed('waterNextChecksText'),
+
+      select('waterSubjectType',T.main.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
+      select('waterSubjectConfirmed',T.main.subjectConfirmed,tri,{showWhen:when('waterShowSubjectConfirmed')}),
+
+      select('waterArticle13NewOrChangeConfirmed',T.main.article13NewOrChange,yn,{showWhen:when('waterShowSubjectConfirmed')}),
+      select('waterArticle13DesignatedSubjectConfirmed',T.main.article13Designated,tri,{showWhen:when('waterShowArticle13Details')}),
+      select('waterMeasuresPlanApproval',T.main.measuresPlanApproval,[['approved','設立／變更前已有核准水措計畫'],['none','查無核准水措計畫'],['notApproved','有申請但稽查所涉時點尚未核准'],['unknown','核准狀態尚待確認']],{showWhen:when('waterShowArticle13Details')}),
+
+      select('waterMatterType',T.main.matterType,[['wastewater','廢（污）水'],['sludge','污泥'],['acidAlkaliWasteLiquid','酸鹼廢液'],['waterFertilizer','水肥'],['garbage','垃圾'],['constructionWaste','建築廢料'],['otherPollutant','其他污染物'],['unknown','物質性質尚未確認']],{showWhen:when('waterShowMatterType')}),
+      select('waterWastewaterStatus',T.main.wastewater,tri,{showWhen:when('waterShowWastewater')}),
+      checklist('waterSourceTypes',T.main.sourceType,[['manufacturing','製造製程'],['operation','操作過程'],['naturalResource','自然資源開發'],['workEnvironment','作業環境'],['domestic','生活污水'],['cleaning','清洗水'],['cooling','冷卻水'],['rain','雨水'],['groundwater','地下水'],['other','其他'],['unknown','來源尚待確認',{exclusive:true}]],{showWhen:when('waterShowWastewater')}),
+      select('waterActualDischarge',T.main.actualDischarge,yn,{showWhen:when('waterShowDischarge')}),
+      select('waterDestination',T.main.destination,[['surfaceWater','地面水體'],['sewer','污水下水道'],['storage','貯留'],['reuse','回收使用'],['outsourced','委外處理'],['soil','排放於土壤'],['groundwater','注入地下／疑似地下水體'],['unknown','最終去向仍無法確認']],{showWhen:when('waterShowDestination')}),
+
+      select('waterSurfaceType',T.main.surfaceType,[['river','河川'],['ocean','海洋'],['lake','湖潭'],['reservoir','水庫'],['pond','池塘'],['irrigationChannel','灌溉渠道'],['drainage','各級排水路'],['roadsideDitch','道路側溝'],['other','其他疑似地面水體'],['unknown','類型仍無法確認']],{showWhen:when('waterShowSurfaceDetails')}),
+      select('waterSurfaceWaterConfirmed',T.main.surfaceConfirmed,tri,{showWhen:when('waterShowSurfaceDetails')}),
+      select('waterDrainageFunctionConfirmed',T.main.drainageFunction,tri,{showWhen:when('waterShowDitchDetails')}),
+      select('waterDownstreamConfirmed',T.main.downstream,tri,{showWhen:when('waterShowDitchDetails')}),
+      select('waterDrainageConnectionConfirmed',T.main.drainageConnection,tri,{showWhen:when('waterShowDitchDetails')}),
+      select('waterDischargePermit',T.main.permit,[['valid','有有效排放許可／簡易排放許可文件'],['none','查無有效排放許可'],['expired','許可已逾有效期間'],['unknown','許可狀態尚待確認']],{showWhen:when('waterShowPermit')}),
+
+      select('waterStorageActivityConfirmed',T.main.storageActivity,yn,{showWhen:when('waterShowStorageDetails')}),
+      select('waterStoragePermit',T.main.storagePermit,permit,{showWhen:when('waterShowStorageDetails')}),
+      select('waterStorageRegistrationMismatch',T.main.storageMismatch,yn,{showWhen:when('waterShowStorageMismatch')}),
+
+      select('waterSampleTaken',T.main.sampleTaken,yn,{showWhen:when('waterShowArticle7')}),
+      select('waterSampleRepresentative',T.main.sampleRepresentative,yn,{showWhen:when('waterShowSampleDetails')}),
+      select('waterSampleBeforeReceivingWater',T.main.sampleBeforeReceivingWater,yn,{showWhen:when('waterShowSampleDetails')}),
+      select('waterApplicableStandardConfirmed',T.main.applicableStandard,yn,{showWhen:when('waterShowSampleDetails')}),
+      select('waterLabResultAvailable',T.main.labResult,yn,{showWhen:when('waterShowLabDetails')}),
+      select('waterEffluentExceeded',T.main.effluentExceeded,yn,{showWhen:when('waterShowEffluentResult')}),
+
+      select('waterApprovedRouteConfirmed',T.main.approvedRoute,yn,{showWhen:when('waterShowBypassRoute')}),
+      select('waterActualRouteConfirmed',T.main.actualRoute,yn,{showWhen:when('waterShowBypassRoute')}),
+      select('waterBypassConfirmed',T.main.bypass,yn,{showWhen:when('waterShowBypassQuestion')}),
+      select('waterBypassEmergencyException',T.main.bypassEmergency,yn,{showWhen:when('waterShowBypassEmergency')}),
+      select('waterDilutionObserved',T.main.dilutionObserved,yn,{showWhen:when('waterShowArticle181')}),
+      select('waterRequiresTreatmentToMeetStandard',T.main.requiresTreatment,yn,{showWhen:when('waterShowDilutionDetails')}),
+      select('waterMixedWithNoTreatmentNeededWater',T.main.mixedCleanWater,yn,{showWhen:when('waterShowDilutionDetails')}),
+      select('waterDilutionPermit',T.main.dilutionPermit,permit,{showWhen:when('waterShowDilutionDetails')}),
+      select('waterDilutionRegistrationMismatch',T.main.dilutionMismatch,yn,{showWhen:when('waterShowDilutionMismatch')}),
+      select('waterDilutionEmergencyException',T.main.dilutionEmergency,yn,{showWhen:when('waterShowDilutionEmergency')}),
+      select('waterTreatmentFacilityApplicable',T.main.treatmentApplicable,yn,{showWhen:when('waterShowArticle181')}),
+      select('waterTreatmentFunctionSufficient',T.main.treatmentFunction,yn,{showWhen:when('waterShowTreatmentDetails')}),
+      select('waterTreatmentOperatingNormally',T.main.treatmentOperating,yn,{showWhen:when('waterShowTreatmentDetails')}),
+
+      select('waterArticle18SpecificDutyConfirmed',T.main.article18SpecificDuty,tri,{showWhen:when('waterShowSubjectConfirmed')}),
+      select('waterArticle18NoncomplianceConfirmed',T.main.article18Noncompliance,yn,{showWhen:when('waterShowArticle18Noncompliance')}),
+
+      select('waterArticle28Scenario',T.main.article28Scenario,yn,{showWhen:when('waterShowArticle28')}),
+      select('waterTransportStorageEquipmentConfirmed',T.main.transportStorageEquipment,yn,{showWhen:when('waterShowArticle28Details')}),
+      select('waterLeakCause',T.main.leakCause,[['tankFailure','槽體破裂／失效'],['pipeFailure','管線破裂／失效'],['overflow','設備或槽體溢流'],['levelFailure','液位控制故障'],['otherEquipmentFailure','其他設備故障／疏漏'],['humanDischarge','人為開閥／私管／主動抽排'],['unknown','原因尚待確認']],{showWhen:when('waterShowArticle28Details')}),
+      select('waterLeakRiskToWaterBodyConfirmed',T.main.leakRisk,yn,{showWhen:when('waterShowArticle28LeakChecks')}),
+      select('waterMaintenancePreventionTaken',T.main.maintenancePrevention,yn,{showWhen:when('waterShowArticle28Prevention')}),
+      select('waterLeakPollutedWaterBody',T.main.leakPollutedWater,yn,{showWhen:when('waterShowArticle28LeakChecks')}),
+      select('waterEmergencyActionTaken',T.main.emergencyAction,yn,{showWhen:when('waterShowArticle27Actions')}),
+      select('waterThreeHourNotice',T.main.threeHourNotice,yn,{showWhen:when('waterShowArticle27Actions')}),
+
+      select('waterSevereHazardRiskConfirmed',T.main.severeHazard,yn,{showWhen:when('waterShowArticle27')}),
+
+      select('waterSoilTreatmentPermit',T.main.soilPermit,[['valid','有有效土壤處理許可'],['none','查無有效土壤處理許可'],['expired','土壤處理許可已逾期'],['unknown','土壤處理許可狀態尚待確認']],{showWhen:when('waterShowSoilPermit')}),
+      select('waterGroundwaterBodyConfirmed',T.main.groundwaterBody,yn,{showWhen:when('waterShowGroundwaterCheck')}),
+
+      select('waterDumpingConfirmed',T.main.dumping,yn,{showWhen:when('waterShowArticle30')}),
+      select('waterControlZoneConfirmed',T.main.controlZone,yn,{showWhen:when('waterShowArticle30Details')}),
+      select('waterDesignatedWaterRangeConfirmed',T.main.designatedRange,yn,{showWhen:when('waterShowArticle30Details')}),
+
+      select('waterArticle22ReportingDutyConfirmed',T.main.reportingDuty,tri,{showWhen:when('waterShowArticle181')}),
+      select('waterArticle22ReportingNoncomplianceConfirmed',T.main.reportingNoncompliance,yn,{showWhen:when('waterShowReportingNoncompliance')}),
+      select('waterReportedDataMismatch',T.main.reportedMismatch,yn,{showWhen:when('waterShowReportedMismatch')}),
+      select('waterFalseReportOrBusinessRecordConfirmed',T.main.falseReportRecord,yn,{showWhen:when('waterShowFalseDetails')}),
+      select('waterKnowingFalseEvidenceConfirmed',T.main.knowingFalse,yn,{showWhen:when('waterShowFalseDetails')}),
+
+      select('waterArticle26InspectionBasisConfirmed',T.main.inspectionBasis,yn,{showWhen:when('waterShowAssessment')}),
+      select('waterArticle26ObstructionConfirmed',T.main.obstruction,yn,{showWhen:when('waterShowArticle26Obstruction')}),
+
+      select('waterFacilityFailureConfirmed',T.main.facilityFailure,yn,{showWhen:when('waterShowArticle181')}),
+      select('waterA59ImmediateRepairAndResponse',T.main.a59Repair,yn,{showWhen:when('waterShowArticle59Details')}),
+      select('waterA59ImmediateRecordAndReport',T.main.a59Record,yn,{showWhen:when('waterShowArticle59Details')}),
+      select('waterA59RecoveredWithin24Hours',T.main.a59Recover,yn,{showWhen:when('waterShowArticle59Details')}),
+      select('waterA59WrittenReportWithin5Days',T.main.a59Report5,yn,{showWhen:when('waterShowArticle59Details')}),
+      select('waterA59DirectCausation',T.main.a59Causation,yn,{showWhen:when('waterShowArticle59Details')}),
+      select('waterA59NotSameFailureWithin6Months',T.main.a59SixMonths,yn,{showWhen:when('waterShowArticle59Details')}),
+
+      select('waterSurfaceWaterPollutionEventConfirmed',T.main.surfacePollutionEvent,yn,{showWhen:when('waterShowAssessment')}),
+      select('waterPolluterIdentified',T.main.polluterIdentified,yn,{showWhen:when('waterShowPolluter')}),
+      select('waterInvestigationComplete',T.main.investigationComplete,yn,{showWhen:when('waterShowAssessment')}),
+
+      computed('waterFinalConclusionText',T.main.finalConclusion,{display:true,displayWhen:when('waterShowAssessment')}),
+      computed('waterRulesOverviewText',T.main.overview,{display:true,displayWhen:when('waterShowAssessment')}),
+      computed('waterArticle13Text',T.main.article13,{display:true,displayWhen:when('waterShowSubjectConfirmed')}),
+      computed('waterArticle14Text',T.main.article14,{display:true,displayWhen:when('waterShowArticle14')}),
+      computed('waterArticle7Text',T.main.article7,{display:true,displayWhen:when('waterShowArticle7')}),
+      computed('waterArticle18Text',T.main.article18,{display:true,displayWhen:when('waterShowSubjectConfirmed')}),
+      computed('waterArticle181Text',T.main.article181,{display:true,displayWhen:when('waterShowArticle181')}),
+      computed('waterArticle20Text',T.main.article20,{display:true,displayWhen:when('waterShowArticle181')}),
+      computed('waterArticle22Text',T.main.article22,{display:true,displayWhen:when('waterShowArticle181')}),
+      computed('waterArticle35Text',T.main.article35,{display:true,displayWhen:when('waterShowFalseDetails')}),
+      computed('waterArticle26Text',T.main.article26,{display:true,displayWhen:when('waterShowArticle26Obstruction')}),
+      computed('waterArticle27Text',T.main.article27,{display:true,displayWhen:when('waterShowArticle27')}),
+      computed('waterArticle28Text',T.main.article28,{display:true,displayWhen:when('waterShowArticle28')}),
+      computed('waterArticle32Text',T.main.article32,{display:true,displayWhen:when('waterShowArticle32')}),
+      computed('waterArticle30Text',T.main.article30,{display:true,displayWhen:when('waterShowArticle30')}),
+      computed('waterArticle59Text',T.main.article59,{display:true,displayWhen:when('waterShowArticle59Details')}),
+      computed('waterArticle71Text',T.main.article71,{display:true,displayWhen:when('waterShowPolluter')})
+    ],
+    record:['水污染案件判斷流程目前不產生稽查紀錄草稿。'],reply:['水污染案件判斷流程目前不產生民眾回覆草稿。']
+  };
+  root.INSPECTION_CONFIG.templates.push(template);
+})(window);
