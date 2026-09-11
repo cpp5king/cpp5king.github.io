@@ -1,0 +1,6 @@
+# 本機讀檔工具與暫存不納入版本控制；歸檔的舊程式仍應保留。
+archive/development-tmp/
+tmp/
+node_modules/
+# 使用者原始文件可能含案件個資，不應提交。
+references/

@@ -1,0 +1,68 @@
+const PROVENANCE='PP-IA-41-7F3C9A21';
+const CACHE_NAME='inspection-assistant-4.1.1-pp-7f3c9a21';
+const APP_SHELL=[
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-180.png',
+  './src/styles.css',
+  './src/choice-cards.css',
+  './data/provenance.js',
+  './data/app-meta.js',
+  './data/texts/noise-common.js',
+  './data/texts/noise-templates.js',
+  './data/texts/noise-main.js',
+  './data/texts/noise-article8.js',
+  './data/texts/noise-article9.js',
+  './data/texts/noise-neighbor.js',
+  './data/texts/noise-ui.js',
+  './data/texts/water-main.js',
+  './src/noise-format.js',
+  './data/texts/noise-documents.js',
+  './src/noise-text.js',
+  './data/templates/catalog.js',
+  './data/rules/noise-article8.js',
+  './src/noise-article8.js',
+  './data/rules/noise-article9.js',
+  './src/noise-article9.js',
+  './data/templates/noise-article9-documents.js',
+  './src/noise-article9-documents.js',
+  './src/noise-article9-measurement.js',
+  './src/noise-backgrounds.js',
+  './src/noise-attempts.js',
+  './src/noise-main.js',
+  './data/rules/water-article13.js',
+  './data/rules/water-article14.js',
+  './data/rules/water-article18.js',
+  './data/rules/water-article20.js',
+  './data/rules/water-article22-35.js',
+  './data/rules/water-article26.js',
+  './data/rules/water-article27.js',
+  './data/rules/water-article7.js',
+  './data/rules/water-article18-1.js',
+  './data/rules/water-article28.js',
+  './data/rules/water-article30.js',
+  './data/rules/water-article32.js',
+  './data/rules/water-article59.js',
+  './data/rules/water-article71.js',
+  './src/water-facts.js',
+  './src/water-rule-engine.js',
+  './src/water-main.js',
+  './src/draft-engine.js',
+  './src/template-loader.js',
+  './src/case-session.js',
+  './src/choice-controls.js',
+  './src/field-renderer.js',
+  './src/sentence-app.js',
+  './src/pwa.js',
+  './icons/icon-512.png'
+];
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)));self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))));self.clients.claim();});
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
+  event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{
+    const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;
+  }).catch(()=>caches.match('./index.html'))));
+});

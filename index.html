@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#146552">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="稽查助手">
+  <meta name="application-provenance" content="PP-IA-41-7F3C9A21">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>稽查助手</title>
+  <link rel="stylesheet" href="src/styles.css">
+  <link rel="stylesheet" href="src/choice-cards.css">
+  <script defer src="data/provenance.js"></script>
+  <script defer src="data/app-meta.js"></script>
+  <script defer src="data/texts/noise-common.js"></script>
+  <script defer src="data/texts/noise-templates.js"></script>
+  <script defer src="data/texts/noise-main.js"></script>
+  <script defer src="data/texts/noise-article8.js"></script>
+  <script defer src="data/texts/noise-article9.js"></script>
+  <script defer src="data/texts/noise-neighbor.js"></script>
+  <script defer src="data/texts/noise-ui.js"></script>
+  <script defer src="data/texts/water-main.js"></script>
+  <script defer src="src/noise-format.js"></script>
+  <script defer src="data/texts/noise-documents.js"></script>
+  <script defer src="src/noise-text.js"></script>
+  <script defer src="data/templates/catalog.js"></script>
+  <script defer src="data/rules/noise-article8.js"></script>
+  <script defer src="src/noise-article8.js"></script>
+  <script defer src="data/rules/noise-article9.js"></script>
+  <script defer src="src/noise-article9.js"></script>
+  <script defer src="data/templates/noise-article9-documents.js"></script>
+  <script defer src="src/noise-article9-documents.js"></script>
+  <script defer src="src/noise-article9-measurement.js"></script>
+  <script defer src="src/noise-backgrounds.js"></script>
+  <script defer src="src/noise-attempts.js"></script>
+  <script defer src="src/noise-main.js"></script>
+  <script defer src="data/rules/water-article13.js"></script>
+  <script defer src="data/rules/water-article14.js"></script>
+  <script defer src="data/rules/water-article18.js"></script>
+  <script defer src="data/rules/water-article20.js"></script>
+  <script defer src="data/rules/water-article22-35.js"></script>
+  <script defer src="data/rules/water-article26.js"></script>
+  <script defer src="data/rules/water-article27.js"></script>
+  <script defer src="data/rules/water-article7.js"></script>
+  <script defer src="data/rules/water-article18-1.js"></script>
+  <script defer src="data/rules/water-article28.js"></script>
+  <script defer src="data/rules/water-article30.js"></script>
+  <script defer src="data/rules/water-article32.js"></script>
+  <script defer src="data/rules/water-article59.js"></script>
+  <script defer src="data/rules/water-article71.js"></script>
+  <script defer src="src/water-facts.js"></script>
+  <script defer src="src/water-rule-engine.js"></script>
+  <script defer src="src/water-main.js"></script>
+  <script defer src="src/draft-engine.js"></script>
+  <script defer src="src/template-loader.js"></script>
+  <script defer src="src/case-session.js"></script>
+  <script defer src="src/choice-controls.js"></script>
+  <script defer src="src/field-renderer.js"></script>
+  <script defer src="src/sentence-app.js"></script>
+  <script defer src="src/pwa.js"></script>
+</head>
+<body>
+  <header><span class="badge">完全離線 · 草稿填空</span><h1 id="app-version-title">稽查助手</h1><p>選擇案件範本，填寫事實後產生稽查紀錄與民眾回覆</p></header>
+  <main>
+    <aside id="mobile-install" class="mobile-install" hidden><strong>手機版 4.1</strong><br><span id="mobile-install-message"></span><button id="pwa-install-button" class="secondary" type="button" hidden>安裝到手機</button></aside>
+    <aside class="notice"><strong>照草稿選填，保留原本句子順序。</strong><br><span id="home-instructions"></span>選項不符時可自行填寫。不使用 AI，不自行補入事實或法規；請勿輸入個人資料，稽查對象請使用代稱。</aside>
+    <div id="app"></div>
+  </main>
+  <footer>輸入及草稿僅在本次頁面記憶體中處理，不由程式儲存或傳送。重新整理或關閉即清除。按下複製後，文字會進入 Windows 剪貼簿，請自行管理。</footer>
+</body>
+</html>
