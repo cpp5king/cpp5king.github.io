@@ -1,2968 +1,3028 @@
 TAP version 13
-# Subtest: 4.1 應用程式版本集中管理並由首頁載入
-ok 1 - 4.1 應用程式版本集中管理並由首頁載入
+# Subtest: 4.2.1 應用程式版本集中管理並由首頁載入
+ok 1 - 4.2.1 應用程式版本集中管理並由首頁載入
   ---
-  duration_ms: 1.858225
+  duration_ms: 1.889382
   type: 'test'
   ...
 # Subtest: 第8條時間不符合時停止，不帶出管制區、現場事實及告發原稿
 ok 2 - 第8條時間不符合時停止，不帶出管制區、現場事實及告發原稿
   ---
-  duration_ms: 34.475068
+  duration_ms: 53.58154
   type: 'test'
   ...
 # Subtest: 第8條時間符合但區域不符時停止
 ok 3 - 第8條時間符合但區域不符時停止
   ---
-  duration_ms: 10.543156
+  duration_ms: 14.143289
   type: 'test'
   ...
 # Subtest: 無例外規定之行為時區符合，產生指定固定法規及既有處理原稿
 ok 4 - 無例外規定之行為時區符合，產生指定固定法規及既有處理原稿
   ---
-  duration_ms: 14.825879
+  duration_ms: 10.533003
   type: 'test'
   ...
 # Subtest: 公告例外依行為隔離，完整設定仍拒絕其他行為的例外
 ok 5 - 公告例外依行為隔離，完整設定仍拒絕其他行為的例外
   ---
-  duration_ms: 12.13294
+  duration_ms: 10.694766
   type: 'test'
   ...
 # Subtest: 一般日營建工程22至翌08，假日選項未確認不得前進
 ok 6 - 一般日營建工程22至翌08，假日選項未確認不得前進
   ---
-  duration_ms: 6.568272
+  duration_ms: 11.590003
   type: 'test'
   ...
 # Subtest: 例假日營建工程12至14及20至翌08，適用第一至第四類
 ok 7 - 例假日營建工程12至14及20至翌08，適用第一至第四類
   ---
-  duration_ms: 11.291285
+  duration_ms: 7.897467
   type: 'test'
   ...
 # Subtest: 不限時段排氣管全天適用且不需要假日確認
 ok 8 - 不限時段排氣管全天適用且不需要假日確認
   ---
-  duration_ms: 7.270179
+  duration_ms: 10.298098
   type: 'test'
   ...
 # Subtest: 吹葉機06時截止與伴唱假日午間時段僅由資料定義
 ok 9 - 吹葉機06時截止與伴唱假日午間時段僅由資料定義
   ---
-  duration_ms: 8.875804
+  duration_ms: 7.714735
   type: 'test'
   ...
 # Subtest: 缺漏、無效日期時間、自由輸入行為／管制區與偽造判斷均不能告發
 ok 10 - 缺漏、無效日期時間、自由輸入行為／管制區與偽造判斷均不能告發
   ---
-  duration_ms: 15.963103
+  duration_ms: 19.980105
   type: 'test'
   ...
 # Subtest: 逐步欄位、各自行為例外及成立後事實，變更上游清空下游
 ok 11 - 逐步欄位、各自行為例外及成立後事實，變更上游清空下游
   ---
-  duration_ms: 19.516328
+  duration_ms: 18.234369
   type: 'test'
   ...
 # Subtest: 使用者補齊的營建工程例外可直接判斷
 ok 12 - 使用者補齊的營建工程例外可直接判斷
   ---
-  duration_ms: 9.200967
+  duration_ms: 6.484367
   type: 'test'
   ...
 # Subtest: 第8條修改條件立即清除舊草稿，包含手動修改內容
 ok 13 - 第8條修改條件立即清除舊草稿，包含手動修改內容
   ---
-  duration_ms: 13.969545
+  duration_ms: 13.723094
   type: 'test'
   ...
 # Subtest: 相同輸入結果一致，沒有修改輸入或規則資料
 ok 14 - 相同輸入結果一致，沒有修改輸入或規則資料
   ---
-  duration_ms: 163.898851
+  duration_ms: 88.338953
   type: 'test'
   ...
 # Subtest: 第6條、未量測、餐飲及周界異味與2.0逐字一致（第9條改用2.6核定流程）
 ok 15 - 第6條、未量測、餐飲及周界異味與2.0逐字一致（第9條改用2.6核定流程）
   ---
-  duration_ms: 15.102006
+  duration_ms: 24.137663
   type: 'test'
   ...
 # Subtest: 介面變更第8條條件後舊告發文字立即清空，不保留可複製內容
 ok 16 - 介面變更第8條條件後舊告發文字立即清空，不保留可複製內容
   ---
-  duration_ms: 43.069825
+  duration_ms: 63.313644
   type: 'test'
   ...
 # Subtest: 五項公告例外完整且每個選项皆排除告發，無例外可成立
 ok 17 - 五項公告例外完整且每個選项皆排除告發，無例外可成立
   ---
-  duration_ms: 91.086933
+  duration_ms: 9.241401
   type: 'test'
   ...
 # Subtest: 卡拉OK兩項均是才為例外；未確認不告發，已確認有否才成立
 ok 18 - 卡拉OK兩項均是才為例外；未確認不告發，已確認有否才成立
   ---
-  duration_ms: 48.742894
+  duration_ms: 10.63567
   type: 'test'
   ...
 # Subtest: 核准工程顯示三項附加查核；切換例外及模板清除查核資料
 ok 19 - 核准工程顯示三項附加查核；切換例外及模板清除查核資料
   ---
-  duration_ms: 60.020813
+  duration_ms: 16.693474
   type: 'test'
   ...
 # Subtest: 卡拉OK確認欄位不被單一無例外取代，假日定義來自規則檔
 ok 20 - 卡拉OK確認欄位不被單一無例外取代，假日定義來自規則檔
   ---
-  duration_ms: 18.133313
+  duration_ms: 12.366553
   type: 'test'
   ...
 # Subtest: 2.3工程選項唯一，兩份公文逐字符合核定營建工程文字
 ok 21 - 2.3工程選項唯一，兩份公文逐字符合核定營建工程文字
   ---
-  duration_ms: 28.058142
+  duration_ms: 11.722466
   type: 'test'
   ...
 # Subtest: 營建工程只有時間區域例外均成立才顯示機具作業欄位
 ok 22 - 營建工程只有時間區域例外均成立才顯示機具作業欄位
   ---
-  duration_ms: 19.938518
+  duration_ms: 9.853758
   type: 'test'
   ...
 # Subtest: 3.2第8條實體規則與3.1.2完全一致
 ok 23 - 3.2第8條實體規則與3.1.2完全一致
   ---
-  duration_ms: 14.188029
+  duration_ms: 7.705874
   type: 'test'
   ...
 # Subtest: 全部第8條行為共用模板，四類管制區均輸出阿拉伯數字
 ok 24 - 全部第8條行為共用模板，四類管制區均輸出阿拉伯數字
   ---
-  duration_ms: 52.025636
+  duration_ms: 34.549163
   type: 'test'
   ...
 # Subtest: factText只取適用輸入，缺漏不補事實，自填內容不二次展開
 ok 25 - factText只取適用輸入，缺漏不補事實，自填內容不二次展開
   ---
-  duration_ms: 24.131629
+  duration_ms: 14.400247
   type: 'test'
   ...
 # Subtest: 營建與其他行為欄位互斥，切換後清除事實描述及機具作業
 ok 26 - 營建與其他行為欄位互斥，切換後清除事實描述及機具作業
   ---
-  duration_ms: 12.676705
+  duration_ms: 10.837722
   type: 'test'
   ...
 # Subtest: 2.4夜間依第一至第四類篩選，場所不參與篩選
 ok 27 - 2.4夜間依第一至第四類篩選，場所不參與篩選
   ---
-  duration_ms: 11.668739
+  duration_ms: 9.980536
   type: 'test'
   ...
 # Subtest: 2.4假日僅在候選清單不同時詢問，13時及21時正確篩選
 ok 28 - 2.4假日僅在候選清單不同時詢問，13時及21時正確篩選
   ---
-  duration_ms: 30.104369
+  duration_ms: 10.383994
   type: 'test'
   ...
 # Subtest: 2.4無候選清單提示可用，不限時排氣管依原規則列出
 ok 29 - 2.4無候選清單提示可用，不限時排氣管依原規則列出
   ---
-  duration_ms: 21.726782
+  duration_ms: 10.007329
   type: 'test'
   ...
 # Subtest: 2.4介面順序為日期時間區域假日行為，再顯示專屬例外及場所
 ok 30 - 2.4介面順序為日期時間區域假日行為，再顯示專屬例外及場所
   ---
-  duration_ms: 29.188902
+  duration_ms: 16.900139
   type: 'test'
   ...
 # Subtest: 2.4變更篩選條件清除旧行為例外與事實，修改場所保留篩選
 ok 31 - 2.4變更篩選條件清除旧行為例外與事實，修改場所保留篩選
   ---
-  duration_ms: 7.485062
+  duration_ms: 10.713505
   type: 'test'
   ...
 # Subtest: 2.9超標直接顯示背景數值，沒有關閉音源確認題
 ok 32 - 2.9超標直接顯示背景數值，沒有關閉音源確認題
   ---
-  duration_ms: 34.105419
+  duration_ms: 39.26087
   type: 'test'
   ...
 # Subtest: 2.9例外為主動勾選，清除背景數值且原因必填；取消恢復輸入
 ok 33 - 2.9例外為主動勾選，清除背景數值且原因必填；取消恢復輸入
   ---
-  duration_ms: 24.169632
+  duration_ms: 19.813391
   type: 'test'
   ...
 # Subtest: 2.9混入背景與例外資料時不會同時生效，公文註明原因
 ok 34 - 2.9混入背景與例外資料時不會同時生效，公文註明原因
   ---
-  duration_ms: 15.672679
+  duration_ms: 13.625551
   type: 'test'
   ...
 # Subtest: 2.9上游條件變更清除背景例外原因，包含風速重新計算
 ok 35 - 2.9上游條件變更清除背景例外原因，包含風速重新計算
   ---
-  duration_ms: 8.447205
+  duration_ms: 9.225002
   type: 'test'
   ...
 # Subtest: 2.9工廠仍可使用核備背景，正常輸入無須回答工廠特例
 ok 36 - 2.9工廠仍可使用核備背景，正常輸入無須回答工廠特例
   ---
-  duration_ms: 8.749839
+  duration_ms: 18.32261
   type: 'test'
   ...
 # Subtest: 2.9wind兩份結束公文使用核定執法依據文字
 ok 37 - 2.9wind兩份結束公文使用核定執法依據文字
   ---
-  duration_ms: 20.39962
+  duration_ms: 11.077314
   type: 'test'
   ...
 # Subtest: 2.9difference兩份結束公文使用核定執法依據文字
 ok 38 - 2.9difference兩份結束公文使用核定執法依據文字
   ---
-  duration_ms: 15.622221
+  duration_ms: 21.027868
   type: 'test'
   ...
 # Subtest: 差值2.9嚴格套用原修正門檻
 ok 39 - 差值2.9嚴格套用原修正門檻
   ---
-  duration_ms: 219.623702
+  duration_ms: 28.945954
   type: 'test'
   ...
 # Subtest: 差值3嚴格套用原修正門檻
 ok 40 - 差值3嚴格套用原修正門檻
   ---
-  duration_ms: 7.361929
+  duration_ms: 8.268635
   type: 'test'
   ...
 # Subtest: 差值9.9嚴格套用原修正門檻
 ok 41 - 差值9.9嚴格套用原修正門檻
   ---
-  duration_ms: 8.967592
+  duration_ms: 9.134517
   type: 'test'
   ...
 # Subtest: 差值10嚴格套用原修正門檻
 ok 42 - 差值10嚴格套用原修正門檻
   ---
-  duration_ms: 16.728999
+  duration_ms: 7.232497
   type: 'test'
   ...
 # Subtest: wind可重測清空數據及背景，保留案件資料
 ok 43 - wind可重測清空數據及背景，保留案件資料
   ---
-  duration_ms: 16.698268
+  duration_ms: 8.230821
   type: 'test'
   ...
 # Subtest: wind結束產生指定兩份公文，不作合格超標或第9條違規認定
 ok 44 - wind結束產生指定兩份公文，不作合格超標或第9條違規認定
   ---
-  duration_ms: 40.612287
+  duration_ms: 20.53112
   type: 'test'
   ...
 # Subtest: wind頁面提供兩個出口，結束後可產生及複製正常草稿
 ok 45 - wind頁面提供兩個出口，結束後可產生及複製正常草稿
   ---
-  duration_ms: 77.60172
+  duration_ms: 64.012507
   type: 'test'
   ...
 # Subtest: difference可重測清空數據及背景，保留案件資料
 ok 46 - difference可重測清空數據及背景，保留案件資料
   ---
-  duration_ms: 7.502951
+  duration_ms: 23.463285
   type: 'test'
   ...
 # Subtest: difference結束產生指定兩份公文，不作合格超標或第9條違規認定
 ok 47 - difference結束產生指定兩份公文，不作合格超標或第9條違規認定
   ---
-  duration_ms: 14.174225
+  duration_ms: 20.34246
   type: 'test'
   ...
 # Subtest: difference頁面提供兩個出口，結束後可產生及複製正常草稿
 ok 48 - difference頁面提供兩個出口，結束後可產生及複製正常草稿
   ---
-  duration_ms: 39.990077
+  duration_ms: 67.374343
   type: 'test'
   ...
 # Subtest: 5.0可用且不能偽造不符條件的結束原因，編輯量測清除舊出口
 ok 49 - 5.0可用且不能偽造不符條件的結束原因，編輯量測清除舊出口
   ---
-  duration_ms: 46.716094
+  duration_ms: 28.151992
   type: 'test'
   ...
 # Subtest: 可聞第9條聲音直接進入固定2分鐘量測，不問持續間歇代表性
 ok 50 - 可聞第9條聲音直接進入固定2分鐘量測，不問持續間歇代表性
   ---
-  duration_ms: 38.423254
+  duration_ms: 42.400166
   type: 'test'
   ...
 # Subtest: 移除可聞及完成確認，舊欄位不能阻擋現有量測
 ok 51 - 移除可聞及完成確認，舊欄位不能阻擋現有量測
   ---
-  duration_ms: 23.105703
+  duration_ms: 18.153578
   type: 'test'
   ...
 # Subtest: 天雨路濕停止數值流程，兩份制式文字正確
 ok 52 - 天雨路濕停止數值流程，兩份制式文字正確
   ---
-  duration_ms: 24.129975
+  duration_ms: 18.409322
   type: 'test'
   ...
 # Subtest: 一般音源只有Leq，營建工程才有Lmax，低頻獨立
 ok 53 - 一般音源只有Leq，營建工程才有Lmax，低頻獨立
   ---
-  duration_ms: 7.59232
+  duration_ms: 9.737708
   type: 'test'
   ...
 # Subtest: 各項均未超標及等於標準直接符合，不需背景
 ok 54 - 各項均未超標及等於標準直接符合，不需背景
   ---
-  duration_ms: 7.221724
+  duration_ms: 20.658618
   type: 'test'
   ...
 # Subtest: Leq超標Lmax合格均需背景且只修正原超標項目
 ok 55 - Leq超標Lmax合格均需背景且只修正原超標項目
   ---
-  duration_ms: 7.626418
+  duration_ms: 11.949856
   type: 'test'
   ...
 # Subtest: Leq合格Lmax超標均需背景且只修正原超標項目
 ok 56 - Leq合格Lmax超標均需背景且只修正原超標項目
   ---
-  duration_ms: 6.765567
+  duration_ms: 18.369685
   type: 'test'
   ...
 # Subtest: 低頻超標均需背景且只修正原超標項目
 ok 57 - 低頻超標均需背景且只修正原超標項目
   ---
-  duration_ms: 9.766395
+  duration_ms: 16.648992
   type: 'test'
   ...
 # Subtest: 三項超標均需背景且只修正原超標項目
 ok 58 - 三項超標均需背景且只修正原超標項目
   ---
-  duration_ms: 8.893646
+  duration_ms: 18.081853
   type: 'test'
   ...
 # Subtest: D>=10不修正且公文不輸出實際差值
 ok 59 - D>=10不修正且公文不輸出實際差值
   ---
-  duration_ms: 10.979428
+  duration_ms: 15.474422
   type: 'test'
   ...
 # Subtest: 3<=D<10依公式自動修正，原未超標項目保留
 ok 60 - 3<=D<10依公式自動修正，原未超標項目保留
   ---
-  duration_ms: 17.008145
+  duration_ms: 11.33056
   type: 'test'
   ...
 # Subtest: D<3該筆停止，不得產生符合或超標公文
 ok 61 - D<3該筆停止，不得產生符合或超標公文
   ---
-  duration_ms: 17.882931
+  duration_ms: 11.020216
   type: 'test'
   ...
 # Subtest: 無法配合必填原因，不修正原始值
 ok 62 - 無法配合必填原因，不修正原始值
   ---
-  duration_ms: 19.358861
+  duration_ms: 9.840796
   type: 'test'
   ...
 # Subtest: 修正後等於標準值視為符合，不以顯示四捨五入決定
 ok 63 - 修正後等於標準值視為符合，不以顯示四捨五入決定
   ---
-  duration_ms: 26.817846
+  duration_ms: 6.980714
   type: 'test'
   ...
 # Subtest: 修正後仍超標只限期改善，不直接告發
 ok 64 - 修正後仍超標只限期改善，不直接告發
   ---
-  duration_ms: 12.305278
+  duration_ms: 10.962713
   type: 'test'
   ...
 # Subtest: 風速超限數值可記錄但不採用，重測清空所有測量及背景值
 ok 65 - 風速超限數值可記錄但不採用，重測清空所有測量及背景值
   ---
-  duration_ms: 10.041533
+  duration_ms: 6.755219
   type: 'test'
   ...
 # Subtest: 公文排列全頻最大低頻；非營建Lmax與未量頻率不出現
 ok 66 - 公文排列全頻最大低頻；非營建Lmax與未量頻率不出現
   ---
-  duration_ms: 17.681609
+  duration_ms: 10.040702
   type: 'test'
   ...
 # Subtest: 測點依陳情人要求選擇，民眾回覆使用對應用字
 ok 67 - 測點依陳情人要求選擇，民眾回覆使用對應用字
   ---
-  duration_ms: 12.962978
+  duration_ms: 8.999113
   type: 'test'
   ...
 # Subtest: 工廠核備背景僅限24小時全年運轉且核備有效，全頻可用低頻不套用
 ok 68 - 工廠核備背景僅限24小時全年運轉且核備有效，全頻可用低頻不套用
   ---
-  duration_ms: 8.636714
+  duration_ms: 9.308022
   type: 'test'
   ...
 # Subtest: 缺值未完成風速未確認及無標準不可產生結論，不採用偽造計算欄位
 ok 69 - 缺值未完成風速未確認及無標準不可產生結論，不採用偽造計算欄位
   ---
-  duration_ms: 16.392301
+  duration_ms: 8.880652
   type: 'test'
   ...
 # Subtest: 表單一般音源不顯示Lmax，天雨隱藏全部測量欄位，風速在量測中記錄
 ok 70 - 表單一般音源不顯示Lmax，天雨隱藏全部測量欄位，風速在量測中記錄
   ---
-  duration_ms: 36.497556
+  duration_ms: 17.905501
   type: 'test'
   ...
 # Subtest: 實際頁面完成量測產生草稿、風速失效清空草稿、重測後可重新產生
 ok 71 - 實際頁面完成量測產生草稿、風速失效清空草稿、重測後可重新產生
   ---
-  duration_ms: 175.79609
+  duration_ms: 53.658554
   type: 'test'
   ...
 # Subtest: 背景更動觸發判定與公文更新、切換上游不殘留量測資料
 ok 72 - 背景更動觸發判定與公文更新、切換上游不殘留量測資料
   ---
-  duration_ms: 21.350781
+  duration_ms: 16.318606
   type: 'test'
   ...
 # Subtest: 2.5標準表及第8條完整規則與判斷器保持不變
 ok 73 - 2.5標準表及第8條完整規則與判斷器保持不變
   ---
-  duration_ms: 20.536443
+  duration_ms: 11.728787
   type: 'test'
   ...
 # Subtest: 三項超標以三筆不同背景值計算，不共用全頻低頻數據
 ok 74 - 三項超標以三筆不同背景值計算，不共用全頻低頻數據
   ---
-  duration_ms: 19.008554
+  duration_ms: 6.278695
   type: 'test'
   ...
 # Subtest: 量測判斷與公文具確定性，不修改事實或規則
 ok 75 - 量測判斷與公文具確定性，不修改事實或規則
   ---
-  duration_ms: 113.743229
+  duration_ms: 24.653697
   type: 'test'
   ...
 # Subtest: 2.7只輸入Leq只比較及輸出Leq，低頻Lmax空白不顯示
 ok 76 - 2.7只輸入Leq只比較及輸出Leq，低頻Lmax空白不顯示
   ---
-  duration_ms: 7.428536
+  duration_ms: 9.527734
   type: 'test'
   ...
 # Subtest: 2.7只有低頻或Lmax也可独立判斷，零不等於空白
 ok 77 - 2.7只有低頻或Lmax也可独立判斷，零不等於空白
   ---
-  duration_ms: 10.494963
+  duration_ms: 7.691771
   type: 'test'
   ...
 # Subtest: 2.7風速5可採用、5.1不採用、缺漏與舊選項不能替代
 ok 78 - 2.7風速5可採用、5.1不採用、缺漏與舊選項不能替代
   ---
-  duration_ms: 9.170946
+  duration_ms: 7.912631
   type: 'test'
   ...
 # Subtest: 2.7修正後compliant畫面顯示原值背景修正值標準及結果
 ok 79 - 2.7修正後compliant畫面顯示原值背景修正值標準及結果
   ---
-  duration_ms: 11.930942
+  duration_ms: 8.522746
   type: 'test'
   ...
 # Subtest: 2.7修正後exceeded畫面顯示原值背景修正值標準及結果
 ok 80 - 2.7修正後exceeded畫面顯示原值背景修正值標準及結果
   ---
-  duration_ms: 13.036826
+  duration_ms: 10.954398
   type: 'test'
   ...
 # Subtest: 2.7原始超標修正後合格紀錄保留背景量測及修正數值
 ok 81 - 2.7原始超標修正後合格紀錄保留背景量測及修正數值
   ---
-  duration_ms: 7.416439
+  duration_ms: 7.495199
   type: 'test'
   ...
 # Subtest: 2.7factory超標帶第9條第1項第1款
 ok 82 - 2.7factory超標帶第9條第1項第1款
   ---
-  duration_ms: 9.943018
+  duration_ms: 7.17343
   type: 'test'
   ...
 # Subtest: 2.7entertainment超標帶第9條第1項第2款
 ok 83 - 2.7entertainment超標帶第9條第1項第2款
   ---
-  duration_ms: 7.805693
+  duration_ms: 7.63134
   type: 'test'
   ...
 # Subtest: 2.7business超標帶第9條第1項第3款
 ok 84 - 2.7business超標帶第9條第1項第3款
   ---
-  duration_ms: 13.919338
+  duration_ms: 7.924485
   type: 'test'
   ...
 # Subtest: 2.7construction超標帶第9條第1項第4款
 ok 85 - 2.7construction超標帶第9條第1項第4款
   ---
-  duration_ms: 9.068503
+  duration_ms: 8.580343
   type: 'test'
   ...
 # Subtest: 2.7speaker超標帶第9條第1項第5款
 ok 86 - 2.7speaker超標帶第9條第1項第5款
   ---
-  duration_ms: 8.944204
+  duration_ms: 13.592073
   type: 'test'
   ...
 # Subtest: 2.7other超標帶第9條第1項第6款
 ok 87 - 2.7other超標帶第9條第1項第6款
   ---
-  duration_ms: 21.656567
+  duration_ms: 19.648671
   type: 'test'
   ...
 # Subtest: 2.7所有量測欄位依標準可用性顯示，無三項已刪除欄位
 ok 88 - 2.7所有量測欄位依標準可用性顯示，無三項已刪除欄位
   ---
-  duration_ms: 9.850689
+  duration_ms: 9.17547
   type: 'test'
   ...
 # Subtest: 2.7背景修正公式及機器精度比較保留2.6原程式
 ok 89 - 2.7背景修正公式及機器精度比較保留2.6原程式
   ---
-  duration_ms: 0.506606
+  duration_ms: 0.59701
   type: 'test'
   ...
 # Subtest: 第9條第1類21:00為evening
 ok 90 - 第9條第1類21:00為evening
   ---
-  duration_ms: 25.017302
+  duration_ms: 35.536018
   type: 'test'
   ...
 # Subtest: 第9條第1類22:00為night
 ok 91 - 第9條第1類22:00為night
   ---
-  duration_ms: 6.411111
+  duration_ms: 10.930984
   type: 'test'
   ...
 # Subtest: 第9條第3類22:00為evening
 ok 92 - 第9條第3類22:00為evening
   ---
-  duration_ms: 7.206104
+  duration_ms: 11.000419
   type: 'test'
   ...
 # Subtest: 第9條第3類23:00為night
 ok 93 - 第9條第3類23:00為night
   ---
-  duration_ms: 6.830537
+  duration_ms: 16.443329
   type: 'test'
   ...
 # Subtest: 營建工程第三類日間全頻
 ok 94 - 營建工程第三類日間全頻
   ---
-  duration_ms: 9.885762
+  duration_ms: 12.053627
   type: 'test'
   ...
 # Subtest: 營建工程第三類夜間全頻
 ok 95 - 營建工程第三類夜間全頻
   ---
-  duration_ms: 8.251386
+  duration_ms: 9.800085
   type: 'test'
   ...
 # Subtest: 營建工程第三類夜間低頻
 ok 96 - 營建工程第三類夜間低頻
   ---
-  duration_ms: 7.023049
+  duration_ms: 8.320219
   type: 'test'
   ...
 # Subtest: 營業場所第二類晚間全頻
 ok 97 - 營業場所第二類晚間全頻
   ---
-  duration_ms: 8.613604
+  duration_ms: 11.380965
   type: 'test'
   ...
 # Subtest: 其他公告設施第三類夜間全頻
 ok 98 - 其他公告設施第三類夜間全頻
   ---
-  duration_ms: 11.165342
+  duration_ms: 8.440001
   type: 'test'
   ...
 # Subtest: 全頻低頻同案為兩組獨立標準；低頻沒有Lmax
 ok 99 - 全頻低頻同案為兩組獨立標準；低頻沒有Lmax
   ---
-  duration_ms: 8.220915
+  duration_ms: 13.043853
   type: 'test'
   ...
 # Subtest: 娛樂與營業法定類型分開但共用表；地方設施僅八項
 ok 100 - 娛樂與營業法定類型分開但共用表；地方設施僅八項
   ---
-  duration_ms: 8.193094
+  duration_ms: 6.8953
   type: 'test'
   ...
 # Subtest: 擴音設施不捏造低頻标准，兩頻率仍分開標示
 ok 101 - 擴音設施不捏造低頻标准，兩頻率仍分開標示
   ---
-  duration_ms: 6.467573
+  duration_ms: 13.807187
   type: 'test'
   ...
 # Subtest: 所有時段邊界、跨日、無效時間區域與缺漏不補值
 ok 102 - 所有時段邊界、跨日、無效時間區域與缺漏不補值
   ---
-  duration_ms: 10.775803
+  duration_ms: 24.155314
   type: 'test'
   ...
 # Subtest: 第9條表單順序、唯讀時段標準、隱藏舊實測及結果輸入
 ok 103 - 第9條表單順序、唯讀時段標準、隱藏舊實測及結果輸入
   ---
-  duration_ms: 19.896676
+  duration_ms: 24.850884
   type: 'test'
   ...
 # Subtest: 第9條尚未完成量測前禁止會話產生公文
 ok 104 - 第9條尚未完成量測前禁止會話產生公文
   ---
-  duration_ms: 8.517623
+  duration_ms: 9.551359
   type: 'test'
   ...
 # Subtest: 相同輸入確定一致，不修改輸入規則且每次結果獨立
 ok 105 - 相同輸入確定一致，不修改輸入規則且每次結果獨立
   ---
-  duration_ms: 25.5349
+  duration_ms: 8.523962
   type: 'test'
   ...
 # Subtest: 第9條未完成量測前隱藏公文按鈕與舊草稿，切回原模組恢復
 ok 106 - 第9條未完成量測前隱藏公文按鈕與舊草稿，切回原模組恢復
   ---
-  duration_ms: 57.989577
+  duration_ms: 45.124565
   type: 'test'
   ...
 # Subtest: 切換模板清除所有輸入、自填、勾選及手動修改草稿
 ok 107 - 切換模板清除所有輸入、自填、勾選及手動修改草稿
   ---
-  duration_ms: 29.411246
+  duration_ms: 30.923838
   type: 'test'
   ...
 # Subtest: 同模板重新選擇與回到首頁也不保留資料
 ok 108 - 同模板重新選擇與回到首頁也不保留資料
   ---
-  duration_ms: 6.337107
+  duration_ms: 7.847168
   type: 'test'
   ...
 # Subtest: 選項變更清除不適用的子項與條件值，草稿標記過期
 ok 109 - 選項變更清除不適用的子項與條件值，草稿標記過期
   ---
-  duration_ms: 7.807512
+  duration_ms: 9.197939
   type: 'test'
   ...
 # Subtest: 手動修改輸出不改模板、輸入快照也不外洩可變狀態
 ok 110 - 手動修改輸出不改模板、輸入快照也不外洩可變狀態
   ---
-  duration_ms: 10.949907
+  duration_ms: 11.711774
   type: 'test'
   ...
 # Subtest: 同層兩模板點選直接進表單，往返不殘留輸入與草稿
 ok 111 - 同層兩模板點選直接進表單，往返不殘留輸入與草稿
   ---
-  duration_ms: 33.682783
+  duration_ms: 43.952836
   type: 'test'
   ...
 # Subtest: 設備兩選項初始未選，切換無設備清除種類及其他文字
 ok 112 - 設備兩選項初始未選，切換無設備清除種類及其他文字
   ---
-  duration_ms: 24.089653
+  duration_ms: 23.4294
   type: 'test'
   ...
 # Subtest: 空白輸入不自行推定日期、現場事實或結果
 ok 113 - 空白輸入不自行推定日期、現場事實或結果
   ---
-  duration_ms: 1.739353
+  duration_ms: 1.819
   type: 'test'
   ...
 # Subtest: 六種處理結果分別產生兩份草稿
 ok 114 - 六種處理結果分別產生兩份草稿
   ---
-  duration_ms: 1.153366
+  duration_ms: 1.029308
   type: 'test'
   ...
 # Subtest: 條件選項、文字原樣保留及模板不變
 ok 115 - 條件選項、文字原樣保留及模板不變
   ---
-  duration_ms: 1.688883
+  duration_ms: 2.46919
   type: 'test'
   ...
 # Subtest: 其他說明留白、不沿用非其他結果的文字
 ok 116 - 其他說明留白、不沿用非其他結果的文字
   ---
-  duration_ms: 0.635006
+  duration_ms: 0.537103
   type: 'test'
   ...
 # Subtest: 所有五個示範分支均可完成
 ok 117 - 所有五個示範分支均可完成
   ---
-  duration_ms: 1.868705
+  duration_ms: 2.69985
   type: 'test'
   ...
 # Subtest: 回退更改答案不保留舊分支
 ok 118 - 回退更改答案不保留舊分支
   ---
-  duration_ms: 0.233338
+  duration_ms: 0.22174
   type: 'test'
   ...
 # Subtest: 錯誤目標及循環會顯示資料錯誤
 ok 119 - 錯誤目標及循環會顯示資料錯誤
   ---
-  duration_ms: 0.645021
+  duration_ms: 0.941465
   type: 'test'
   ...
 # Subtest: 沒有餐飲欄位名稱的模板可用多段、條件與複選
 ok 120 - 沒有餐飲欄位名稱的模板可用多段、條件與複選
   ---
-  duration_ms: 61.802338
+  duration_ms: 15.212243
   type: 'test'
   ...
 # Subtest: 缺少資料不推測；隱藏的條件內容不被注入輸出
 ok 121 - 缺少資料不推測；隱藏的條件內容不被注入輸出
   ---
-  duration_ms: 20.53197
+  duration_ms: 4.477541
   type: 'test'
   ...
 # Subtest: 未知欄位、重複識別碼、無效條件指向及不支援類型會被拒絕
 ok 122 - 未知欄位、重複識別碼、無效條件指向及不支援類型會被拒絕
   ---
-  duration_ms: 13.517623
+  duration_ms: 3.793397
   type: 'test'
   ...
 # Subtest: 現行餐飲模板所有選項均可產生，且執行不改模板設定
 ok 123 - 現行餐飲模板所有選項均可產生，且執行不改模板設定
   ---
-  duration_ms: 84.357487
+  duration_ms: 19.634811
   type: 'test'
   ...
 # Subtest: 大門深鎖兩份輸出使用指定事實，忽略隱藏欄位及自填值
 ok 124 - 大門深鎖兩份輸出使用指定事實，忽略隱藏欄位及自填值
   ---
-  duration_ms: 25.550021
+  duration_ms: 36.537819
   type: 'test'
   ...
 # Subtest: 切換深鎖隱藏五組欄位並清除內容，切回不恢復舊值
 ok 125 - 切換深鎖隱藏五組欄位並清除內容，切回不恢復舊值
   ---
-  duration_ms: 9.929435
+  duration_ms: 18.387372
   type: 'test'
   ...
 # Subtest: 營業狀態只保留四種，不接受舊選項或自行填寫
 ok 126 - 營業狀態只保留四種，不接受舊選項或自行填寫
   ---
-  duration_ms: 7.546961
+  duration_ms: 10.00769
   type: 'test'
   ...
 # Subtest: 通用不等於及固定文字依資料生效，拒絕無效條件，不接受固定值注入
 ok 127 - 通用不等於及固定文字依資料生效，拒絕無效條件，不接受固定值注入
   ---
-  duration_ms: 8.261693
+  duration_ms: 8.869117
   type: 'test'
   ...
 # Subtest: 3.2噪音主流程與近鄰無select或傳統radio，時間依3.7.1採雙select例外
 ok 128 - 3.2噪音主流程與近鄰無select或傳統radio，時間依3.7.1採雙select例外
   ---
-  duration_ms: 42.270036
+  duration_ms: 55.032079
   type: 'test'
   ...
 # Subtest: 3.2 mainZone 直接展開所有適用單選卡
 ok 129 - 3.2 mainZone 直接展開所有適用單選卡
   ---
-  duration_ms: 13.438705
+  duration_ms: 13.423802
   type: 'test'
   ...
 # Subtest: 3.2 a9Type 直接展開所有適用單選卡
 ok 130 - 3.2 a9Type 直接展開所有適用單選卡
   ---
-  duration_ms: 11.686605
+  duration_ms: 10.234258
   type: 'test'
   ...
 # Subtest: 3.2 a9Facility 直接展開所有適用單選卡
 ok 131 - 3.2 a9Facility 直接展開所有適用單選卡
   ---
-  duration_ms: 24.923678
+  duration_ms: 10.863378
   type: 'test'
   ...
 # Subtest: 3.2 mainMeasure 直接展開所有適用單選卡
 ok 132 - 3.2 mainMeasure 直接展開所有適用單選卡
   ---
-  duration_ms: 16.694413
+  duration_ms: 12.650344
   type: 'test'
   ...
 # Subtest: 3.2 a9Rain 直接展開所有適用單選卡
 ok 133 - 3.2 a9Rain 直接展開所有適用單選卡
   ---
-  duration_ms: 15.019603
+  duration_ms: 16.35169
   type: 'test'
   ...
 # Subtest: 3.2 a9Home 直接展開所有適用單選卡
 ok 134 - 3.2 a9Home 直接展開所有適用單選卡
   ---
-  duration_ms: 13.242298
+  duration_ms: 17.273221
   type: 'test'
   ...
 # Subtest: 3.2單選點擊會取消原值並顯示aria選中狀態
 ok 135 - 3.2單選點擊會取消原值並顯示aria選中狀態
   ---
-  duration_ms: 16.754639
+  duration_ms: 20.903285
   type: 'test'
   ...
 # Subtest: 3.2方向鍵、Home、End與停用選項遵循單選語意
 ok 136 - 3.2方向鍵、Home、End與停用選項遵循單選語意
   ---
-  duration_ms: 10.948384
+  duration_ms: 13.399447
   type: 'test'
   ...
 # Subtest: 3.2條件式候選只顯示引擎允許值，改區域清除舊值
 ok 137 - 3.2條件式候選只顯示引擎允許值，改區域清除舊值
   ---
-  duration_ms: 20.601979
+  duration_ms: 14.338511
   type: 'test'
   ...
 # Subtest: 3.2未量測與背景例外仍為原生checkbox，可多選及取消
 ok 138 - 3.2未量測與背景例外仍為原生checkbox，可多選及取消
   ---
-  duration_ms: 21.324467
+  duration_ms: 19.873328
   type: 'test'
   ...
 # Subtest: 3.2近鄰自訂卡仍展開自填，輸出採原分流
 ok 139 - 3.2近鄰自訂卡仍展開自填，輸出採原分流
   ---
-  duration_ms: 12.071334
+  duration_ms: 10.467589
   type: 'test'
   ...
 # Subtest: 3.2餐飲及異味仍維持原UI設定
 ok 140 - 3.2餐飲及異味仍維持原UI設定
   ---
-  duration_ms: 8.172994
+  duration_ms: 10.505012
   type: 'test'
   ...
 # Subtest: 3.2單選卡完成量測、產稿、複製與重測動作仍為一般按鈕
 ok 141 - 3.2單選卡完成量測、產稿、複製與重測動作仍為一般按鈕
   ---
-  duration_ms: 72.68946
+  duration_ms: 60.610065
   type: 'test'
   ...
 # Subtest: 3.2法規資料載入結果與3.1.2一致，文字位置不影響實體條件
 ok 142 - 3.2法規資料載入結果與3.1.2一致，文字位置不影響實體條件
   ---
-  duration_ms: 25.769467
+  duration_ms: 28.698906
   type: 'test'
   ...
 # Subtest: 3.2 修正後合格 以狀態碼及數值驗證，不比對整篇公文
 ok 143 - 3.2 修正後合格 以狀態碼及數值驗證，不比對整篇公文
   ---
-  duration_ms: 10.159841
+  duration_ms: 9.729491
   type: 'test'
   ...
 # Subtest: 3.2 超標 以狀態碼及數值驗證，不比對整篇公文
 ok 144 - 3.2 超標 以狀態碼及數值驗證，不比對整篇公文
   ---
-  duration_ms: 11.390237
+  duration_ms: 10.5708
   type: 'test'
   ...
 # Subtest: 3.2 雨濕 以狀態碼及數值驗證，不比對整篇公文
 ok 145 - 3.2 雨濕 以狀態碼及數值驗證，不比對整篇公文
   ---
-  duration_ms: 11.407635
+  duration_ms: 8.58168
   type: 'test'
   ...
 # Subtest: 3.2 風速結束 以狀態碼及數值驗證，不比對整篇公文
 ok 146 - 3.2 風速結束 以狀態碼及數值驗證，不比對整篇公文
   ---
-  duration_ms: 7.464219
+  duration_ms: 7.542697
   type: 'test'
   ...
 # Subtest: 3.2 差值結束 以狀態碼及數值驗證，不比對整篇公文
 ok 147 - 3.2 差值結束 以狀態碼及數值驗證，不比對整篇公文
   ---
-  duration_ms: 11.241936
+  duration_ms: 8.644313
   type: 'test'
   ...
 # Subtest: 3.2改一般公文與提示，不改任何路由、標準或修正結果
 ok 148 - 3.2改一般公文與提示，不改任何路由、標準或修正結果
   ---
-  duration_ms: 17.064242
+  duration_ms: 20.247247
   type: 'test'
   ...
 # Subtest: 3.2第8條文案調整不改成立、例外或分流
 ok 149 - 3.2第8條文案調整不改成立、例外或分流
   ---
-  duration_ms: 10.516965
+  duration_ms: 13.986525
   type: 'test'
   ...
 # Subtest: 3.2文字缺變數或非法變數阻止產稿；事實內模板符號不二次解析
 ok 150 - 3.2文字缺變數或非法變數阻止產稿；事實內模板符號不二次解析
   ---
-  duration_ms: 10.107341
+  duration_ms: 14.272074
   type: 'test'
   ...
 # Subtest: 3.2即使移除模板變數，必要現場事實驗證仍在
 ok 151 - 3.2即使移除模板變數，必要現場事實驗證仍在
   ---
-  duration_ms: 13.847505
+  duration_ms: 16.589769
   type: 'test'
   ...
 # Subtest: 3.0主入口直接進整合流程並只顯示日期時間
 ok 152 - 3.0主入口直接進整合流程並只顯示日期時間
   ---
-  duration_ms: 41.708441
+  duration_ms: 53.802085
   type: 'test'
   ...
 # Subtest: 3.0候選完全沿用既有時間與區域篩選
 ok 153 - 3.0候選完全沿用既有時間與區域篩選
   ---
-  duration_ms: 18.442975
+  duration_ms: 24.143059
   type: 'test'
   ...
 # Subtest: 3.0假日只在結果不同時詢問，未回答不提前轉第9條
 ok 154 - 3.0假日只在結果不同時詢問，未回答不提前轉第9條
   ---
-  duration_ms: 11.655046
+  duration_ms: 14.611122
   type: 'test'
   ...
 # Subtest: 3.0零候選自動轉第9條（記憶體測試資料）
 ok 155 - 3.0零候選自動轉第9條（記憶體測試資料）
   ---
-  duration_ms: 14.419482
+  duration_ms: 14.767253
   type: 'test'
   ...
 # Subtest: 3.0以上皆非自動轉第9條，但尚未選是否量測不產生公文
 ok 156 - 3.0以上皆非自動轉第9條，但尚未選是否量測不產生公文
   ---
-  duration_ms: 15.043674
+  duration_ms: 14.508318
   type: 'test'
   ...
 # Subtest: 3.0公告例外自動轉第9條且保留營建附加查核
 ok 157 - 3.0公告例外自動轉第9條且保留營建附加查核
   ---
-  duration_ms: 13.22834
+  duration_ms: 13.283751
   type: 'test'
   ...
 # Subtest: 3.0卡拉OK雙確認沿用既有例外
 ok 158 - 3.0卡拉OK雙確認沿用既有例外
   ---
-  duration_ms: 14.121096
+  duration_ms: 15.256154
   type: 'test'
   ...
 # Subtest: 3.0第8條成立終止流程且與舊公文完全一致
 ok 159 - 3.0第8條成立終止流程且與舊公文完全一致
   ---
-  duration_ms: 21.450446
+  duration_ms: 18.981446
   type: 'test'
   ...
 # Subtest: 3.0第9條沿用共同日期時間區域且沒有第二組可輸入控制項
 ok 160 - 3.0第9條沿用共同日期時間區域且沒有第二組可輸入控制項
   ---
-  duration_ms: 22.687027
+  duration_ms: 19.284795
   type: 'test'
   ...
 # Subtest: 3.0未量測 factory 使用核定場所文字
 ok 161 - 3.0未量測 factory 使用核定場所文字
   ---
-  duration_ms: 14.533936
+  duration_ms: 17.628779
   type: 'test'
   ...
 # Subtest: 3.0未量測 entertainment 使用核定場所文字
 ok 162 - 3.0未量測 entertainment 使用核定場所文字
   ---
-  duration_ms: 13.900581
+  duration_ms: 23.583416
   type: 'test'
   ...
 # Subtest: 3.0未量測 business 使用核定場所文字
 ok 163 - 3.0未量測 business 使用核定場所文字
   ---
-  duration_ms: 17.347507
+  duration_ms: 21.904963
   type: 'test'
   ...
 # Subtest: 3.0未量測 construction 使用核定場所文字
 ok 164 - 3.0未量測 construction 使用核定場所文字
   ---
-  duration_ms: 14.191677
+  duration_ms: 23.915223
   type: 'test'
   ...
 # Subtest: 3.0設備未啟動與大門深鎖、未發現可並存
 ok 165 - 3.0設備未啟動與大門深鎖、未發現可並存
   ---
-  duration_ms: 31.395855
+  duration_ms: 33.81056
   type: 'test'
   ...
 # Subtest: 3.0未發現噪音及擴音分支不推論未運轉
 ok 166 - 3.0未發現噪音及擴音分支不推論未運轉
   ---
-  duration_ms: 23.592641
+  duration_ms: 31.470454
   type: 'test'
   ...
 # Subtest: 3.0其他原因必填並嵌入完整公文
 ok 167 - 3.0其他原因必填並嵌入完整公文
   ---
-  duration_ms: 23.134433
+  duration_ms: 19.052483
   type: 'test'
   ...
 # Subtest: 3.0第6款八種設施沿用，未選設施不進下一步
 ok 168 - 3.0第6款八種設施沿用，未選設施不進下一步
   ---
-  duration_ms: 24.223238
+  duration_ms: 20.796644
   type: 'test'
   ...
 # Subtest: 3.0量測公文與2.9相同且不帶入第8條事實
 ok 169 - 3.0量測公文與2.9相同且不帶入第8條事實
   ---
-  duration_ms: 20.302692
+  duration_ms: 21.586466
   type: 'test'
   ...
 # Subtest: 3.0原始超標直接背景修正，修正後合格保留過程
 ok 170 - 3.0原始超標直接背景修正，修正後合格保留過程
   ---
-  duration_ms: 21.815332
+  duration_ms: 26.231864
   type: 'test'
   ...
 # Subtest: 3.0風速重測及結束沿用，不能直接產生違規結論
 ok 171 - 3.0風速重測及結束沿用，不能直接產生違規結論
   ---
-  duration_ms: 45.523919
+  duration_ms: 26.974629
   type: 'test'
   ...
 # Subtest: 3.0差值重測及結束沿用，不能直接產生違規結論
 ok 172 - 3.0差值重測及結束沿用，不能直接產生違規結論
   ---
-  duration_ms: 37.855509
+  duration_ms: 30.321767
   type: 'test'
   ...
 # Subtest: 3.0天雨路濕維持制式公文及阻止數值欄
 ok 173 - 3.0天雨路濕維持制式公文及阻止數值欄
   ---
-  duration_ms: 17.679551
+  duration_ms: 19.532125
   type: 'test'
   ...
 # Subtest: 3.3修改 mainTime 保留有效量測並重算
 ok 174 - 3.3修改 mainTime 保留有效量測並重算
   ---
-  duration_ms: 16.977029
+  duration_ms: 20.663823
   type: 'test'
   ...
 # Subtest: 3.3修改 mainZone 保留有效量測並重算
 ok 175 - 3.3修改 mainZone 保留有效量測並重算
   ---
-  duration_ms: 17.546914
+  duration_ms: 18.262351
   type: 'test'
   ...
 # Subtest: 3.3修改 mainDate 保留有效量測並重算
 ok 176 - 3.3修改 mainDate 保留有效量測並重算
   ---
-  duration_ms: 23.219673
+  duration_ms: 22.294418
   type: 'test'
   ...
 # Subtest: 3.3修改 mainHoliday 保留有效量測並重算
 ok 177 - 3.3修改 mainHoliday 保留有效量測並重算
   ---
-  duration_ms: 25.770588
+  duration_ms: 21.449692
   type: 'test'
   ...
 # Subtest: 3.0實際欄位事件由第8條一路量測並產生公文
 ok 178 - 3.0實際欄位事件由第8條一路量測並產生公文
   ---
-  duration_ms: 64.507878
+  duration_ms: 53.784134
   type: 'test'
   ...
 # Subtest: 3.0第8條例外切換後第9條結果不得殘留
 ok 179 - 3.0第8條例外切換後第9條結果不得殘留
   ---
-  duration_ms: 20.631973
+  duration_ms: 15.8949
   type: 'test'
   ...
 # Subtest: 3.0輸入包含模板符號不二次解析，相同輸入確定一致
 ok 180 - 3.0輸入包含模板符號不二次解析，相同輸入確定一致
   ---
-  duration_ms: 20.521527
+  duration_ms: 22.055931
   type: 'test'
   ...
 # Subtest: 3.0完整頁面第8條至第9條、公文生成、修改上游清除可複製草稿
 ok 181 - 3.0完整頁面第8條至第9條、公文生成、修改上游清除可複製草稿
   ---
-  duration_ms: 109.983348
+  duration_ms: 100.436538
   type: 'test'
   ...
 # Subtest: 3.0完整頁面風速無效可結束產稿及重新量測
 ok 182 - 3.0完整頁面風速無效可結束產稿及重新量測
   ---
-  duration_ms: 87.901893
+  duration_ms: 125.177493
   type: 'test'
   ...
 # Subtest: 3.0完整頁面未量測、額外狀態及第6條入口
 ok 183 - 3.0完整頁面未量測、額外狀態及第6條入口
   ---
-  duration_ms: 79.904842
+  duration_ms: 74.243236
   type: 'test'
   ...
 # Subtest: 3.0有作用的假日確認跨分流保留，重新選假日則舊量測失效
 ok 184 - 3.0有作用的假日確認跨分流保留，重新選假日則舊量測失效
   ---
-  duration_ms: 28.419414
+  duration_ms: 23.694031
   type: 'test'
   ...
 # Subtest: 3.0未量測場所原因切換類型後清空，擴音不提供未營業推論
 ok 185 - 3.0未量測場所原因切換類型後清空，擴音不提供未營業推論
   ---
-  duration_ms: 22.210631
+  duration_ms: 21.846015
   type: 'test'
   ...
 # Subtest: 3.2抽離文字後第8／9條規則資料保持原內容
 ok 186 - 3.2抽離文字後第8／9條規則資料保持原內容
   ---
-  duration_ms: 26.837764
+  duration_ms: 32.180543
   type: 'test'
   ...
 # Subtest: 文字契約：1999、巡查固定尾段與背景未修正用語
 ok 187 - 文字契約：1999、巡查固定尾段與背景未修正用語
   ---
-  duration_ms: 113.287842
+  duration_ms: 28.725899
   type: 'test'
   ...
 # Subtest: 文字契約：第9條條項款與原有標準用語
 ok 188 - 文字契約：第9條條項款與原有標準用語
   ---
-  duration_ms: 33.909894
+  duration_ms: 10.970503
   type: 'test'
   ...
 # Subtest: 文字集中：噪音固定尾段只在一個正式文字來源定義
 ok 189 - 文字集中：噪音固定尾段只在一個正式文字來源定義
   ---
-  duration_ms: 5.851987
+  duration_ms: 0.770089
   type: 'test'
   ...
 # Subtest: 文字集中：主要噪音流程不再包含完整公文或長提示字串
 ok 190 - 文字集中：主要噪音流程不再包含完整公文或長提示字串
   ---
-  duration_ms: 12.113107
+  duration_ms: 0.862076
   type: 'test'
   ...
 # Subtest: 3.1入口只通往近鄰生活噪音，新表單沒有第8／9條或舊未量測
 ok 191 - 3.1入口只通往近鄰生活噪音，新表單沒有第8／9條或舊未量測
   ---
-  duration_ms: 41.761279
+  duration_ms: 70.501809
   type: 'test'
   ...
 # Subtest: 3.1近鄰所有原分流公文逐字沿用，輸入scenario不能切回舊流程
 ok 192 - 3.1近鄰所有原分流公文逐字沿用，輸入scenario不能切回舊流程
   ---
-  duration_ms: 20.586759
+  duration_ms: 26.586867
   type: 'test'
   ...
 # Subtest: 3.1排氣管正式規則保留，但15時第3類主流程為零候選
 ok 193 - 3.1排氣管正式規則保留，但15時第3類主流程為零候選
   ---
-  duration_ms: 24.827899
+  duration_ms: 19.174436
   type: 'test'
   ...
 # Subtest: 3.1排氣管不在任何候選選項，注入選擇也不能告發
 ok 194 - 3.1排氣管不在任何候選選項，注入選擇也不能告發
   ---
-  duration_ms: 14.654
+  duration_ms: 18.824169
   type: 'test'
   ...
 # Subtest: 3.1未量測為複選且無額外狀態或現場無人
 ok 195 - 3.1未量測為複選且無額外狀態或現場無人
   ---
-  duration_ms: 10.189549
+  duration_ms: 18.700284
   type: 'test'
   ...
 # Subtest: 3.1 factory 僅顯示合理checkbox且清除無效注入
 ok 196 - 3.1 factory 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 20.566669
+  duration_ms: 22.411176
   type: 'test'
   ...
 # Subtest: 3.1 entertainment 僅顯示合理checkbox且清除無效注入
 ok 197 - 3.1 entertainment 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 22.992873
+  duration_ms: 20.095043
   type: 'test'
   ...
 # Subtest: 3.1 business 僅顯示合理checkbox且清除無效注入
 ok 198 - 3.1 business 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 24.426389
+  duration_ms: 20.925339
   type: 'test'
   ...
 # Subtest: 3.1 construction 僅顯示合理checkbox且清除無效注入
 ok 199 - 3.1 construction 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 13.756785
+  duration_ms: 19.512378
   type: 'test'
   ...
 # Subtest: 3.1 speaker 僅顯示合理checkbox且清除無效注入
 ok 200 - 3.1 speaker 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 17.826227
+  duration_ms: 25.242568
   type: 'test'
   ...
 # Subtest: 3.1 other 僅顯示合理checkbox且清除無效注入
 ok 201 - 3.1 other 僅顯示合理checkbox且清除無效注入
   ---
-  duration_ms: 14.384369
+  duration_ms: 19.986399
   type: 'test'
   ...
 # Subtest: 3.1未營業、大門深鎖與未發現可同时勾選
 ok 202 - 3.1未營業、大門深鎖與未發現可同时勾選
   ---
-  duration_ms: 49.844541
+  duration_ms: 35.662535
   type: 'test'
   ...
 # Subtest: 3.1設備未啟動複合原因使用完整設備句型且不重複未發現
 ok 203 - 3.1設備未啟動複合原因使用完整設備句型且不重複未發現
   ---
-  duration_ms: 27.047694
+  duration_ms: 16.306881
   type: 'test'
   ...
 # Subtest: 3.1其他原因條件顯示、必填、取消即清除
 ok 204 - 3.1其他原因條件顯示、必填、取消即清除
   ---
-  duration_ms: 29.453034
+  duration_ms: 40.259166
   type: 'test'
   ...
 # Subtest: 3.1只選其他仍產生完整兩份公文，不把自填當成整份文件
 ok 205 - 3.1只選其他仍產生完整兩份公文，不把自填當成整份文件
   ---
-  duration_ms: 29.270955
+  duration_ms: 16.694092
   type: 'test'
   ...
 # Subtest: 3.1設備與其他原因可以共存且其他仍保留於公文
 ok 206 - 3.1設備與其他原因可以共存且其他仍保留於公文
   ---
-  duration_ms: 30.882212
+  duration_ms: 16.724004
   type: 'test'
   ...
 # Subtest: 3.1先選原因才顯示場所，只選未營業不顯示噪音源
 ok 207 - 3.1先選原因才顯示場所，只選未營業不顯示噪音源
   ---
-  duration_ms: 24.467682
+  duration_ms: 22.521324
   type: 'test'
   ...
 # Subtest: 3.1未營業不強迫噪音源，缺場所禁止產稿
 ok 208 - 3.1未營業不強迫噪音源，缺場所禁止產稿
   ---
-  duration_ms: 19.107213
+  duration_ms: 19.336121
   type: 'test'
   ...
 # Subtest: 3.1設備未啟動缺噪音源阻擋，含placeholder也阻擋
 ok 209 - 3.1設備未啟動缺噪音源阻擋，含placeholder也阻擋
   ---
-  duration_ms: 28.136939
+  duration_ms: 27.447956
   type: 'test'
   ...
 # Subtest: 3.1量測缺 稽查場所 無法產稿並提供明確提示
 ok 210 - 3.1量測缺 稽查場所 無法產稿並提供明確提示
   ---
-  duration_ms: 23.077991
+  duration_ms: 22.75715
   type: 'test'
   ...
 # Subtest: 3.1量測缺 噪音源 無法產稿並提供明確提示
 ok 211 - 3.1量測缺 噪音源 無法產稿並提供明確提示
   ---
-  duration_ms: 19.232668
+  duration_ms: 20.170871
   type: 'test'
   ...
 # Subtest: 3.1量測必要數值由既有量測器檢查，未量低頻不必填
 ok 212 - 3.1量測必要數值由既有量測器檢查，未量低頻不必填
   ---
-  duration_ms: 35.175365
+  duration_ms: 60.935867
   type: 'test'
   ...
 # Subtest: 3.5第8條場所仍必填，機具作業空白可用標準事實產稿
 ok 213 - 3.5第8條場所仍必填，機具作業空白可用標準事實產稿
   ---
-  duration_ms: 24.715723
+  duration_ms: 36.862509
   type: 'test'
   ...
 # Subtest: 3.5第8條非營建行為空白補充仍完整產稿
 ok 214 - 3.5第8條非營建行為空白補充仍完整產稿
   ---
-  duration_ms: 33.253546
+  duration_ms: 25.382626
   type: 'test'
   ...
 # Subtest: 3.1類型切換只清除不適用原因，保留其他及現場資料
 ok 215 - 3.1類型切換只清除不適用原因，保留其他及現場資料
   ---
-  duration_ms: 25.911347
+  duration_ms: 24.790227
   type: 'test'
   ...
 # Subtest: 3.1取消設備未啟動隱藏噪音源並保留資料，其他原因不被一併清除
 ok 216 - 3.1取消設備未啟動隱藏噪音源並保留資料，其他原因不被一併清除
   ---
-  duration_ms: 23.309965
+  duration_ms: 22.073698
   type: 'test'
   ...
 # Subtest: 3.3共同條件保留未量測原因；改成量測才清除不適用原因
 ok 217 - 3.3共同條件保留未量測原因；改成量測才清除不適用原因
   ---
-  duration_ms: 20.512053
+  duration_ms: 31.630177
   type: 'test'
   ...
 # Subtest: 3.1背景音顯示用字更新，原始值與超標結果保持不變
 ok 218 - 3.1背景音顯示用字更新，原始值與超標結果保持不變
   ---
-  duration_ms: 17.232504
+  duration_ms: 16.667492
   type: 'test'
   ...
 # Subtest: 3.1共用摘要以民國日期與時許顯示，原始資料仍不變
 ok 219 - 3.1共用摘要以民國日期與時許顯示，原始資料仍不變
   ---
-  duration_ms: 18.417597
+  duration_ms: 24.161102
   type: 'test'
   ...
 # Subtest: 3.1原因勾選順序不影響輸出，自訂模板符號不二次展開
 ok 220 - 3.1原因勾選順序不影響輸出，自訂模板符號不二次展開
   ---
-  duration_ms: 25.525133
+  duration_ms: 34.739066
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Subject
 ok 221 - 3.3改第2類保留 a9Subject
   ---
-  duration_ms: 43.119367
+  duration_ms: 71.054862
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Source
 ok 222 - 3.3改第2類保留 a9Source
   ---
-  duration_ms: 20.749968
+  duration_ms: 12.853261
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 mainMeasure
 ok 223 - 3.3改第2類保留 mainMeasure
   ---
-  duration_ms: 15.464811
+  duration_ms: 21.887569
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Type
 ok 224 - 3.3改第2類保留 a9Type
   ---
-  duration_ms: 11.782157
+  duration_ms: 18.346072
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Value_leq
 ok 225 - 3.3改第2類保留 a9Value_leq
   ---
-  duration_ms: 12.633895
+  duration_ms: 17.25496
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Value_lmax
 ok 226 - 3.3改第2類保留 a9Value_lmax
   ---
-  duration_ms: 11.638436
+  duration_ms: 13.732699
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9Value_leqLF
 ok 227 - 3.3改第2類保留 a9Value_leqLF
   ---
-  duration_ms: 12.775834
+  duration_ms: 13.984644
   type: 'test'
   ...
 # Subtest: 3.3改第2類保留 a9WindSpeed
 ok 228 - 3.3改第2類保留 a9WindSpeed
   ---
-  duration_ms: 15.291273
+  duration_ms: 12.831362
   type: 'test'
   ...
 # Subtest: 3.3管制區變更套用新標準、重算超標及背景需求
 ok 229 - 3.3管制區變更套用新標準、重算超標及背景需求
   ---
-  duration_ms: 19.513626
+  duration_ms: 13.003454
   type: 'test'
   ...
 # Subtest: 3.3時間變更保留值並重算日夜及標準
 ok 230 - 3.3時間變更保留值並重算日夜及標準
   ---
-  duration_ms: 11.677014
+  duration_ms: 13.175656
   type: 'test'
   ...
 # Subtest: 3.3仍在候選的第8條行為及事實保留
 ok 231 - 3.3仍在候選的第8條行為及事實保留
   ---
-  duration_ms: 13.467414
+  duration_ms: 14.808942
   type: 'test'
   ...
 # Subtest: 3.3失效第8條只清專屬資料，零候選自動使用既有第9條值
 ok 232 - 3.3失效第8條只清專屬資料，零候選自動使用既有第9條值
   ---
-  duration_ms: 11.014324
+  duration_ms: 13.791818
   type: 'test'
   ...
 # Subtest: 3.3第8條成立期間隱藏第9條資料，返回例外後仍可用
 ok 233 - 3.3第8條成立期間隱藏第9條資料，返回例外後仍可用
   ---
-  duration_ms: 14.40895
+  duration_ms: 17.240665
   type: 'test'
   ...
 # Subtest: 3.3新日期清除舊假日確認但保留現場與量測
 ok 234 - 3.3新日期清除舊假日確認但保留現場與量測
   ---
-  duration_ms: 11.553822
+  duration_ms: 13.846332
   type: 'test'
   ...
 # Subtest: 3.3營建改營業只清Lmax與其背景，保留兩種均能及風速
 ok 235 - 3.3營建改營業只清Lmax與其背景，保留兩種均能及風速
   ---
-  duration_ms: 13.675842
+  duration_ms: 12.880772
   type: 'test'
   ...
 # Subtest: 3.3其他公告子類型離開後清除，轉入時要求重新選擇
 ok 236 - 3.3其他公告子類型離開後清除，轉入時要求重新選擇
   ---
-  duration_ms: 15.575002
+  duration_ms: 19.24362
   type: 'test'
   ...
 # Subtest: 3.3無低頻標準類型清除低頻及其背景
 ok 237 - 3.3無低頻標準類型清除低頻及其背景
   ---
-  duration_ms: 14.546318
+  duration_ms: 22.442082
   type: 'test'
   ...
 # Subtest: 3.3重算仍超標保留背景並重算修正
 ok 238 - 3.3重算仍超標保留背景並重算修正
   ---
-  duration_ms: 14.583919
+  duration_ms: 17.4109
   type: 'test'
   ...
 # Subtest: 3.3新標準無超標，僅清無效背景不清原值
 ok 239 - 3.3新標準無超標，僅清無效背景不清原值
   ---
-  duration_ms: 13.64937
+  duration_ms: 17.464761
   type: 'test'
   ...
 # Subtest: 3.3背景例外原因仍有效時保留，不需背景時清除
 ok 240 - 3.3背景例外原因仍有效時保留，不需背景時清除
   ---
-  duration_ms: 15.613756
+  duration_ms: 16.442504
   type: 'test'
   ...
 # Subtest: 3.3工廠歲修核備背景保留，離開工廠清除核備資料
 ok 241 - 3.3工廠歲修核備背景保留，離開工廠清除核備資料
   ---
-  duration_ms: 15.651519
+  duration_ms: 16.099447
   type: 'test'
   ...
 # Subtest: 3.3來源類型變更只移除不適用checkbox
 ok 242 - 3.3來源類型變更只移除不適用checkbox
   ---
-  duration_ms: 11.295042
+  duration_ms: 9.457798
   type: 'test'
   ...
 # Subtest: 3.3UI沒有operation欄位，固定文字僅用於量測
 ok 243 - 3.3UI沒有operation欄位，固定文字僅用於量測
   ---
-  duration_ms: 18.959748
+  duration_ms: 25.6016
   type: 'test'
   ...
 # Subtest: 3.3真正草稿失效但資料保留，重新開始仍完全清空
 ok 244 - 3.3真正草稿失效但資料保留，重新開始仍完全清空
   ---
-  duration_ms: 14.29067
+  duration_ms: 23.240428
   type: 'test'
   ...
 # Subtest: 3.3目前模板與畫面版本更新，標準資料保持原版本及內容
 ok 245 - 3.3目前模板與畫面版本更新，標準資料保持原版本及內容
   ---
-  duration_ms: 7.170571
+  duration_ms: 14.767102
   type: 'test'
   ...
 # Subtest: 3.3日常契約不再載入61份完整公文遷移比對
 ok 246 - 3.3日常契約不再載入61份完整公文遷移比對
   ---
-  duration_ms: 2.499559
+  duration_ms: 2.458575
   type: 'test'
   ...
 # Subtest: 3.5歷史D低於3不因顯示四捨五入誤寫3.0
 ok 247 - 3.5歷史D低於3不因顯示四捨五入誤寫3.0
   ---
-  duration_ms: 64.200966
+  duration_ms: 53.25484
   type: 'test'
   ...
 # Subtest: 3.5沒有placeholder卡片，按產稿才呈現必要欄位錯誤
 ok 248 - 3.5沒有placeholder卡片，按產稿才呈現必要欄位錯誤
   ---
-  duration_ms: 60.725656
+  duration_ms: 36.005224
   type: 'test'
   ...
 # Subtest: 3.5完整頁面重測保留第1筆、第2筆能產稿，重新案件清除歷史
 ok 249 - 3.5完整頁面重測保留第1筆、第2筆能產稿，重新案件清除歷史
   ---
-  duration_ms: 150.14436
+  duration_ms: 101.170985
   type: 'test'
   ...
 # Subtest: 3.5完整頁面D<3依3.6只重測背景，原背景與D保留且新一筆可結束
 ok 250 - 3.5完整頁面D<3依3.6只重測背景，原背景與D保留且新一筆可結束
   ---
-  duration_ms: 117.337149
+  duration_ms: 74.272352
   type: 'test'
   ...
 # Subtest: 3.5量測出口完全沒有輸入DOM；內部出口仍可結束與產稿
 ok 251 - 3.5量測出口完全沒有輸入DOM；內部出口仍可結束與產稿
   ---
-  duration_ms: 47.119105
+  duration_ms: 17.386963
   type: 'test'
   ...
 # Subtest: 3.5只在風速無效時提供相應重測與結束操作
 ok 252 - 3.5只在風速無效時提供相應重測與結束操作
   ---
-  duration_ms: 27.557942
+  duration_ms: 11.81647
   type: 'test'
   ...
 # Subtest: 3.5只在差值無效時提供相應重測與結束操作
 ok 253 - 3.5只在差值無效時提供相應重測與結束操作
   ---
-  duration_ms: 23.490235
+  duration_ms: 12.877092
   type: 'test'
   ...
 # Subtest: 3.5噪音與近鄰卡片沒有空白／placeholder答案，初始全部未選
 ok 254 - 3.5噪音與近鄰卡片沒有空白／placeholder答案，初始全部未選
   ---
-  duration_ms: 18.66342
+  duration_ms: 9.591224
   type: 'test'
   ...
 # Subtest: 3.5缺管制區與非法時間提供具體驗證，禁止正式產稿
 ok 255 - 3.5缺管制區與非法時間提供具體驗證，禁止正式產稿
   ---
-  duration_ms: 17.19749
+  duration_ms: 13.41997
   type: 'test'
   ...
 # Subtest: 3.5擴音未啟動自動帶入，不接受殘留手填音源覆蓋
 ok 256 - 3.5擴音未啟動自動帶入，不接受殘留手填音源覆蓋
   ---
-  duration_ms: 25.241741
+  duration_ms: 16.307301
   type: 'test'
   ...
 # Subtest: 3.5公告設施1未啟動直接使用既選名稱
 ok 257 - 3.5公告設施1未啟動直接使用既選名稱
   ---
-  duration_ms: 21.615937
+  duration_ms: 12.281613
   type: 'test'
   ...
 # Subtest: 3.5公告設施2未啟動直接使用既選名稱
 ok 258 - 3.5公告設施2未啟動直接使用既選名稱
   ---
-  duration_ms: 19.691448
+  duration_ms: 15.86862
   type: 'test'
   ...
 # Subtest: 3.5公告設施3未啟動直接使用既選名稱
 ok 259 - 3.5公告設施3未啟動直接使用既選名稱
   ---
-  duration_ms: 34.203848
+  duration_ms: 14.092167
   type: 'test'
   ...
 # Subtest: 3.5公告設施4未啟動直接使用既選名稱
 ok 260 - 3.5公告設施4未啟動直接使用既選名稱
   ---
-  duration_ms: 20.545294
+  duration_ms: 12.150485
   type: 'test'
   ...
 # Subtest: 3.5公告設施5未啟動直接使用既選名稱
 ok 261 - 3.5公告設施5未啟動直接使用既選名稱
   ---
-  duration_ms: 17.955095
+  duration_ms: 13.352228
   type: 'test'
   ...
 # Subtest: 3.5公告設施6未啟動直接使用既選名稱
 ok 262 - 3.5公告設施6未啟動直接使用既選名稱
   ---
-  duration_ms: 23.318105
+  duration_ms: 11.015338
   type: 'test'
   ...
 # Subtest: 3.5公告設施7未啟動直接使用既選名稱
 ok 263 - 3.5公告設施7未啟動直接使用既選名稱
   ---
-  duration_ms: 25.741082
+  duration_ms: 14.418217
   type: 'test'
   ...
 # Subtest: 3.5公告設施8未啟動直接使用既選名稱
 ok 264 - 3.5公告設施8未啟動直接使用既選名稱
   ---
-  duration_ms: 21.565115
+  duration_ms: 12.298908
   type: 'test'
   ...
 # Subtest: 3.5factory無法由類型確定音源，仍須填寫
 ok 265 - 3.5factory無法由類型確定音源，仍須填寫
   ---
-  duration_ms: 24.532174
+  duration_ms: 10.950897
   type: 'test'
   ...
 # Subtest: 3.5business無法由類型確定音源，仍須填寫
 ok 266 - 3.5business無法由類型確定音源，仍須填寫
   ---
-  duration_ms: 26.352215
+  duration_ms: 16.747055
   type: 'test'
   ...
 # Subtest: 3.5entertainment無法由類型確定音源，仍須填寫
 ok 267 - 3.5entertainment無法由類型確定音源，仍須填寫
   ---
-  duration_ms: 22.915575
+  duration_ms: 12.226761
   type: 'test'
   ...
 # Subtest: 3.5場所欄與驗證一致，第9條不恢復作業情形
 ok 268 - 3.5場所欄與驗證一致，第9條不恢復作業情形
   ---
-  duration_ms: 18.845686
+  duration_ms: 13.286912
   type: 'test'
   ...
 # Subtest: 3.5所有第8條行為空白補充可產完整事實且法規結果不變
 ok 269 - 3.5所有第8條行為空白補充可產完整事實且法規結果不變
   ---
-  duration_ms: 51.532453
+  duration_ms: 30.623149
   type: 'test'
   ...
 # Subtest: 3.5補充文字附加在標準事實後，不形成只有名詞的斷句
 ok 270 - 3.5補充文字附加在標準事實後，不形成只有名詞的斷句
   ---
-  duration_ms: 27.841403
+  duration_ms: 15.114895
   type: 'test'
   ...
 # Subtest: 3.5optional標示與空白驗證一致，必填欄未標選填
 ok 271 - 3.5optional標示與空白驗證一致，必填欄未標選填
   ---
-  duration_ms: 28.510497
+  duration_ms: 15.69971
   type: 'test'
   ...
 # Subtest: 3.5風速raw string正常輸入 0.8
 ok 272 - 3.5風速raw string正常輸入 0.8
   ---
-  duration_ms: 25.002274
+  duration_ms: 13.41078
   type: 'test'
   ...
 # Subtest: 3.5風速raw string正常輸入 1.4
 ok 273 - 3.5風速raw string正常輸入 1.4
   ---
-  duration_ms: 21.207593
+  duration_ms: 15.362848
   type: 'test'
   ...
 # Subtest: 3.5風速raw string正常輸入 5.0
 ok 274 - 3.5風速raw string正常輸入 5.0
   ---
-  duration_ms: 24.969476
+  duration_ms: 12.656036
   type: 'test'
   ...
 # Subtest: 3.5風速raw string正常輸入 5.25
 ok 275 - 3.5風速raw string正常輸入 5.25
   ---
-  duration_ms: 18.177035
+  duration_ms: 11.360092
   type: 'test'
   ...
 # Subtest: 3.5中間字串1.不回寫、不重建節點、不重設游標
 ok 276 - 3.5中間字串1.不回寫、不重建節點、不重設游標
   ---
-  duration_ms: 27.888762
+  duration_ms: 14.73153
   type: 'test'
   ...
 # Subtest: 3.5風速邊界 5.0
 ok 277 - 3.5風速邊界 5.0
   ---
-  duration_ms: 12.892664
+  duration_ms: 12.207194
   type: 'test'
   ...
 # Subtest: 3.5風速邊界 5.01
 ok 278 - 3.5風速邊界 5.01
   ---
-  duration_ms: 12.974603
+  duration_ms: 8.56292
   type: 'test'
   ...
 # Subtest: 3.5第1次風速無效留存，第2次有效獨立判定
 ok 279 - 3.5第1次風速無效留存，第2次有效獨立判定
   ---
-  duration_ms: 29.79126
+  duration_ms: 13.554042
   type: 'test'
   ...
 # Subtest: 3.6更新舊D<3測試：保存背景歷史而非完整attempt
 ok 280 - 3.6更新舊D<3測試：保存背景歷史而非完整attempt
   ---
-  duration_ms: 21.080795
+  duration_ms: 10.852724
   type: 'test'
   ...
 # Subtest: 3.5連續三次重測保存三份獨立快照，舊歷史不參與新標準判定
 ok 281 - 3.5連續三次重測保存三份獨立快照，舊歷史不參與新標準判定
   ---
-  duration_ms: 28.696775
+  duration_ms: 16.080192
   type: 'test'
   ...
 # Subtest: 3.5歷史保留當時類型標準，上游智慧保留不改寫歷史
 ok 282 - 3.5歷史保留當時類型標準，上游智慧保留不改寫歷史
   ---
-  duration_ms: 25.410589
+  duration_ms: 18.982513
   type: 'test'
   ...
 # Subtest: 3.5結束所有無效量測沿用原無效模板，完整重設清除歷史
 ok 283 - 3.5結束所有無效量測沿用原無效模板，完整重設清除歷史
   ---
-  duration_ms: 33.687187
+  duration_ms: 14.892582
   type: 'test'
   ...
 # Subtest: 3.5背景61減56內部維持完整精度，兩份顯示只取一位小數
 ok 284 - 3.5背景61減56內部維持完整精度，兩份顯示只取一位小數
   ---
-  duration_ms: 23.190518
+  duration_ms: 14.533393
   type: 'test'
   ...
 # Subtest: 3.5修正顯示等於65.0，實際65.01仍判超標，不用顯示值比較
 ok 285 - 3.5修正顯示等於65.0，實際65.01仍判超標，不用顯示值比較
   ---
-  duration_ms: 21.14206
+  duration_ms: 11.052904
   type: 'test'
   ...
 # Subtest: 3.5lmax修正亦僅格式化顯示
 ok 286 - 3.5lmax修正亦僅格式化顯示
   ---
-  duration_ms: 17.370327
+  duration_ms: 16.388168
   type: 'test'
   ...
 # Subtest: 3.5leqLF修正亦僅格式化顯示
 ok 287 - 3.5leqLF修正亦僅格式化顯示
   ---
-  duration_ms: 16.505297
+  duration_ms: 12.34286
   type: 'test'
   ...
 # Subtest: 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 00:40
 ok 288 - 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 00:40
   ---
-  duration_ms: 52.191084
+  duration_ms: 16.271792
   type: 'test'
   ...
 # Subtest: 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 08:05
 ok 289 - 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 08:05
   ---
-  duration_ms: 16.987372
+  duration_ms: 11.351271
   type: 'test'
   ...
 # Subtest: 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 14:10
 ok 290 - 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 14:10
   ---
-  duration_ms: 17.453919
+  duration_ms: 15.981869
   type: 'test'
   ...
 # Subtest: 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 21:00
 ok 291 - 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 21:00
   ---
-  duration_ms: 14.265426
+  duration_ms: 11.738647
   type: 'test'
   ...
 # Subtest: 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 23:30
 ok 292 - 3.5時間UI依3.7.1改為24小時選擇器，公文省略分鐘 23:30
   ---
-  duration_ms: 20.050025
+  duration_ms: 13.03804
   type: 'test'
   ...
 # Subtest: 3.5拒絕非法24小時格式 24:00
 ok 293 - 3.5拒絕非法24小時格式 24:00
   ---
-  duration_ms: 21.009356
+  duration_ms: 9.353964
   type: 'test'
   ...
 # Subtest: 3.5拒絕非法24小時格式 12:00 AM
 ok 294 - 3.5拒絕非法24小時格式 12:00 AM
   ---
-  duration_ms: 17.849754
+  duration_ms: 9.273462
   type: 'test'
   ...
 # Subtest: 3.5拒絕非法24小時格式 01:00 PM
 ok 295 - 3.5拒絕非法24小時格式 01:00 PM
   ---
-  duration_ms: 10.352475
+  duration_ms: 15.688563
   type: 'test'
   ...
 # Subtest: 3.5拒絕非法24小時格式 8:05
 ok 296 - 3.5拒絕非法24小時格式 8:05
   ---
-  duration_ms: 14.524855
+  duration_ms: 8.543879
   type: 'test'
   ...
 # Subtest: 3.5拒絕非法24小時格式 23:60
 ok 297 - 3.5拒絕非法24小時格式 23:60
   ---
-  duration_ms: 10.743468
+  duration_ms: 9.644633
   type: 'test'
   ...
 # Subtest: 3.5第8條使用完整分鐘，第9條22:59與23:01不同時段
 ok 298 - 3.5第8條使用完整分鐘，第9條22:59與23:01不同時段
   ---
-  duration_ms: 9.769867
+  duration_ms: 10.921019
   type: 'test'
   ...
 # Subtest: 3.5第8條及未量測公文使用同一小時格式
 ok 299 - 3.5第8條及未量測公文使用同一小時格式
   ---
-  duration_ms: 31.638817
+  duration_ms: 15.821665
   type: 'test'
   ...
 # Subtest: 3.5規則檔與3.3完全相同，版本與固定尾段契約仍在
 ok 300 - 3.5規則檔與3.3完全相同，版本與固定尾段契約仍在
   ---
-  duration_ms: 17.642786
+  duration_ms: 31.31584
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9Value_leq
 ok 301 - 3.6背景重測保留 a9Value_leq
   ---
-  duration_ms: 37.731035
+  duration_ms: 45.936721
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9Home
 ok 302 - 3.6背景重測保留 a9Home
   ---
-  duration_ms: 10.817262
+  duration_ms: 16.58953
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9WindSpeed
 ok 303 - 3.6背景重測保留 a9WindSpeed
   ---
-  duration_ms: 12.091489
+  duration_ms: 16.432776
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9Subject
 ok 304 - 3.6背景重測保留 a9Subject
   ---
-  duration_ms: 8.748775
+  duration_ms: 15.369802
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9Source
 ok 305 - 3.6背景重測保留 a9Source
   ---
-  duration_ms: 9.278089
+  duration_ms: 15.001507
   type: 'test'
   ...
 # Subtest: 3.6背景重測保留 a9Type
 ok 306 - 3.6背景重測保留 a9Type
   ---
-  duration_ms: 8.888407
+  duration_ms: 18.267186
   type: 'test'
   ...
 # Subtest: 3.6 D2只清背景且不新增完整attempt
 ok 307 - 3.6 D2只清背景且不新增完整attempt
   ---
-  duration_ms: 9.529595
+  duration_ms: 15.51337
   type: 'test'
   ...
 # Subtest: 3.6第二次背景51用原55計算D4並採用
 ok 308 - 3.6第二次背景51用原55計算D4並採用
   ---
-  duration_ms: 15.804582
+  duration_ms: 25.155647
   type: 'test'
   ...
 # Subtest: 3.6同一attempt可保留三次無效背景
 ok 309 - 3.6同一attempt可保留三次無效背景
   ---
-  duration_ms: 12.76068
+  duration_ms: 30.402242
   type: 'test'
   ...
 # Subtest: 3.6有效背景優先，正式紀錄與回覆不列失敗歷程
 ok 310 - 3.6有效背景優先，正式紀錄與回覆不列失敗歷程
   ---
-  duration_ms: 17.803947
+  duration_ms: 28.232208
   type: 'test'
   ...
 # Subtest: 3.6多次無效後結束，紀錄摘要與既有精簡回覆分開
 ok 311 - 3.6多次無效後結束，紀錄摘要與既有精簡回覆分開
   ---
-  duration_ms: 17.131759
+  duration_ms: 27.821876
   type: 'test'
   ...
 # Subtest: 3.6單次失敗結束不誤稱多次
 ok 312 - 3.6單次失敗結束不誤稱多次
   ---
-  duration_ms: 8.629636
+  duration_ms: 18.208321
   type: 'test'
   ...
 # Subtest: 3.6 D邊界背景52
 ok 313 - 3.6 D邊界背景52
   ---
-  duration_ms: 9.300567
+  duration_ms: 15.661797
   type: 'test'
   ...
 # Subtest: 3.6 D邊界背景45.1
 ok 314 - 3.6 D邊界背景45.1
   ---
-  duration_ms: 15.959751
+  duration_ms: 14.718202
   type: 'test'
   ...
 # Subtest: 3.6 D邊界背景45
 ok 315 - 3.6 D邊界背景45
   ---
-  duration_ms: 14.839851
+  duration_ms: 15.930652
   type: 'test'
   ...
 # Subtest: 3.6背景公式與來源逐字相同
 ok 316 - 3.6背景公式與來源逐字相同
   ---
-  duration_ms: 1.791094
+  duration_ms: 1.480111
   type: 'test'
   ...
 # Subtest: 3.6風速重測仍新增完整attempt並清所有量測
 ok 317 - 3.6風速重測仍新增完整attempt並清所有量測
   ---
-  duration_ms: 12.397116
+  duration_ms: 16.155666
   type: 'test'
   ...
 # Subtest: 3.6營建三個原始數值都保留，只重測失敗背景
 ok 318 - 3.6營建三個原始數值都保留，只重測失敗背景
   ---
-  duration_ms: 18.053969
+  duration_ms: 18.580937
   type: 'test'
   ...
 # Subtest: 3.6背景輸入編輯不把每個按鍵當成一次量測
 ok 319 - 3.6背景輸入編輯不把每個按鍵當成一次量測
   ---
-  duration_ms: 16.362709
+  duration_ms: 25.103503
   type: 'test'
   ...
 # Subtest: 3.6上游時區改變保留source與需要的背景，草稿失效
 ok 320 - 3.6上游時區改變保留source與需要的背景，草稿失效
   ---
-  duration_ms: 25.340916
+  duration_ms: 32.455184
   type: 'test'
   ...
 # Subtest: 3.6重算不需背景時歷史不再selected
 ok 321 - 3.6重算不需背景時歷史不再selected
   ---
-  duration_ms: 14.584079
+  duration_ms: 29.447624
   type: 'test'
   ...
 # Subtest: 3.6背景重測鎖定欄位且隱藏完整2分鐘提示
 ok 322 - 3.6背景重測鎖定欄位且隱藏完整2分鐘提示
   ---
-  duration_ms: 34.649473
+  duration_ms: 27.062173
   type: 'test'
   ...
 # Subtest: 3.6背景重測期間防止事件覆寫原source
 ok 323 - 3.6背景重測期間防止事件覆寫原source
   ---
-  duration_ms: 13.843688
+  duration_ms: 15.347418
   type: 'test'
   ...
 # Subtest: 3.6改未量測後背景鎖定與歷史清除，其他分支不受影響
 ok 324 - 3.6改未量測後背景鎖定與歷史清除，其他分支不受影響
   ---
-  duration_ms: 13.394833
+  duration_ms: 17.652609
   type: 'test'
   ...
 # Subtest: 3.6首頁文字集中且入口載入背景模組
 ok 325 - 3.6首頁文字集中且入口載入背景模組
   ---
-  duration_ms: 6.599614
+  duration_ms: 9.759745
   type: 'test'
   ...
 # Subtest: 3.6天雨及未量測紀錄不混入背景歷史
 ok 326 - 3.6天雨及未量測紀錄不混入背景歷史
   ---
-  duration_ms: 13.783168
+  duration_ms: 18.995229
   type: 'test'
   ...
 # Subtest: 3.6頁面從D2點背景重測再D4產稿，無須重填原值
 ok 327 - 3.6頁面從D2點背景重測再D4產稿，無須重填原值
   ---
-  duration_ms: 75.34702
+  duration_ms: 116.706158
   type: 'test'
   ...
 # Subtest: 3.6頁面連續三次無效後結束可正常填兩份公文
 ok 328 - 3.6頁面連續三次無效後結束可正常填兩份公文
   ---
-  duration_ms: 67.117123
+  duration_ms: 158.631102
   type: 'test'
   ...
 # Subtest: 3.6首頁集中說明確實繫結至DOM
 ok 329 - 3.6首頁集中說明確實繫結至DOM
   ---
-  duration_ms: 46.933877
+  duration_ms: 78.278707
   type: 'test'
   ...
 # Subtest: 3.6回首頁重新開始同時清除背景及完整量測歷史
 ok 330 - 3.6回首頁重新開始同時清除背景及完整量測歷史
   ---
-  duration_ms: 104.070108
+  duration_ms: 152.270363
   type: 'test'
   ...
 # Subtest: 3.6工廠核備背景使用同一公式與獨立背景歷程
 ok 331 - 3.6工廠核備背景使用同一公式與獨立背景歷程
   ---
-  duration_ms: 10.908392
+  duration_ms: 17.987005
   type: 'test'
   ...
 # Subtest: 3.6無法取得背景例外不再選用原背景歷史
 ok 332 - 3.6無法取得背景例外不再選用原背景歷史
   ---
-  duration_ms: 12.375896
+  duration_ms: 22.965062
   type: 'test'
   ...
 # Subtest: 3.6類型改變清Lmax仍保留其他原值及背景
 ok 333 - 3.6類型改變清Lmax仍保留其他原值及背景
   ---
-  duration_ms: 10.441081
+  duration_ms: 17.769587
   type: 'test'
   ...
 # Subtest: 3.6同步背景歷史不修改輸入且相同輸入結果一致
 ok 334 - 3.6同步背景歷史不修改輸入且相同輸入結果一致
   ---
-  duration_ms: 12.597958
+  duration_ms: 20.789194
   type: 'test'
   ...
 # Subtest: 3.6完整attempt快照包含其背景歷程，不混成下一attempt
 ok 335 - 3.6完整attempt快照包含其背景歷程，不混成下一attempt
   ---
-  duration_ms: 9.213842
+  duration_ms: 15.994268
   type: 'test'
   ...
 # Subtest: 3.6保護第6條文字、8/9規則及餐飲異味原檔
 ok 336 - 3.6保護第6條文字、8/9規則及餐飲異味原檔
   ---
-  duration_ms: 0.674055
+  duration_ms: 1.129997
   type: 'test'
   ...
 # Subtest: 3.6首頁只引用存在的本機資源，版本為3.6
 ok 337 - 3.6首頁只引用存在的本機資源，版本為3.6
   ---
-  duration_ms: 0.771583
+  duration_ms: 1.335252
   type: 'test'
   ...
 # Subtest: 3.7.1結束稽查紀錄動態列1筆背景
 ok 338 - 3.7.1結束稽查紀錄動態列1筆背景
   ---
-  duration_ms: 66.286857
+  duration_ms: 66.641734
   type: 'test'
   ...
 # Subtest: 3.7.1結束稽查紀錄動態列2筆背景
 ok 339 - 3.7.1結束稽查紀錄動態列2筆背景
   ---
-  duration_ms: 41.62592
+  duration_ms: 29.910085
   type: 'test'
   ...
 # Subtest: 3.7.1結束稽查紀錄動態列3筆背景
 ok 340 - 3.7.1結束稽查紀錄動態列3筆背景
   ---
-  duration_ms: 34.275866
+  duration_ms: 39.508115
   type: 'test'
   ...
 # Subtest: 3.7.1結束稽查紀錄動態列4筆背景
 ok 341 - 3.7.1結束稽查紀錄動態列4筆背景
   ---
-  duration_ms: 46.220678
+  duration_ms: 41.844877
   type: 'test'
   ...
 # Subtest: 3.7.1結束稽查紀錄動態列5筆背景
 ok 342 - 3.7.1結束稽查紀錄動態列5筆背景
   ---
-  duration_ms: 48.043019
+  duration_ms: 43.150129
   type: 'test'
   ...
 # Subtest: 3.7.1完整核定範例與句號
 ok 343 - 3.7.1完整核定範例與句號
   ---
-  duration_ms: 29.527244
+  duration_ms: 31.453667
   type: 'test'
   ...
 # Subtest: 3.7.1每種背景筆數結案均有正確標點
 ok 344 - 3.7.1每種背景筆數結案均有正確標點
   ---
-  duration_ms: 52.808616
+  duration_ms: 50.139598
   type: 'test'
   ...
 # Subtest: 3.7.1民眾回覆不列背景歷程且保持1999
 ok 345 - 3.7.1民眾回覆不列背景歷程且保持1999
   ---
-  duration_ms: 31.469594
+  duration_ms: 36.179825
   type: 'test'
   ...
 # Subtest: 3.7.1背景79、78後76有效，只用80與76
 ok 346 - 3.7.1背景79、78後76有效，只用80與76
   ---
-  duration_ms: 26.458075
+  duration_ms: 34.700861
   type: 'test'
   ...
 # Subtest: 3.7.1時間只有雙select，無自由輸入框
 ok 347 - 3.7.1時間只有雙select，無自由輸入框
   ---
-  duration_ms: 18.518999
+  duration_ms: 22.179304
   type: 'test'
   ...
 # Subtest: 3.7.1小時完整00至23
 ok 348 - 3.7.1小時完整00至23
   ---
-  duration_ms: 15.866886
+  duration_ms: 16.33073
   type: 'test'
   ...
 # Subtest: 3.7.1分鐘完整00至59
 ok 349 - 3.7.1分鐘完整00至59
   ---
-  duration_ms: 13.415036
+  duration_ms: 17.043926
   type: 'test'
   ...
 # Subtest: 3.7.1時間初始未選且不依locale顯示AM/PM
 ok 350 - 3.7.1時間初始未選且不依locale顯示AM/PM
   ---
-  duration_ms: 26.417775
+  duration_ms: 14.406123
   type: 'test'
   ...
 # Subtest: 3.7.1只選小時時不假定分鐘00，完成分鐘後才組合
 ok 351 - 3.7.1只選小時時不假定分鐘00，完成分鐘後才組合
   ---
-  duration_ms: 24.383032
+  duration_ms: 27.893473
   type: 'test'
   ...
 # Subtest: 3.7.1也支援先選分鐘再選小時
 ok 352 - 3.7.1也支援先選分鐘再選小時
   ---
-  duration_ms: 21.741425
+  duration_ms: 17.41669
   type: 'test'
   ...
 # Subtest: 3.7.1選擇23:40內部保留分鐘，兩份公文僅幾時許
 ok 353 - 3.7.1選擇23:40內部保留分鐘，兩份公文僅幾時許
   ---
-  duration_ms: 38.484926
+  duration_ms: 28.580513
   type: 'test'
   ...
 # Subtest: 3.7.1選擇00:40內部保留分鐘，兩份公文僅幾時許
 ok 354 - 3.7.1選擇00:40內部保留分鐘，兩份公文僅幾時許
   ---
-  duration_ms: 21.927163
+  duration_ms: 28.649395
   type: 'test'
   ...
 # Subtest: 3.7.1選擇08:05內部保留分鐘，兩份公文僅幾時許
 ok 355 - 3.7.1選擇08:05內部保留分鐘，兩份公文僅幾時許
   ---
-  duration_ms: 27.204945
+  duration_ms: 27.039158
   type: 'test'
   ...
 # Subtest: 3.7.1選23:40仍可篩出第8條營建行為
 ok 356 - 3.7.1選23:40仍可篩出第8條營建行為
   ---
-  duration_ms: 32.056803
+  duration_ms: 26.341894
   type: 'test'
   ...
 # Subtest: 3.7.1第3類23:40判夜間且套既有標準
 ok 357 - 3.7.1第3類23:40判夜間且套既有標準
   ---
-  duration_ms: 15.131483
+  duration_ms: 23.966728
   type: 'test'
   ...
 # Subtest: 3.7.1時間分鐘不丟失22:59與23:00時段差異
 ok 358 - 3.7.1時間分鐘不丟失22:59與23:00時段差異
   ---
-  duration_ms: 22.974452
+  duration_ms: 46.621025
   type: 'test'
   ...
 # Subtest: 3.7.1只修改分鐘智慧保留場所音源量測及背景
 ok 359 - 3.7.1只修改分鐘智慧保留場所音源量測及背景
   ---
-  duration_ms: 29.074413
+  duration_ms: 30.708559
   type: 'test'
   ...
 # Subtest: 3.7.1頁面改分鐘清除草稿但保留有效量測
 ok 360 - 3.7.1頁面改分鐘清除草稿但保留有效量測
   ---
-  duration_ms: 121.143319
+  duration_ms: 130.231458
   type: 'test'
   ...
 # Subtest: 3.7.1頁面D<3背景重測仍鎖原80並列三次背景
 ok 361 - 3.7.1頁面D<3背景重測仍鎖原80並列三次背景
   ---
-  duration_ms: 125.860775
+  duration_ms: 128.211453
   type: 'test'
   ...
 # Subtest: 3.7.1時間修改不修改風速小數字串
 ok 362 - 3.7.1時間修改不修改風速小數字串
   ---
-  duration_ms: 27.138554
+  duration_ms: 20.342145
   type: 'test'
   ...
 # Subtest: 3.7.1D邊界背景77不列無效歷次模板
 ok 363 - 3.7.1D邊界背景77不列無效歷次模板
   ---
-  duration_ms: 19.98342
+  duration_ms: 20.36473
   type: 'test'
   ...
 # Subtest: 3.7.1D邊界背景70不列無效歷次模板
 ok 364 - 3.7.1D邊界背景70不列無效歷次模板
   ---
-  duration_ms: 26.533982
+  duration_ms: 24.618022
   type: 'test'
   ...
 # Subtest: 3.7.1原規則公式、背景與完整attempt模組未修改
 ok 365 - 3.7.1原規則公式、背景與完整attempt模組未修改
   ---
-  duration_ms: 2.27161
+  duration_ms: 2.681544
   type: 'test'
   ...
 # Subtest: 3.7.1本機版本metadata及集中文字
 ok 366 - 3.7.1本機版本metadata及集中文字
   ---
-  duration_ms: 14.223014
+  duration_ms: 12.851079
   type: 'test'
   ...
 # Subtest: 3.7.1多項音量分別列背景，不混成同一音量
 ok 367 - 3.7.1多項音量分別列背景，不混成同一音量
   ---
-  duration_ms: 24.906003
+  duration_ms: 28.61088
   type: 'test'
   ...
 # Subtest: 3.7.1清空分鐘不補00，重選仍沿用原小時
 ok 368 - 3.7.1清空分鐘不補00，重選仍沿用原小時
   ---
-  duration_ms: 18.973849
+  duration_ms: 23.104562
   type: 'test'
   ...
 # Subtest: 第9條不再採用舊人工結果欄位，缺漏時不得告發
 ok 369 - 第9條不再採用舊人工結果欄位，缺漏時不得告發
   ---
-  duration_ms: 40.427439
+  duration_ms: 28.573267
   type: 'test'
   ...
 # Subtest: 第9條不由舊陳情人說明選項推定已說明
 ok 370 - 第9條不由舊陳情人說明選項推定已說明
   ---
-  duration_ms: 13.905229
+  duration_ms: 9.614146
   type: 'test'
   ...
 # Subtest: 條件表單只顯示所選樣態，切換清除隱藏資料，固定公文不在表單
 ok 371 - 條件表單只顯示所選樣態，切換清除隱藏資料，固定公文不在表單
   ---
-  duration_ms: 21.507655
+  duration_ms: 15.487565
   type: 'test'
   ...
 # Subtest: 通用條件段落驗證、歧義拒絕及輸入不二次展開
 ok 372 - 通用條件段落驗證、歧義拒絕及輸入不二次展開
   ---
-  duration_ms: 15.341349
+  duration_ms: 14.298861
   type: 'test'
   ...
 # Subtest: 首頁可進入噪音案件，往返餐飲與噪音清除輸入及草稿
 ok 373 - 首頁可進入噪音案件，往返餐飲與噪音清除輸入及草稿
   ---
-  duration_ms: 33.622516
+  duration_ms: 28.745247
   type: 'test'
   ...
 # Subtest: 近鄰有無管委會逐字符合原稿，未選不預設管委會
 ok 374 - 近鄰有無管委會逐字符合原稿，未選不預設管委會
   ---
-  duration_ms: 18.311957
+  duration_ms: 11.193695
   type: 'test'
   ...
 # Subtest: 第8條成立後沿用原稿並套入固定法規文字
 ok 375 - 第8條成立後沿用原稿並套入固定法規文字
   ---
-  duration_ms: 8.933847
+  duration_ms: 10.189825
   type: 'test'
   ...
 # Subtest: 未量測四種原因及擴音用字，其他只取自填，天雨回覆不擅加結尾
 ok 376 - 未量測四種原因及擴音用字，其他只取自填，天雨回覆不擅加結尾
   ---
-  duration_ms: 13.100327
+  duration_ms: 19.528809
   type: 'test'
   ...
 # Subtest: 首頁及清單內的本機依賴完整，無舊版或外部資源
 ok 377 - 首頁及清單內的本機依賴完整，無舊版或外部資源
   ---
-  duration_ms: 36.569288
+  duration_ms: 43.734738
   type: 'test'
   ...
 # Subtest: PP來源指紋分散存在多個核心檔案
 ok 378 - PP來源指紋分散存在多個核心檔案
   ---
-  duration_ms: 1.378638
+  duration_ms: 1.092783
   type: 'test'
   ...
-# Subtest: 版本與PWA識別同步為4.1.1且含PP來源身分
-ok 379 - 版本與PWA識別同步為4.1.1且含PP來源身分
+# Subtest: 版本與PWA識別同步為4.2.1且含PP來源身分
+ok 379 - 版本與PWA識別同步為4.2.1且含PP來源身分
   ---
-  duration_ms: 0.40079
+  duration_ms: 1.165437
   type: 'test'
   ...
-# Subtest: 4.1 提供可安裝 PWA manifest 與手機圖示
-ok 380 - 4.1 提供可安裝 PWA manifest 與手機圖示
+# Subtest: 4.2 提供可安裝 PWA manifest 與手機圖示
+ok 380 - 4.2 提供可安裝 PWA manifest 與手機圖示
   ---
-  duration_ms: 1.011752
+  duration_ms: 1.009776
   type: 'test'
   ...
-# Subtest: 4.1 首頁載入 manifest、PWA 啟動程式及手機 viewport
-ok 381 - 4.1 首頁載入 manifest、PWA 啟動程式及手機 viewport
+# Subtest: 4.2 首頁載入 manifest、PWA 啟動程式及手機 viewport
+ok 381 - 4.2 首頁載入 manifest、PWA 啟動程式及手機 viewport
   ---
-  duration_ms: 0.331684
+  duration_ms: 0.361631
   type: 'test'
   ...
-# Subtest: 4.1 service worker App Shell 僅快取本機現有資源
-ok 382 - 4.1 service worker App Shell 僅快取本機現有資源
+# Subtest: 4.2 service worker App Shell 僅快取本機現有資源
+ok 382 - 4.2 service worker App Shell 僅快取本機現有資源
   ---
-  duration_ms: 2.417583
+  duration_ms: 1.504143
   type: 'test'
   ...
-# Subtest: 4.1 手機介面具有單欄與大觸控區樣式
-ok 383 - 4.1 手機介面具有單欄與大觸控區樣式
+# Subtest: 4.2 手機介面具有單欄與大觸控區樣式
+ok 383 - 4.2 手機介面具有單欄與大觸控區樣式
   ---
-  duration_ms: 1.083318
+  duration_ms: 1.428781
   type: 'test'
   ...
 # Subtest: 有設備範例保留句型，改用指定的設備名稱
 ok 384 - 有設備範例保留句型，改用指定的設備名稱
   ---
-  duration_ms: 3.822152
+  duration_ms: 7.470681
   type: 'test'
   ...
 # Subtest: 未選不推定可變事實，零有效、空白不是零
 ok 385 - 未選不推定可變事實，零有效、空白不是零
   ---
-  duration_ms: 2.210902
+  duration_ms: 3.917661
   type: 'test'
   ...
 # Subtest: 多選設備、自填其他及缺漏；回覆省略種類與數值
 ok 386 - 多選設備、自填其他及缺漏；回覆省略種類與數值
   ---
-  duration_ms: 1.334641
+  duration_ms: 1.087282
   type: 'test'
   ...
 # Subtest: 無設備重現現行範例，移除設備處理句
 ok 387 - 無設備重現現行範例，移除設備處理句
   ---
-  duration_ms: 0.444919
+  duration_ms: 0.483618
   type: 'test'
   ...
 # Subtest: 手冊必須明確交付，切換有設備不沿用手冊或加裝句
 ok 388 - 手冊必須明確交付，切換有設備不沿用手冊或加裝句
   ---
-  duration_ms: 0.970951
+  duration_ms: 0.597149
   type: 'test'
   ...
 # Subtest: 日期與時間只輸出幾時許，不接受分鐘輸入
 ok 389 - 日期與時間只輸出幾時許，不接受分鐘輸入
   ---
-  duration_ms: 1.755662
+  duration_ms: 1.658351
   type: 'test'
   ...
 # Subtest: 自訂原文保持字面值，執行不改模板
 ok 390 - 自訂原文保持字面值，執行不改模板
   ---
-  duration_ms: 0.526407
+  duration_ms: 0.310643
   type: 'test'
   ...
 # Subtest: 設備自動產生指定勸導；未知設備不補勸導；舊勸導輸入無效
 ok 391 - 設備自動產生指定勸導；未知設備不補勸導；舊勸導輸入無效
   ---
-  duration_ms: 101.113786
+  duration_ms: 44.651669
   type: 'test'
   ...
 # Subtest: 表單只有四種營業選項、純數值電子鼻及兩種手冊狀態，無勸導輸入
 ok 392 - 表單只有四種營業選項、純數值電子鼻及兩種手冊狀態，無勸導輸入
   ---
-  duration_ms: 13.091304
+  duration_ms: 22.121655
   type: 'test'
   ...
 # Subtest: 選擇採樣樣態後實際渲染日期、分鐘時間、袋數、公司欄位且不提供程序控制欄位
 ok 393 - 選擇採樣樣態後實際渲染日期、分鐘時間、袋數、公司欄位且不提供程序控制欄位
   ---
-  duration_ms: 41.462148
+  duration_ms: 38.972017
   type: 'test'
   ...
 # Subtest: 勾選才顯示公司名稱，取消勾選清除名稱
 ok 394 - 勾選才顯示公司名稱，取消勾選清除名稱
   ---
-  duration_ms: 9.363464
+  duration_ms: 9.266719
   type: 'test'
   ...
 # Subtest: 採樣以作業中為前提，沒有作業選項，舊值不影響固定文字
 ok 395 - 採樣以作業中為前提，沒有作業選項，舊值不影響固定文字
   ---
-  duration_ms: 42.068172
+  duration_ms: 31.994
   type: 'test'
   ...
 # Subtest: 兩個獨立模板同屬空氣污染，原模板保留
 ok 396 - 兩個獨立模板同屬空氣污染，原模板保留
   ---
-  duration_ms: 27.417179
+  duration_ms: 25.449528
   type: 'test'
   ...
 # Subtest: 稽查與採樣日期獨立，可重現跨日凌晨採樣
 ok 397 - 稽查與採樣日期獨立，可重現跨日凌晨採樣
   ---
-  duration_ms: 8.86777
+  duration_ms: 9.807923
   type: 'test'
   ...
 # Subtest: 未填或無效採樣時間不自行補值
 ok 398 - 未填或無效採樣時間不自行補值
   ---
-  duration_ms: 8.749021
+  duration_ms: 8.989341
   type: 'test'
   ...
 # Subtest: 公司名稱由勾選與自填決定，未填不使用參考公司名
 ok 399 - 公司名稱由勾選與自填決定，未填不使用參考公司名
   ---
-  duration_ms: 10.87238
+  duration_ms: 7.941517
   type: 'test'
   ...
 # Subtest: 拍照與簽名為核定固定文字，不受舊欄位控制
 ok 400 - 拍照與簽名為核定固定文字，不受舊欄位控制
   ---
-  duration_ms: 13.604383
+  duration_ms: 7.909671
   type: 'test'
   ...
 # Subtest: 符合規定程序為固定文字
 ok 401 - 符合規定程序為固定文字
   ---
-  duration_ms: 12.402842
+  duration_ms: 7.031176
   type: 'test'
   ...
 # Subtest: 標準作業程序及注意事項為完整固定文字
 ok 402 - 標準作業程序及注意事項為完整固定文字
   ---
-  duration_ms: 7.965664
+  duration_ms: 8.884943
   type: 'test'
   ...
 # Subtest: 未填日期時間不使用現在值，完成稽查為既定前提
 ok 403 - 未填日期時間不使用現在值，完成稽查為既定前提
   ---
-  duration_ms: 8.452518
+  duration_ms: 7.608575
   type: 'test'
   ...
 # Subtest: 袋數處理正整數，空白、零、小數及非數字不造假
 ok 404 - 袋數處理正整數，空白、零、小數及非數字不造假
   ---
-  duration_ms: 11.280043
+  duration_ms: 8.729654
   type: 'test'
   ...
 # Subtest: 位置固定，舊位置輸入不再作用
 ok 405 - 位置固定，舊位置輸入不再作用
   ---
-  duration_ms: 8.179789
+  duration_ms: 9.19673
   type: 'test'
   ...
 # Subtest: 產生待結果紀錄，不推定合格、不合格或加入法條
 ok 406 - 產生待結果紀錄，不推定合格、不合格或加入法條
   ---
-  duration_ms: 8.49809
+  duration_ms: 7.842956
   type: 'test'
   ...
 # Subtest: 民眾回覆逐字符合提供模板，不帶內部採樣細節
 ok 407 - 民眾回覆逐字符合提供模板，不帶內部採樣細節
   ---
-  duration_ms: 6.743964
+  duration_ms: 8.475005
   type: 'test'
   ...
 # Subtest: 固定程序產生參考紀錄，標點完整
 ok 408 - 固定程序產生參考紀錄，標點完整
   ---
-  duration_ms: 8.45067
+  duration_ms: 6.992939
   type: 'test'
   ...
 # Subtest: 切換回原樣態再回採樣時，輸入與手動草稿皆清空
 ok 409 - 切換回原樣態再回採樣時，輸入與手動草稿皆清空
   ---
-  duration_ms: 7.634309
+  duration_ms: 9.826529
   type: 'test'
   ...
 # Subtest: 範例名稱與數值只在測試資料中，模板不包含案例常數
 ok 410 - 範例名稱與數值只在測試資料中，模板不包含案例常數
   ---
-  duration_ms: 8.357526
+  duration_ms: 10.013775
   type: 'test'
   ...
 # Subtest: 正確載入大類與類型；空氣污染、水污染與噪音開放
 ok 411 - 正確載入大類與類型；空氣污染、水污染與噪音開放
   ---
-  duration_ms: 26.801894
+  duration_ms: 28.823481
   type: 'test'
   ...
 # Subtest: 依清單載入現有範本，不需在首頁列出每個 script
 ok 412 - 依清單載入現有範本，不需在首頁列出每個 script
   ---
-  duration_ms: 6.656582
+  duration_ms: 8.787323
   type: 'test'
   ...
 # Subtest: 新增純測試資料只需登記清單，載入器可載入多模板
 ok 413 - 新增純測試資料只需登記清單，載入器可載入多模板
   ---
-  duration_ms: 7.841588
+  duration_ms: 8.71894
   type: 'test'
   ...
 # Subtest: 模板檔缺漏、重複 id 或不合法分類會明確報錯
 ok 414 - 模板檔缺漏、重複 id 或不合法分類會明確報錯
   ---
-  duration_ms: 17.835049
+  duration_ms: 21.659046
   type: 'test'
   ...
 # Subtest: 3.1.2原因為原生checkbox複選，notFound控制項及選项已移除
 ok 415 - 3.1.2原因為原生checkbox複選，notFound控制項及選项已移除
   ---
-  duration_ms: 44.331101
+  duration_ms: 52.80025
   type: 'test'
   ...
 # Subtest: 3.1.2 notOpen 兩份公文各有一次相同完整尾段
 ok 416 - 3.1.2 notOpen 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 13.899912
+  duration_ms: 12.660512
   type: 'test'
   ...
 # Subtest: 3.1.2 notWorking 兩份公文各有一次相同完整尾段
 ok 417 - 3.1.2 notWorking 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 9.349086
+  duration_ms: 15.777161
   type: 'test'
   ...
 # Subtest: 3.1.2 notBuilding 兩份公文各有一次相同完整尾段
 ok 418 - 3.1.2 notBuilding 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 8.729804
+  duration_ms: 21.605448
   type: 'test'
   ...
 # Subtest: 3.1.2 source 兩份公文各有一次相同完整尾段
 ok 419 - 3.1.2 source 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 10.109104
+  duration_ms: 10.882386
   type: 'test'
   ...
 # Subtest: 3.1.2 locked+source 兩份公文各有一次相同完整尾段
 ok 420 - 3.1.2 locked+source 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 9.828713
+  duration_ms: 12.208561
   type: 'test'
   ...
 # Subtest: 3.1.2 other 兩份公文各有一次相同完整尾段
 ok 421 - 3.1.2 other 兩份公文各有一次相同完整尾段
   ---
-  duration_ms: 11.497696
+  duration_ms: 16.284189
   type: 'test'
   ...
 # Subtest: 3.1.2設備案例逐字符合指定文字
 ok 422 - 3.1.2設備案例逐字符合指定文字
   ---
-  duration_ms: 10.22955
+  duration_ms: 15.565073
   type: 'test'
   ...
 # Subtest: 3.1.2導引更新，只有舊notFound輸入仍不得當作完成原因
 ok 423 - 3.1.2導引更新，只有舊notFound輸入仍不得當作完成原因
   ---
-  duration_ms: 7.20189
+  duration_ms: 15.381674
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 notOpen 使用核定固定周界尾段
 ok 424 - 3.1.2單勾 notOpen 使用核定固定周界尾段
   ---
-  duration_ms: 31.711006
+  duration_ms: 38.7795
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 notWorking 使用核定固定周界尾段
 ok 425 - 3.1.2單勾 notWorking 使用核定固定周界尾段
   ---
-  duration_ms: 13.811925
+  duration_ms: 14.605517
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 notBuilding 使用核定固定周界尾段
 ok 426 - 3.1.2單勾 notBuilding 使用核定固定周界尾段
   ---
-  duration_ms: 9.91428
+  duration_ms: 10.375164
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 locked 使用核定固定周界尾段
 ok 427 - 3.1.2單勾 locked 使用核定固定周界尾段
   ---
-  duration_ms: 8.980633
+  duration_ms: 9.496787
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 source 使用核定固定周界尾段
 ok 428 - 3.1.2單勾 source 使用核定固定周界尾段
   ---
-  duration_ms: 10.972088
+  duration_ms: 10.81192
   type: 'test'
   ...
 # Subtest: 3.1.2單勾 other 使用核定固定周界尾段
 ok 429 - 3.1.2單勾 other 使用核定固定周界尾段
   ---
-  duration_ms: 8.954764
+  duration_ms: 10.780171
   type: 'test'
   ...
 # Subtest: 3.1.2範例A、B逐字比對，舊notFound值不影響固定尾段
 ok 430 - 3.1.2範例A、B逐字比對，舊notFound值不影響固定尾段
   ---
-  duration_ms: 12.54219
+  duration_ms: 13.067585
   type: 'test'
   ...
 # Subtest: 3.1.2範例C、D逐字比對，設備案件固定尾段逐字一致
 ok 431 - 3.1.2範例C、D逐字比對，設備案件固定尾段逐字一致
   ---
-  duration_ms: 12.997908
+  duration_ms: 15.138629
   type: 'test'
   ...
 # Subtest: 3.1.2設備案件忽略舊未發現選值，未勾鎖門不得出現
 ok 432 - 3.1.2設備案件忽略舊未發現選值，未勾鎖門不得出現
   ---
-  duration_ms: 13.484845
+  duration_ms: 15.04275
   type: 'test'
   ...
 # Subtest: 3.1.2原因事實固定排序且忽略舊選值，不依點選順序
 ok 433 - 3.1.2原因事實固定排序且忽略舊選值，不依點選順序
   ---
-  duration_ms: 25.620685
+  duration_ms: 20.190264
   type: 'test'
   ...
 # Subtest: 3.1.2未勾其他不輸出殘留自填，設備必填驗證維持
 ok 434 - 3.1.2未勾其他不輸出殘留自填，設備必填驗證維持
   ---
-  duration_ms: 15.348854
+  duration_ms: 18.876673
   type: 'test'
   ...
 # Subtest: 3.1.2所有合法原因組合：兩份文件均使用單一固定尾段
 ok 435 - 3.1.2所有合法原因組合：兩份文件均使用單一固定尾段
   ---
-  duration_ms: 126.46033
+  duration_ms: 162.658719
   type: 'test'
   ...
 # Subtest: 3.1.2取消及重勾鎖門：清空舊草稿，重新產稿同步移除及恢復
 ok 436 - 3.1.2取消及重勾鎖門：清空舊草稿，重新產稿同步移除及恢復
   ---
-  duration_ms: 110.705783
+  duration_ms: 100.784339
   type: 'test'
   ...
 # Subtest: §14五項核心要件全部確認才輸出成立方向
 ok 437 - §14五項核心要件全部確認才輸出成立方向
   ---
-  duration_ms: 12.788935
+  duration_ms: 32.71279
   type: 'test'
   ...
 # Subtest: §14道路側溝未確認地面水體時必須事證不足並提示追水
 ok 438 - §14道路側溝未確認地面水體時必須事證不足並提示追水
   ---
-  duration_ms: 4.056709
+  duration_ms: 4.727371
   type: 'test'
   ...
 # Subtest: §14有有效許可時無許可排放要件不成立
 ok 439 - §14有有效許可時無許可排放要件不成立
   ---
-  duration_ms: 3.803611
+  duration_ms: 2.9791
   type: 'test'
   ...
 # Subtest: §14非水污法事業時不得因水髒或排水直接成立
 ok 440 - §14非水污法事業時不得因水髒或排水直接成立
   ---
-  duration_ms: 3.454859
+  duration_ms: 3.896708
   type: 'test'
   ...
 # Subtest: §18-1 繞流需確認核准水路、實際水路、繞流事實且無緊急例外
 ok 441 - §18-1 繞流需確認核准水路、實際水路、繞流事實且無緊急例外
   ---
-  duration_ms: 15.003263
+  duration_ms: 34.430832
   type: 'test'
   ...
 # Subtest: §18-1 發現不明管線但未確認實際水路不得直接認定繞流
 ok 442 - §18-1 發現不明管線但未確認實際水路不得直接認定繞流
   ---
-  duration_ms: 4.418018
+  duration_ms: 20.859098
   type: 'test'
   ...
 # Subtest: §18-1 繞流符合急迫搶救例外時該違規方向不成立
 ok 443 - §18-1 繞流符合急迫搶救例外時該違規方向不成立
   ---
-  duration_ms: 6.564302
+  duration_ms: 5.999765
   type: 'test'
   ...
 # Subtest: §18-1 稀釋須先檢核第20條稀釋許可
 ok 444 - §18-1 稀釋須先檢核第20條稀釋許可
   ---
-  duration_ms: 4.219476
+  duration_ms: 9.336318
   type: 'test'
   ...
 # Subtest: §18-1 無稀釋許可且符合其餘要件時成立方向
 ok 445 - §18-1 無稀釋許可且符合其餘要件時成立方向
   ---
-  duration_ms: 3.486654
+  duration_ms: 8.119254
   type: 'test'
   ...
 # Subtest: §18-1 處理設施未正常操作可成立第四項方向
 ok 446 - §18-1 處理設施未正常操作可成立第四項方向
   ---
-  duration_ms: 3.962872
+  duration_ms: 6.235998
   type: 'test'
   ...
 # Subtest: §18-1 處理設施功能與操作均正常時第四項目前不成立
 ok 447 - §18-1 處理設施功能與操作均正常時第四項目前不成立
   ---
-  duration_ms: 3.030371
+  duration_ms: 15.267394
   type: 'test'
   ...
 # Subtest: §28 設備有疏漏至水體之虞且未採維護防範措施時成立方向
 ok 448 - §28 設備有疏漏至水體之虞且未採維護防範措施時成立方向
   ---
-  duration_ms: 22.565058
+  duration_ms: 20.021119
   type: 'test'
   ...
 # Subtest: §28 人為開閥主動排放不硬套設備疏漏
 ok 449 - §28 人為開閥主動排放不硬套設備疏漏
   ---
-  duration_ms: 9.337359
+  duration_ms: 3.994793
   type: 'test'
   ...
 # Subtest: §28 疏漏污染水體後未立即應變可成立方向
 ok 450 - §28 疏漏污染水體後未立即應變可成立方向
   ---
-  duration_ms: 6.920502
+  duration_ms: 3.580886
   type: 'test'
   ...
 # Subtest: §28 疏漏污染水體後已立即應變則未立即應變方向不成立
 ok 451 - §28 疏漏污染水體後已立即應變則未立即應變方向不成立
   ---
-  duration_ms: 4.819434
+  duration_ms: 5.986948
   type: 'test'
   ...
 # Subtest: §28 疏漏污染水體後未於3小時通知可成立方向
 ok 452 - §28 疏漏污染水體後未於3小時通知可成立方向
   ---
-  duration_ms: 5.250832
+  duration_ms: 6.382127
   type: 'test'
   ...
 # Subtest: §30 污泥於水污染管制區指定水體沿岸範圍內棄置時成立方向
 ok 453 - §30 污泥於水污染管制區指定水體沿岸範圍內棄置時成立方向
   ---
-  duration_ms: 16.189793
+  duration_ms: 22.861891
   type: 'test'
   ...
 # Subtest: §30 未確認水污染管制區時不得直接認定
 ok 454 - §30 未確認水污染管制區時不得直接認定
   ---
-  duration_ms: 7.720032
+  duration_ms: 8.527851
   type: 'test'
   ...
 # Subtest: §30 一般管線排放廢污水不以污染物棄置模組直接套用
 ok 455 - §30 一般管線排放廢污水不以污染物棄置模組直接套用
   ---
-  duration_ms: 6.648942
+  duration_ms: 4.84335
   type: 'test'
   ...
 # Subtest: §32 廢污水排放土壤且查無有效土壤處理許可時成立方向
 ok 456 - §32 廢污水排放土壤且查無有效土壤處理許可時成立方向
   ---
-  duration_ms: 24.274804
+  duration_ms: 23.123844
   type: 'test'
   ...
 # Subtest: §32 排放土壤有有效許可時無許可方向不成立
 ok 457 - §32 排放土壤有有效許可時無許可方向不成立
   ---
-  duration_ms: 13.317614
+  duration_ms: 6.63416
   type: 'test'
   ...
 # Subtest: §32 管線往地下但未確認進入地下水體不得認定注入地下水體
 ok 458 - §32 管線往地下但未確認進入地下水體不得認定注入地下水體
   ---
-  duration_ms: 5.724126
+  duration_ms: 13.852855
   type: 'test'
   ...
 # Subtest: §32 已確認廢污水實際注入地下水體時成立方向
 ok 459 - §32 已確認廢污水實際注入地下水體時成立方向
   ---
-  duration_ms: 10.497562
+  duration_ms: 5.028326
   type: 'test'
   ...
 # Subtest: §7 有代表性採樣與有效檢測且超標才成立
 ok 460 - §7 有代表性採樣與有效檢測且超標才成立
   ---
-  duration_ms: 25.020953
+  duration_ms: 33.927802
   type: 'test'
   ...
 # Subtest: §7 未採樣屬事證不足，不得把肉眼污染直接當超標
 ok 461 - §7 未採樣屬事證不足，不得把肉眼污染直接當超標
   ---
-  duration_ms: 6.222455
+  duration_ms: 5.004771
   type: 'test'
   ...
 # Subtest: §7 檢測確認未超標時目前不成立
 ok 462 - §7 檢測確認未超標時目前不成立
   ---
-  duration_ms: 5.467696
+  duration_ms: 4.764805
   type: 'test'
   ...
 # Subtest: §7 非管制主體標記不適用
 ok 463 - §7 非管制主體標記不適用
   ---
-  duration_ms: 3.603309
+  duration_ms: 6.091782
   type: 'test'
   ...
 # Subtest: §7 污水下水道系統與建築物污水處理設施均可進入主體要件
 ok 464 - §7 污水下水道系統與建築物污水處理設施均可進入主體要件
   ---
-  duration_ms: 6.320997
+  duration_ms: 11.541659
   type: 'test'
   ...
 # Subtest: 4.0-dev3 非事業污染物棄置可進§30而不需硬走廢水流程
 ok 465 - 4.0-dev3 非事業污染物棄置可進§30而不需硬走廢水流程
   ---
-  duration_ms: 27.319951
+  duration_ms: 25.161845
   type: 'test'
   ...
 # Subtest: 4.0-dev3 廢污水排土壤會開啟§32且有效土壤處理許可使該方向不成立
 ok 466 - 4.0-dev3 廢污水排土壤會開啟§32且有效土壤處理許可使該方向不成立
   ---
-  duration_ms: 8.276732
+  duration_ms: 10.01487
   type: 'test'
   ...
 # Subtest: 4.0-dev3 設備故障與人為主動排放分流
 ok 467 - 4.0-dev3 設備故障與人為主動排放分流
   ---
-  duration_ms: 9.260767
+  duration_ms: 9.416687
   type: 'test'
   ...
 # Subtest: 4.0-dev3 變更主要物質會清除舊廢水與棄置支線資料
 ok 468 - 4.0-dev3 變更主要物質會清除舊廢水與棄置支線資料
   ---
-  duration_ms: 6.517999
+  duration_ms: 7.938457
   type: 'test'
   ...
 # Subtest: 水污統一事實：未確認不得轉成否定或肯定
 ok 469 - 水污統一事實：未確認不得轉成否定或肯定
   ---
-  duration_ms: 20.487501
+  duration_ms: 12.327137
   type: 'test'
   ...
 # Subtest: 水污統一事實：非地面水體去向明確時地面水體要件為否
 ok 470 - 水污統一事實：非地面水體去向明確時地面水體要件為否
   ---
-  duration_ms: 5.642385
+  duration_ms: 4.699579
   type: 'test'
   ...
 # Subtest: 水污統一事實：道路側溝不自動等於地面水體
 ok 471 - 水污統一事實：道路側溝不自動等於地面水體
   ---
-  duration_ms: 5.687533
+  duration_ms: 3.937065
+  type: 'test'
+  ...
+# Subtest: 4.2 水污染新增現場稽查入口且案件研判保留
+ok 472 - 4.2 水污染新增現場稽查入口且案件研判保留
+  ---
+  duration_ms: 29.268058
+  type: 'test'
+  ...
+# Subtest: 4.2 現場稽查依前端順序逐步開啟，不先攤開法律條文
+ok 473 - 4.2 現場稽查依前端順序逐步開啟，不先攤開法律條文
+  ---
+  duration_ms: 18.02359
+  type: 'test'
+  ...
+# Subtest: 4.2 現場稽查追水到道路側溝時提示追下游而非直接認定地面水體
+ok 474 - 4.2 現場稽查追水到道路側溝時提示追下游而非直接認定地面水體
+  ---
+  duration_ms: 9.309438
+  type: 'test'
+  ...
+# Subtest: 4.2 現場稽查可複選證據並針對排放自動提示缺少水流影片與排放口
+ok 475 - 4.2 現場稽查可複選證據並針對排放自動提示缺少水流影片與排放口
+  ---
+  duration_ms: 9.375927
+  type: 'test'
+  ...
+# Subtest: 4.2 完成現場查察後才顯示後台法規初步研判
+ok 476 - 4.2 完成現場查察後才顯示後台法規初步研判
+  ---
+  duration_ms: 9.720915
+  type: 'test'
+  ...
+# Subtest: 4.2 非廢水污染物不會卡在追水流程，可直接走§30棄置分支
+ok 477 - 4.2 非廢水污染物不會卡在追水流程，可直接走§30棄置分支
+  ---
+  duration_ms: 9.617997
   type: 'test'
   ...
 # Subtest: 4.0-dev3 水污染分類與主流程已正式接入 catalog
-ok 472 - 4.0-dev3 水污染分類與主流程已正式接入 catalog
+ok 478 - 4.0-dev3 水污染分類與主流程已正式接入 catalog
   ---
-  duration_ms: 33.301357
+  duration_ms: 28.383391
   type: 'test'
   ...
 # Subtest: 水污主流程依序開啟節點且道路側溝仍保留未知
-ok 473 - 水污主流程依序開啟節點且道路側溝仍保留未知
+ok 479 - 水污主流程依序開啟節點且道路側溝仍保留未知
   ---
-  duration_ms: 22.527637
+  duration_ms: 18.104939
   type: 'test'
   ...
 # Subtest: 水污上游答案改變會清除不再有效的下游事實
-ok 474 - 水污上游答案改變會清除不再有效的下游事實
+ok 480 - 水污上游答案改變會清除不再有效的下游事實
   ---
-  duration_ms: 9.651705
+  duration_ms: 8.850986
   type: 'test'
   ...
 # Subtest: 水污首頁可直接點入，判斷流程不顯示公文草稿按鈕
-ok 475 - 水污首頁可直接點入，判斷流程不顯示公文草稿按鈕
+ok 481 - 水污首頁可直接點入，判斷流程不顯示公文草稿按鈕
   ---
-  duration_ms: 21.590315
+  duration_ms: 26.074884
   type: 'test'
   ...
 # Subtest: 4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀態控制
-ok 476 - 4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀態控制
+ok 482 - 4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀態控制
   ---
-  duration_ms: 10.516677
+  duration_ms: 14.196269
   type: 'test'
   ...
 # Subtest: 4.0-dev3 污水下水道系統可進§7與§18-1，但不顯示事業§14區塊
-ok 477 - 4.0-dev3 污水下水道系統可進§7與§18-1，但不顯示事業§14區塊
+ok 483 - 4.0-dev3 污水下水道系統可進§7與§18-1，但不顯示事業§14區塊
   ---
-  duration_ms: 7.80122
+  duration_ms: 13.307147
   type: 'test'
   ...
 # Subtest: 4.0-dev3 §18-1 詳細結果只展開已走到的異常態樣
-ok 478 - 4.0-dev3 §18-1 詳細結果只展開已走到的異常態樣
+ok 484 - 4.0-dev3 §18-1 詳細結果只展開已走到的異常態樣
   ---
-  duration_ms: 8.811324
+  duration_ms: 14.195073
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §13 指定事業於設立變更前查無核准水措計畫可形成成立方向
-ok 479 - 4.0-rc1 §13 指定事業於設立變更前查無核准水措計畫可形成成立方向
+ok 485 - 4.0-rc1 §13 指定事業於設立變更前查無核准水措計畫可形成成立方向
   ---
-  duration_ms: 82.815176
+  duration_ms: 26.038237
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §18 未進子法時只提示待查，已確認具體義務且不符才成立
-ok 480 - 4.0-rc1 §18 未進子法時只提示待查，已確認具體義務且不符才成立
+ok 486 - 4.0-rc1 §18 未進子法時只提示待查，已確認具體義務且不符才成立
   ---
-  duration_ms: 42.504687
+  duration_ms: 19.719554
   type: 'test'
   ...
 # Subtest: 4.0-rc1 沒有向外排放仍可追到貯留並進§20
-ok 481 - 4.0-rc1 沒有向外排放仍可追到貯留並進§20
+ok 487 - 4.0-rc1 沒有向外排放仍可追到貯留並進§20
   ---
-  duration_ms: 16.231023
+  duration_ms: 9.063681
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §20 有有效貯留許可但未依登記事項可獨立成立方向
-ok 482 - 4.0-rc1 §20 有有效貯留許可但未依登記事項可獨立成立方向
+ok 488 - 4.0-rc1 §20 有有效貯留許可但未依登記事項可獨立成立方向
   ---
-  duration_ms: 17.13814
+  duration_ms: 7.968474
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §22與§35分離，資料不一致不直接等於明知不實
-ok 483 - 4.0-rc1 §22與§35分離，資料不一致不直接等於明知不實
+ok 489 - 4.0-rc1 §22與§35分離，資料不一致不直接等於明知不實
   ---
-  duration_ms: 18.284002
+  duration_ms: 8.363387
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §35須有明知證據才形成刑事疑義完整方向
-ok 484 - 4.0-rc1 §35須有明知證據才形成刑事疑義完整方向
+ok 490 - 4.0-rc1 §35須有明知證據才形成刑事疑義完整方向
   ---
-  duration_ms: 17.12271
+  duration_ms: 8.798604
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §26需先建立合法查證基礎再判規避妨礙拒絕
-ok 485 - 4.0-rc1 §26需先建立合法查證基礎再判規避妨礙拒絕
+ok 491 - 4.0-rc1 §26需先建立合法查證基礎再判規避妨礙拒絕
   ---
-  duration_ms: 17.640352
+  duration_ms: 7.373443
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §27重大危害同時檢核立即應變與3小時通知
-ok 486 - 4.0-rc1 §27重大危害同時檢核立即應變與3小時通知
+ok 492 - 4.0-rc1 §27重大危害同時檢核立即應變與3小時通知
   ---
-  duration_ms: 17.074252
+  duration_ms: 8.985215
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §59六項完整時會提示可能適用24小時標準例外
-ok 487 - 4.0-rc1 §59六項完整時會提示可能適用24小時標準例外
+ok 493 - 4.0-rc1 §59六項完整時會提示可能適用24小時標準例外
   ---
-  duration_ms: 19.437691
+  duration_ms: 8.228674
   type: 'test'
   ...
 # Subtest: 4.0-rc1 §71污染事件與污染行為人確認後輸出限期清除後續
-ok 488 - 4.0-rc1 §71污染事件與污染行為人確認後輸出限期清除後續
+ok 494 - 4.0-rc1 §71污染事件與污染行為人確認後輸出限期清除後續
   ---
-  duration_ms: 25.351454
+  duration_ms: 9.419132
   type: 'test'
   ...
 # Subtest: 4.0-rc1 最終輸出在無成立方向且查證未完成時為C，完成時可為A
-ok 489 - 4.0-rc1 最終輸出在無成立方向且查證未完成時為C，完成時可為A
+ok 495 - 4.0-rc1 最終輸出在無成立方向且查證未完成時為C，完成時可為A
   ---
-  duration_ms: 30.118628
+  duration_ms: 19.426791
   type: 'test'
   ...
 # Subtest: 4.1 水的主要來源改為複選，並可同時保存多個來源
-ok 490 - 4.1 水的主要來源改為複選，並可同時保存多個來源
+ok 496 - 4.1 水的主要來源改為複選，並可同時保存多個來源
   ---
-  duration_ms: 33.391214
+  duration_ms: 55.5699
   type: 'test'
   ...
 # Subtest: 4.1 舊 waterSourceType 單值資料會自動遷移成 waterSourceTypes 陣列
-ok 491 - 4.1 舊 waterSourceType 單值資料會自動遷移成 waterSourceTypes 陣列
+ok 497 - 4.1 舊 waterSourceType 單值資料會自動遷移成 waterSourceTypes 陣列
   ---
-  duration_ms: 18.620082
+  duration_ms: 13.712472
   type: 'test'
   ...
 # Subtest: 4.1 來源尚待確認與已知來源互斥，資料層也會移除衝突 unknown
-ok 492 - 4.1 來源尚待確認與已知來源互斥，資料層也會移除衝突 unknown
+ok 498 - 4.1 來源尚待確認與已知來源互斥，資料層也會移除衝突 unknown
   ---
-  duration_ms: 14.849791
+  duration_ms: 13.877953
   type: 'test'
   ...
 # Subtest: 4.1 複選介面勾選已知來源時會自動取消來源尚待確認
-ok 493 - 4.1 複選介面勾選已知來源時會自動取消來源尚待確認
+ok 499 - 4.1 複選介面勾選已知來源時會自動取消來源尚待確認
   ---
-  duration_ms: 24.338322
+  duration_ms: 26.527792
   type: 'test'
   ...
-1..493
-# tests 493
+# Subtest: 4.2.1 現場查察完成後提供繼續案件研判交接
+ok 500 - 4.2.1 現場查察完成後提供繼續案件研判交接
+  ---
+  duration_ms: 38.784487
+  type: 'test'
+  ...
+# Subtest: 4.2.1 交接到完整母法模式時保留已填共同事實並重新計算目標模板
+ok 501 - 4.2.1 交接到完整母法模式時保留已填共同事實並重新計算目標模板
+  ---
+  duration_ms: 16.267333
+  type: 'test'
+  ...
+# Subtest: 4.2.1 水污介面預留「產生案件文字」名稱但未核定模板前仍不生成假草稿
+ok 502 - 4.2.1 水污介面預留「產生案件文字」名稱但未核定模板前仍不生成假草稿
+  ---
+  duration_ms: 7.608424
+  type: 'test'
+  ...
+# Subtest: 4.2.1 介面的「繼續案件研判」按鈕可實際切換到完整母法模式
+ok 503 - 4.2.1 介面的「繼續案件研判」按鈕可實際切換到完整母法模式
+  ---
+  duration_ms: 26.092277
+  type: 'test'
+  ...
+1..503
+# tests 503
 # suites 0
-# pass 493
+# pass 503
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 5477.985919
+# duration_ms 4667.012561

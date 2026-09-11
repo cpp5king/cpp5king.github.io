@@ -1,5 +1,5 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const CACHE_NAME='inspection-assistant-4.1.1-pp-7f3c9a21';
+const CACHE_NAME='inspection-assistant-4.2.1-pp-7f3c9a21';
 const APP_SHELL=[
   './',
   './index.html',
@@ -18,10 +18,18 @@ const APP_SHELL=[
   './data/texts/noise-neighbor.js',
   './data/texts/noise-ui.js',
   './data/texts/water-main.js',
+  './data/texts/water-field.js',
   './src/noise-format.js',
   './data/texts/noise-documents.js',
   './src/noise-text.js',
   './data/templates/catalog.js',
+  './data/templates/restaurant-odor.js',
+  './data/templates/restaurant-odor-sampling-pending.js',
+  './data/templates/noise-case.js',
+  './data/templates/noise-main.js',
+  './data/templates/noise-neighbor.js',
+  './data/templates/water-field.js',
+  './data/templates/water-main.js',
   './data/rules/noise-article8.js',
   './src/noise-article8.js',
   './data/rules/noise-article9.js',
@@ -49,6 +57,7 @@ const APP_SHELL=[
   './src/water-facts.js',
   './src/water-rule-engine.js',
   './src/water-main.js',
+  './src/water-field.js',
   './src/draft-engine.js',
   './src/template-loader.js',
   './src/case-session.js',

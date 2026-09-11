@@ -39,9 +39,9 @@ test('水污首頁可直接點入，判斷流程不顯示公文草稿按鈕',asy
   const env=await loaded();const doc=documentStub(),app=doc.createElement('main');doc.getElementById=()=>app;env.context.document=doc;env.root.confirm=()=>true;env.root.TemplateLoader.load=async()=>env.config;
   env.run('src/field-renderer.js');env.run('src/sentence-app.js');await new Promise(r=>setImmediate(r));
   const click=text=>{const b=nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent===text);assert.ok(b,text);b.dispatch('click');};
-  click('水污染');click('水污染案件');
+  click('水污染');click('案件研判（完整母法）');
   assert.ok(app.querySelector('form'));
-  const draftButton=nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent==='填入兩份草稿');
+  const draftButton=nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent==='產生案件文字');
   assert.ok(draftButton);assert.equal(draftButton.parentElement.hidden,true);
 });
 

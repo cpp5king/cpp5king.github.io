@@ -23,6 +23,7 @@
   <script defer src="data/texts/noise-neighbor.js"></script>
   <script defer src="data/texts/noise-ui.js"></script>
   <script defer src="data/texts/water-main.js"></script>
+  <script defer src="data/texts/water-field.js"></script>
   <script defer src="src/noise-format.js"></script>
   <script defer src="data/texts/noise-documents.js"></script>
   <script defer src="src/noise-text.js"></script>
@@ -54,6 +55,7 @@
   <script defer src="src/water-facts.js"></script>
   <script defer src="src/water-rule-engine.js"></script>
   <script defer src="src/water-main.js"></script>
+  <script defer src="src/water-field.js"></script>
   <script defer src="src/draft-engine.js"></script>
   <script defer src="src/template-loader.js"></script>
   <script defer src="src/case-session.js"></script>
@@ -63,9 +65,9 @@
   <script defer src="src/pwa.js"></script>
 </head>
 <body>
-  <header><span class="badge">完全離線 · 草稿填空</span><h1 id="app-version-title">稽查助手</h1><p>選擇案件範本，填寫事實後產生稽查紀錄與民眾回覆</p></header>
+  <header><span class="badge">完全離線 · 規則式稽查輔助</span><h1 id="app-version-title">稽查助手</h1><p>選擇案件類型，依流程確認事實、研判與案件文字</p></header>
   <main>
-    <aside id="mobile-install" class="mobile-install" hidden><strong>手機版 4.1</strong><br><span id="mobile-install-message"></span><button id="pwa-install-button" class="secondary" type="button" hidden>安裝到手機</button></aside>
+    <aside id="mobile-install" class="mobile-install" hidden><strong>手機版</strong><br><span id="mobile-install-message"></span><button id="pwa-install-button" class="secondary" type="button" hidden>安裝到手機</button></aside>
     <aside class="notice"><strong>照草稿選填，保留原本句子順序。</strong><br><span id="home-instructions"></span>選項不符時可自行填寫。不使用 AI，不自行補入事實或法規；請勿輸入個人資料，稽查對象請使用代稱。</aside>
     <div id="app"></div>
   </main>
