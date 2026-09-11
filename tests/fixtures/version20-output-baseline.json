@@ -1,0 +1,1235 @@
+[
+  {
+    "id": "restaurant-odor-reference",
+    "input": {},
+    "output": {
+      "record": "本局於（日期尚待確認）（時間尚待確認）派員前往所陳地址，經查該址為（店名尚待確認），稽查時（營業狀態尚待確認），（油煙處理及防制設備情形尚待確認），（周界查察結果尚待確認），爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於（日期尚待確認）（時間尚待確認）派員前往所陳地址，經查該址為（店名尚待確認），稽查時（營業狀態尚待確認），（油煙處理及防制設備情形尚待確認），（周界查察結果尚待確認），爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "open-not-cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，未進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，未進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "closed",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時未營業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時未營業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "close",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時現場大門深鎖無人回應，於周界外巡查未發現有排放油煙致空污異味之情事，爾後本局將不定期派員前往巡查。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時現場大門深鎖無人回應，於周界外巡查未發現有排放油煙致空污異味之情事，爾後本局將不定期派員前往巡查。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "none",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍囑業者加裝空污防制措施，（手冊交付情形尚待確認），爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍囑業者加裝空污防制措施，（手冊交付情形尚待確認），爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "smoke",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查確有些許油煙異味情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查確有些許油煙異味情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "handbook": "yes"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-reference",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "handbook": "previous"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理（洗滌式）後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形（電子鼻數值為0），本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往所陳地址，經查該址為測試場所，稽查時營業中，進行烹飪作業，油煙收集後經由空污防制設備處理後排放至大氣，於周界外巡查未發現有明顯油煙逸散致空污異味之情形，本局仍勸導業者加強防制設備及增加維護保養設備頻率，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "restaurant-odor-sampling-pending",
+    "input": {},
+    "output": {
+      "record": "本局於（稽查日期尚待確認）（稽查時間尚待確認）派員前往稽查，經查該址為（稽查對象／場所描述尚待確認），現場會同（會同人員尚待確認），稽查時現場作業中，於該店排風管下風處適當距離進行周界異味採樣（採樣時間（採樣日期尚待確認）（開始時間尚待確認）-（結束時間尚待確認），共（袋數尚待確認）袋）相關程序皆符合環境部規定，待檢驗結果下達，辦理後續事宜，以上過程均拍照存證並經業者確認無誤後簽名。本案已依環境部訂定之標準作業程序進行採驗（檢測），並已對當事人有利及不利事項注意，且排除相關干擾因素，採樣檢測結果如超過法定標準，本案後續將依法告發。",
+      "reply": "有關臺端反映事項，本局已於（稽查日期尚待確認）（稽查時間尚待確認）派員前往稽查，並於現場執行周界異味採樣，相關樣品刻正辦理檢驗作業，待檢驗結果下達後，本局將依結果辦理後續事宜；如檢測結果不符法定標準，將依法辦理。"
+    }
+  },
+  {
+    "id": "restaurant-odor-sampling-pending",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，現場會同（會同人員尚待確認），稽查時現場作業中，於該店排風管下風處適當距離進行周界異味採樣（採樣時間（採樣日期尚待確認）（開始時間尚待確認）-（結束時間尚待確認），共（袋數尚待確認）袋）相關程序皆符合環境部規定，待檢驗結果下達，辦理後續事宜，以上過程均拍照存證並經業者確認無誤後簽名。本案已依環境部訂定之標準作業程序進行採驗（檢測），並已對當事人有利及不利事項注意，且排除相關干擾因素，採樣檢測結果如超過法定標準，本案後續將依法告發。",
+      "reply": "有關臺端反映事項，本局已於115年3月5日15時許派員前往稽查，並於現場執行周界異味採樣，相關樣品刻正辦理檢驗作業，待檢驗結果下達後，本局將依結果辦理後續事宜；如檢測結果不符法定標準，將依法辦理。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "scenario": "neighbor",
+      "noiseType": "custom",
+      "noiseTypeCustom": "測試聲音",
+      "hasCommittee": ""
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "有關臺端反映事項，測試聲音致妨礙安寧一案，因非屬目前環保法規－噪音管制法管制範圍（噪音管制法第6條），環保局在此跟您致歉，無法為您處理，應由本府警察局或本府工務局公寓大廈管理科依法辦理。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "scenario": "neighbor",
+      "noiseType": "custom",
+      "noiseTypeCustom": "測試聲音",
+      "hasCommittee": "yes"
+    },
+    "output": {
+      "record": "非屬噪音管制法管制範疇，應由本府工務局公寓大廈管理科依法處理之，本局仍囑管委會加強社區自主管理，以維護居住品質。",
+      "reply": "有關臺端反映事項，測試聲音致妨礙安寧一案，因非屬目前環保法規－噪音管制法管制範圍（噪音管制法第6條），環保局在此跟您致歉，無法為您處理，應由本府警察局或本府工務局公寓大廈管理科依法辦理。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "scenario": "neighbor",
+      "noiseType": "custom",
+      "noiseTypeCustom": "測試聲音",
+      "hasCommittee": "no"
+    },
+    "output": {
+      "record": "因非屬目前環保法規－噪音管制法管制範圍，依據噪音管制法第6條規定，製造不具持續性或不易量測而足以妨害他人生活安寧之聲音者，由警察機關依有關法規處理之。",
+      "reply": "有關臺端反映事項，測試聲音致妨礙安寧一案，因非屬目前環保法規－噪音管制法管制範圍（噪音管制法第6條），環保局在此跟您致歉，無法為您處理，應由本府警察局或本府工務局公寓大廈管理科依法辦理。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "",
+      "explainedToComplainant": "",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "",
+      "explainedToComplainant": "true",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "",
+      "explainedToComplainant": "false",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "compliant",
+      "explainedToComplainant": "",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測一般均能音量為50分貝，最大音量60分貝，未超過測試音源別第二類管制區測試時段噪音管制標準（均能：55分貝，最大音量：65分貝），本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令，將依法告發，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，於周界外之適當處所量測符合噪音管制標準，本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令將依法告發，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "compliant",
+      "explainedToComplainant": "true",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測一般均能音量為50分貝，最大音量60分貝，未超過測試音源別第二類管制區測試時段噪音管制標準（均能：55分貝，最大音量：65分貝），本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令，將依法告發，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，於周界外之適當處所量測符合噪音管制標準，本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令將依法告發，以維護環境品質。現場已與臺端說明辦理情形。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "compliant",
+      "explainedToComplainant": "false",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測一般均能音量為50分貝，最大音量60分貝，未超過測試音源別第二類管制區測試時段噪音管制標準（均能：55分貝，最大音量：65分貝），本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令，將依法告發，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，於周界外之適當處所量測符合噪音管制標準，本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令將依法告發，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "exceeded",
+      "explainedToComplainant": "",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測均能音量為50分貝、最大音量為60分貝，另請業者關閉噪音源後量測背景音量為40分貝，均能與背景音量相差10分貝，依法不需修正，超過測試音源別第二類測試時段噪音管制標準（均能：55分貝、最大：65分貝），已違反噪音管制法第9條規定，依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於臺端指定之生活居住場所量測均能音量超過噪音管制標準，已違反噪音管制法規定，本局依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "exceeded",
+      "explainedToComplainant": "true",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測均能音量為50分貝、最大音量為60分貝，另請業者關閉噪音源後量測背景音量為40分貝，均能與背景音量相差10分貝，依法不需修正，超過測試音源別第二類測試時段噪音管制標準（均能：55分貝、最大：65分貝），已違反噪音管制法第9條規定，依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於臺端指定之生活居住場所量測均能音量超過噪音管制標準，已違反噪音管制法規定，本局依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "article9",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "measurementResult": "exceeded",
+      "explainedToComplainant": "false",
+      "background": "40",
+      "backgroundText": "noCorrection"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於測點量測均能音量為50分貝、最大音量為60分貝，另請業者關閉噪音源後量測背景音量為40分貝，均能與背景音量相差10分貝，依法不需修正，超過測試音源別第二類測試時段噪音管制標準（均能：55分貝、最大：65分貝），已違反噪音管制法第9條規定，依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，噪音源為測試音源，於臺端指定之生活居住場所量測均能音量超過噪音管制標準，已違反噪音管制法規定，本局依法限期改善，經限期改善仍未符合噪音管制標準者將依法告發。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "",
+      "inactiveWording": "",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "",
+      "inactiveWording": "sourceInactive",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "",
+      "inactiveWording": "amplifier",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "inactive",
+      "inactiveWording": "",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "inactive",
+      "inactiveWording": "sourceInactive",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試音源未運轉，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試音源未運轉，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "inactive",
+      "inactiveWording": "amplifier",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，現場未發現有使用擴音設備之情形，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，現場未發現有使用擴音設備之情形，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "notFound",
+      "inactiveWording": "",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "（案件樣態或必要選項尚待確認）",
+      "reply": "（案件樣態或必要選項尚待確認）"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "notFound",
+      "inactiveWording": "sourceInactive",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試音源未運轉，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試音源未運轉，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "notFound",
+      "inactiveWording": "amplifier",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，現場未發現有使用擴音設備之情形，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。",
+      "reply": "有關臺端反映事項，本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，現場未發現有使用擴音設備之情形，於周界外亦未發現有明顯噪音擾鄰之情事，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "rain",
+      "inactiveWording": "",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，惟現場適逢天雨路濕依法規定不宜量測噪音，已責成業者加強噪音防制措施、注意作業時段，並請降低音量，避免擾鄰。",
+      "reply": "經查該址為測試場所，稽查時測試作業，噪音源為測試音源，惟適逢天雨路濕未符合噪音管制標準量測時氣象條件之規定，無法量測具代表性之數據，現場勸導業者應加強噪音防制措施及注意作業時間，以維環境品質。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "rain",
+      "inactiveWording": "sourceInactive",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，惟現場適逢天雨路濕依法規定不宜量測噪音，已責成業者加強噪音防制措施、注意作業時段，並請降低音量，避免擾鄰。",
+      "reply": "經查該址為測試場所，稽查時測試作業，噪音源為測試音源，惟適逢天雨路濕未符合噪音管制標準量測時氣象條件之規定，無法量測具代表性之數據，現場勸導業者應加強噪音防制措施及注意作業時間，以維環境品質。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "rain",
+      "inactiveWording": "amplifier",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "本局於115年3月5日15時許派員前往稽查，經查該址為測試場所，稽查時測試作業，惟現場適逢天雨路濕依法規定不宜量測噪音，已責成業者加強噪音防制措施、注意作業時段，並請降低音量，避免擾鄰。",
+      "reply": "經查該址為測試場所，稽查時測試作業，噪音源為測試音源，惟適逢天雨路濕未符合噪音管制標準量測時氣象條件之規定，無法量測具代表性之數據，現場勸導業者應加強噪音防制措施及注意作業時間，以維環境品質。"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "other",
+      "inactiveWording": "",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "其他紀錄",
+      "reply": "其他回覆"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "other",
+      "inactiveWording": "sourceInactive",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "其他紀錄",
+      "reply": "其他回覆"
+    }
+  },
+  {
+    "id": "noise-case",
+    "input": {
+      "date": "2026-03-05",
+      "time": "15",
+      "subject": "測試場所",
+      "operating": "cooking",
+      "equipment": "present",
+      "equipmentTypes": [
+        "wash"
+      ],
+      "observation": "no-odor",
+      "measurement": "0",
+      "scenario": "unmeasured",
+      "operation": "測試作業",
+      "noiseSource": "測試音源",
+      "sourceType": "測試音源別",
+      "zone": "二",
+      "period": "測試時段",
+      "measurementLocation": "測點",
+      "leq": "50",
+      "lmax": "60",
+      "leqStandard": "55",
+      "lmaxStandard": "65",
+      "noMeasurementReason": "other",
+      "inactiveWording": "amplifier",
+      "otherRecord": "其他紀錄",
+      "otherReply": "其他回覆"
+    },
+    "output": {
+      "record": "其他紀錄",
+      "reply": "其他回覆"
+    }
+  }
+]

@@ -1,0 +1,6 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {loaded,plain}=require('./helpers.cjs'),FIXED=require('./fixtures/noise-fixed-texts.json');
+test('文字契約：1999、巡查固定尾段與背景未修正用語',async()=>{const {root}=await loaded();assert.equal(root.NOISE_TEXTS.common.replyEnding,FIXED.replyEnding);assert.equal(root.NOISE_TEXTS.common.noMeasurementPatrol,FIXED.patrol);assert.equal(root.NOISE_TEXTS.article9.backgroundUnavailable,FIXED.backgroundUnavailable);});
+test('文字契約：第9條條項款與原有標準用語',async()=>{const {root}=await loaded();assert.deepEqual(plain(root.NOISE_ARTICLE9_RULES.types.map(t=>t.legalBasis)),[1,2,3,4,5,6].map(n=>'噪音管制法第9條第1項第'+n+'款'));});
+test('文字集中：噪音固定尾段只在一個正式文字來源定義',()=>{const dir=path.join(__dirname,'..','data','texts');for(const text of [FIXED.replyEnding,FIXED.patrol]){const count=fs.readdirSync(dir).filter(f=>f.endsWith('.js')).reduce((sum,f)=>sum+fs.readFileSync(path.join(dir,f),'utf8').split(text).length-1,0);assert.equal(count,1);}});
+test('文字集中：主要噪音流程不再包含完整公文或長提示字串',()=>{for(const name of ['noise-main.js','noise-article8.js','noise-article9.js','noise-article9-measurement.js','noise-article9-documents.js']){const src=fs.readFileSync(path.join(__dirname,'..','src',name),'utf8');assert.doesNotMatch(src,/["'][^"'\r\n]*[\u4e00-\u9fff]{10}[^"'\r\n]*["']/);}});

@@ -1,0 +1,231 @@
+{
+  "id": "restaurant-odor-reference",
+  "categoryId": "air",
+  "caseTypeId": "restaurant-odor",
+  "title": "現有範本",
+  "version": "1.0.0",
+  "formTitle": "依草稿順序選填",
+  "instructions": "依你提供的草稿選填，時間只選小時；設備可複選。選無設備時可選擇是否已交付手冊。",
+  "fields": [
+    {
+      "id": "date",
+      "label": "稽查日期（輸出為民國年）",
+      "type": "date",
+      "format": "roc",
+      "missing": "（日期尚待確認）"
+    },
+    {
+      "id": "time",
+      "label": "稽查時間（只選小時）",
+      "type": "hour",
+      "suffix": "時許",
+      "missing": "（時間尚待確認）"
+    },
+    {
+      "id": "subject",
+      "label": "店名（請使用代稱）",
+      "type": "text",
+      "missing": "（店名尚待確認）"
+    },
+    {
+      "id": "operating",
+      "label": "營業狀態",
+      "type": "select",
+      "options": [
+        {
+          "id": "open",
+          "label": "營業中",
+          "value": "營業中"
+        },
+        {
+          "id": "cooking",
+          "label": "進行烹飪作業中",
+          "value": "進行烹飪作業中"
+        },
+        {
+          "id": "open-not-cooking",
+          "label": "營業中，惟未進行烹飪作業",
+          "value": "營業中惟未進行烹飪作業"
+        },
+        {
+          "id": "closed",
+          "label": "未營業",
+          "value": "未營業"
+        },
+        {
+          "id": "prep",
+          "label": "未作業，現場僅整理環境與備料",
+          "value": "未作業現場僅整理環境與備料"
+        },
+        {
+          "id": "close",
+          "label": "大門深鎖",
+          "value": "大門深鎖，無人回應"
+        }
+      ],
+      "missing": "（營業狀態尚待確認）"
+    },
+    {
+      "id": "equipment",
+      "label": "油煙污染防制情形",
+      "type": "choiceGroup",
+      "showUnanswered": false,
+      "options": [
+        {
+          "id": "none",
+          "label": "未設置污染防制設備",
+          "value": ""
+        },
+        {
+          "id": "present",
+          "label": "油煙經污染防制設備處理後排放",
+          "usesItems": true,
+          "value": "油煙收集後經由空污防制設備處理（{{items}}）後排放至大氣，",
+          "replyValue": "油煙收集後經由空污防制設備處理後排放至大氣，"
+        }
+      ],
+      "itemsKey": "equipmentTypes",
+      "itemsLabel": "有設備：勾選種類",
+      "separator": "、",
+      "items": [
+        {
+          "id": "bag",
+          "label": "袋濾式"
+        },
+        {
+          "id": "wash",
+          "label": "洗滌式"
+        },
+        {
+          "id": "static",
+          "label": "靜電集塵"
+        },
+        {
+          "id": "cyclone",
+          "label": "旋風集塵"
+        },
+        {
+          "id": "adsorption",
+          "label": "吸附"
+        },
+        {
+          "id": "absorption",
+          "label": "吸收"
+        },
+        {
+          "id": "combustion",
+          "label": "燃燒"
+        },
+        {
+          "id": "other",
+          "label": "其他",
+          "customKey": "equipmentOther",
+          "customLabel": "其他設備名稱",
+          "missing": "其他設備名稱尚待確認"
+        }
+      ],
+      "itemsMissing": "設備種類尚待確認",
+      "missing": "（油煙處理及防制設備情形尚待確認），"
+    },
+    {
+      "id": "observation",
+      "label": "周界查察結果",
+      "type": "select",
+      "options": [
+        {
+          "id": "no-odor",
+          "label": "未發現明顯油煙逸散致空污異味之情事",
+          "value": "於周界外巡查未發現有明顯油煙逸散致空污異味之情事"
+        },
+        {
+          "id": "smoke",
+          "label": "發現油煙逸散情形",
+          "value": "於周界外巡查發現有油煙逸散情形"
+        },
+        {
+          "id": "no-smoke",
+          "label": "未發現明顯油煙逸散情事",
+          "value": "於周界外巡查未發現明顯油煙逸散情事"
+        }
+      ],
+      "missing": "（周界查察結果尚待確認）"
+    },
+    {
+      "id": "measurement",
+      "label": "電子鼻量測（只填入稽查紀錄）",
+      "type": "select",
+      "options": [
+        {
+          "id": "omit",
+          "label": "不填電子鼻句",
+          "value": ""
+        }
+      ],
+      "customLabel": "已量測，填入電子鼻數值",
+      "customType": "number",
+      "customPrefix": "（電子鼻數值為",
+      "customSuffix": "）",
+      "missing": "（電子鼻數值尚待確認）"
+    },
+    {
+      "id": "handling",
+      "label": "是否已依草稿內容勸導",
+      "type": "select",
+      "options": [
+        {
+          "id": "maintenance",
+          "when": {
+            "field": "equipment",
+            "value": "present"
+          },
+          "label": "是，已勸導加強設備及增加維護保養頻率",
+          "value": "本局仍勸導業者加強防制設備及增加維護保養設備頻率"
+        },
+        {
+          "id": "install",
+          "when": {
+            "field": "equipment",
+            "value": "none"
+          },
+          "label": "是，已囑業者加裝空污防制措施",
+          "value": "本局仍囑業者加裝空污防制措施"
+        },
+        {
+          "id": "not-guided",
+          "label": "否，本次未勸導",
+          "value": ""
+        }
+      ],
+      "missing": "（勸導情形尚待確認）"
+    },
+    {
+      "id": "handbook",
+      "label": "是否已交付新北市餐飲污染防制手冊",
+      "type": "select",
+      "allowCustom": false,
+      "showWhen": {
+        "field": "equipment",
+        "value": "none"
+      },
+      "options": [
+        {
+          "id": "yes",
+          "label": "是，已當場交付",
+          "value": "，並當場交付新北市餐飲污染防制手冊供其參考"
+        },
+        {
+          "id": "no",
+          "label": "否，未交付（不填交付句）",
+          "value": ""
+        }
+      ],
+      "missing": "，（手冊交付情形尚待確認）"
+    }
+  ],
+  "record": [
+    "本局於{{date}}{{time}}派員前往所陳地址，經查該址為{{subject}}，稽查時{{operating}}，{{equipment}}{{observation}}{{measurement}}，{{handling}}{{handbook}}，爾後本局將不定期派員前往巡查，以維護環境品質。"
+  ],
+  "reply": [
+    "有關臺端反映事項，本局於{{date}}{{time}}派員前往所陳地址，經查該址為{{subject}}，稽查時{{operating}}，{{equipment}}{{observation}}，{{handling}}{{handbook}}，爾後本局將不定期派員前往巡查，以維護環境品質。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+  ]
+}

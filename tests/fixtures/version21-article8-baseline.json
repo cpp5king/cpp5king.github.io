@@ -1,0 +1,394 @@
+[
+  {
+    "act": {
+      "id": "fireworks",
+      "label": "施放爆竹煙火",
+      "zones": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": true,
+      "exceptionsComplete": true,
+      "exceptions": [
+        {
+          "id": "government",
+          "label": "政府辦理大型活動或國際交流，且經本府專案核准"
+        },
+        {
+          "id": "festival",
+          "label": "除夕及春節至元宵節節慶當日"
+        }
+      ]
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "fireworks",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事施放爆竹煙火之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事施放爆竹煙火之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "outdoorSpeaker",
+      "label": "室外使用擴音設施",
+      "zones": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": true,
+      "exceptionsComplete": true,
+      "exceptions": [
+        {
+          "id": "government",
+          "label": "政府辦理大型活動或國際交流，且經本府專案核准"
+        },
+        {
+          "id": "publicDuty",
+          "label": "執行公務"
+        },
+        {
+          "id": "publicInterest",
+          "label": "涉及公共安全及公眾利益"
+        },
+        {
+          "id": "emergency",
+          "label": "緊急危難救助"
+        }
+      ]
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "outdoorSpeaker",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事室外使用擴音設施之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事室外使用擴音設施之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "commercialMachinery",
+      "label": "使用動力機械從事餐飲、洗染、乾燥、印刷商業行為",
+      "zones": [
+        "1",
+        "2"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": false
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "commercialMachinery",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用動力機械從事餐飲、洗染、乾燥、印刷商業行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用動力機械從事餐飲、洗染、乾燥、印刷商業行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "religious",
+      "label": "使用發出聲響之法器從事宗教或民俗活動",
+      "zones": [
+        "1",
+        "2"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": false
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "religious",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用發出聲響之法器從事宗教或民俗活動之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用發出聲響之法器從事宗教或民俗活動之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "instrument",
+      "label": "使用樂器發聲",
+      "zones": [
+        "1",
+        "2"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": false
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "instrument",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用樂器發聲之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用樂器發聲之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "vehicleBusiness",
+      "label": "運轉引擎或使用動力機械從事清洗、修理、改裝車輛之商業行為",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": false
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "vehicleBusiness",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事運轉引擎或使用動力機械從事清洗、修理、改裝車輛之商業行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事運轉引擎或使用動力機械從事清洗、修理、改裝車輛之商業行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "karaoke",
+      "label": "提供伴唱視聽設備供人歌唱",
+      "zones": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "holidayPeriods": [
+        [
+          "22:00",
+          "08:00"
+        ],
+        [
+          "12:00",
+          "14:00"
+        ]
+      ],
+      "hasExceptions": true,
+      "exceptionsComplete": true,
+      "exceptions": [],
+      "exceptionChecks": [
+        {
+          "id": "a8KaraokeRegistered",
+          "label": "是否屬「視聽歌唱業」並經登記許可"
+        },
+        {
+          "id": "a8KaraokeZoning",
+          "label": "是否符合土地使用分區管制規定"
+        }
+      ]
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "karaoke",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事提供伴唱視聽設備供人歌唱之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事提供伴唱視聽設備供人歌唱之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "exhaust",
+      "label": "車輛排氣管公告禁止行為",
+      "zones": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "allDay": true,
+      "hasExceptions": false
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "exhaust",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事車輛排氣管公告禁止行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事車輛排氣管公告禁止行為之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  },
+  {
+    "act": {
+      "id": "leafBlower",
+      "label": "使用吹葉機從事環境清理作業",
+      "zones": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "06:00"
+        ]
+      ],
+      "hasExceptions": true,
+      "exceptionsComplete": true,
+      "exceptions": [
+        {
+          "id": "safety",
+          "label": "有危及公共安全"
+        },
+        {
+          "id": "disaster",
+          "label": "天然災害復原期間"
+        },
+        {
+          "id": "emergency",
+          "label": "緊急危難救助"
+        },
+        {
+          "id": "approved",
+          "label": "經目的事業主管機關核准"
+        }
+      ]
+    },
+    "input": {
+      "scenario": "article8",
+      "date": "2026-03-05",
+      "subject": "測試工區",
+      "article8Time": "22:00",
+      "article8Zone": "1",
+      "prohibitedAct": "leafBlower",
+      "article8Holiday": "no",
+      "article8Exception": "none",
+      "a8KaraokeRegistered": "no",
+      "a8KaraokeZoning": "no",
+      "equipment": "測試機具",
+      "article8Operation": "測試作業"
+    },
+    "output": {
+      "record": "本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用吹葉機從事環境清理作業之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+      "reply": "有關臺端反映事項，本局於115年3月5日22時許派員前往所陳地點，現場查為測試工區，現場使用測試機具進行測試作業，查該工區位處本府公告之第一類噪音管制區，於管制區內公告禁止時段從事使用吹葉機從事環境清理作業之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。若您再次發現污染情形，請撥打新北市政府1999市政服務專線反映，本局會再度派員依法查處。"
+    }
+  }
+]
