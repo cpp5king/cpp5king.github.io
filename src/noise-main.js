@@ -27,7 +27,7 @@
   }
 
   const blankFlags={
-    noiseShowA8:'yes',noiseShowA8Disturbance:'no',noiseShowA8Exception:'no',noiseShowAfterA8:'no',noiseShowA6Disturbance:'no',
+    noiseShowA8:'no',noiseShowA8Disturbance:'no',noiseShowA8Exception:'no',noiseShowAfterA8:'no',noiseShowA6Disturbance:'no',
     noiseShowA9:'no',noiseShowOtherFacility:'no',noiseShowMeasure:'no',noiseShowFull:'no',noiseShowFullPoint:'no',noiseShowSpeakerLocation:'no',noiseShowWeather:'no',
     noiseShowGeneralMethod:'no',noiseShowSpeakerMode:'no',noiseShowFullAssessment:'no',noiseShowConstructionFull:'no',noiseShowLow:'no',
     noiseShowConstructionLmax:'no',noiseShowBgFull:'no',noiseShowBgLmax:'no',noiseShowBgLow:'no'
@@ -41,6 +41,19 @@
     out.noiseRouteText=route;out.noiseGuide=guide||route;out.noiseValidation=validation;out.noiseRecord=record;out.noiseReply=reply;out.noiseBlocked=yes(blocked);return out;
   }
   function routeDraft(title,body){return {record:`${title}：${body}`,reply:`有關噪音陳情案，${body}`};}
+
+  function specialCase(out,type,prefix=''){
+    const special={
+      vehicle:['使用中機動車輛','屬使用中機動車輛噪音管制範圍；依噪音管制法第11條至第13條等規定辦理，不套用一般場所第9條量測流程。'],
+      landTransport:['陸上運輸系統','快速道路、高速公路、鐵路及大眾捷運系統之行駛噪音，依噪音管制法第14條及陸上運輸系統噪音管制標準辦理。'],
+      civilAviation:['民用航空噪音','民用航空器及民用機場相關噪音依噪音管制法第11條、第15條至第16條等規定辦理。'],
+      militaryAviation:['軍用航空噪音','軍用航空噪音依噪音管制法第17條等規定，由軍用航空主管機關會商地方主管機關辦理。']
+    }[type];
+    if(!special)return null;
+    const body=`${prefix?prefix+' ':''}${special[1]}`;
+    const d=routeDraft(special[0],body);
+    return finish(out,{route:special[0],guide:body,record:d.record,reply:d.reply,blocked:false});
+  }
 
   function period(zone,time){
     const z=A9().zones.find(x=>x.id===zone);if(!z||clock(time)===null)return null;
@@ -169,7 +182,7 @@
     if(!text(input.noiseDate)||clock(input.noiseTime)===null||!['1','2','3','4'].includes(input.noiseZone)||!['yes','no'].includes(input.noiseHoliday))return {done:true,out:finish(out,{route:'第8條前置判斷',validation:'請完成稽查日期、時間、噪音管制區及假日別。'})};
     if(!input.noiseA8Act)return {done:true,out:finish(out,{route:'第8條公告禁止行為優先判斷',validation:'請確認現場是否涉及第8條公告禁止行為。'})};
     if(input.noiseA8Act==='none')return {done:false,note:'未見第8條公告禁止行為。'};
-    const act=A8().acts.find(a=>a.id===input.noiseA8Act);
+    const act=A8().acts.find(a=>a.id===input.noiseA8Act&&a.id!=='exhaust');
     if(!act)return {done:true,out:finish(out,{route:'第8條公告禁止行為',validation:'無法辨識所選公告行為，請重新選擇。'})};
     if(!actApplicable(act,input.noiseZone,input.noiseTime,input.noiseHoliday))return {done:false,note:'所選行為於本次管制區／時段條件下不落入第8條公告管制。'};
     out.noiseShowA8Disturbance='yes';
@@ -186,25 +199,42 @@
   }
 
   function prepare(rawInput={}){
-    const zoneState=root.NoiseZone?.resolve?root.NoiseZone.resolve(rawInput):{status:['1','2','3','4'].includes(rawInput.noiseZone)?'resolved':'pending',zone:rawInput.noiseZone,note:'',message:'請確認噪音管制區。'};
     const input={...rawInput};
+    const out=base(input);
+    if(!input.noiseSpecial)return finish(out,{route:'第一步｜主要噪音來源／主管機關分流',validation:'請先確認主要噪音來源，以判斷主管機關與法規路徑。'});
+
+    if(['landTransport','civilAviation','militaryAviation'].includes(input.noiseSpecial))return specialCase(out,input.noiseSpecial);
+
+    if(input.noiseSpecial==='vehicle'){
+      const exhaust=tri(input.noiseVehicleExhaustA8);
+      if(exhaust==='missing')return finish(out,{route:'使用中機動車輛｜先檢查第8條排氣管公告行為',validation:'請確認車輛是否涉及變更合格排氣管，或使用未經噪音審驗／檢驗合格排氣管行駛道路之行為。'});
+      if(exhaust==='unknown')return finish(out,{route:'使用中機動車輛｜第8條排氣管公告行為待確認',validation:'排氣管第8條公告行為尚待確認，不得直接略過後轉機動車輛專章。'});
+      if(exhaust==='yes'){
+        out.noiseShowA8Disturbance='yes';
+        const disturbance=tri(input.noiseA8Disturbance);
+        if(disturbance==='missing')return finish(out,{route:'第8條車輛排氣管公告禁止行為候選',validation:'請確認該排氣管公告行為是否已足以妨害他人生活環境安寧。'});
+        if(disturbance==='unknown')return finish(out,{route:'第8條車輛排氣管公告禁止行為候選',validation:'「妨害他人生活環境安寧」尚待確認，暫不作成第8條結論。'});
+        if(disturbance==='yes'){
+          const body='現場查見使用中機動車輛涉及任意變更經噪音檢（查）驗合格排氣管，或使用未經噪音審驗／檢驗合格排氣管行駛道路之公告禁止行為，且已確認足以妨害他人生活環境安寧；該行為為新北市各類噪音管制區全時段禁止事項，依噪音管制法第8條及新北市現行公告辦理。';
+          const d=routeDraft('第8條車輛排氣管公告禁止行為',body);
+          return finish(out,{route:'第8條車輛排氣管公告禁止行為成立路徑',guide:'本案先依第8條公告禁止行為處理，不以一般場所第9條量測流程判定。',record:d.record,reply:d.reply,blocked:false});
+        }
+        return specialCase(out,'vehicle','已確認排氣管公告行為尚不足認妨害他人生活環境安寧，未逕以第8條成立。');
+      }
+      return specialCase(out,'vehicle','未見第8條車輛排氣管公告禁止行為。');
+    }
+
+    if(input.noiseSpecial!=='ordinary')return finish(out,{route:'來源類型未支援',validation:'請重新選擇主要噪音來源。'});
+
+    const zoneState=root.NoiseZone?.resolve?root.NoiseZone.resolve(input):{status:['1','2','3','4'].includes(input.noiseZone)?'resolved':'pending',zone:input.noiseZone,note:'',message:'請確認噪音管制區。'};
     if(zoneState.status==='resolved')input.noiseZone=zoneState.zone;
     else input.noiseZone='';
-    const out=base(input);out.noiseZoneResultText=zoneState.note||zoneState.message||'';
-    if(zoneState.status!=='resolved')return finish(out,{route:'第一步｜噪音管制區判定',guide:zoneState.note||zoneState.message,validation:zoneState.message||'請確認噪音管制區。'});
+    Object.assign(out,input);out.noiseZoneResultText=zoneState.note||zoneState.message||'';
+    if(zoneState.status!=='resolved')return finish(out,{route:'第二步｜噪音管制區判定',guide:zoneState.note||zoneState.message,validation:zoneState.message||'請確認噪音管制區。'});
 
+    out.noiseShowA8='yes';
     const a8=article8Stage(input,out);if(a8.done)return a8.out;
     out.noiseShowAfterA8='yes';const a8Note=a8.note||'';
-
-    if(!input.noiseSpecial)return finish(out,{route:`${a8Note}\n主管機關／法規分流`,validation:'請確認主要噪音來源。'});
-    const special={
-      vehicle:['使用中機動車輛','屬機動車輛噪音專章；依噪音管制法第11條至第13條等規定辦理，不套用一般場所第9條量測流程。'],
-      landTransport:['陸上運輸系統','快速道路、高速公路、鐵路及大眾捷運系統之行駛噪音，依噪音管制法第14條及陸上運輸系統噪音管制標準辦理。'],
-      civilAviation:['民用航空噪音','民用航空器及民用機場相關噪音依噪音管制法第11條、第15條至第16條等規定辦理。'],
-      militaryAviation:['軍用航空噪音','軍用航空噪音依噪音管制法第17條等規定，由軍用航空主管機關會商地方主管機關辦理。']
-    }[input.noiseSpecial];
-    if(special){const body=`${a8Note} ${special[1]}`;const d=routeDraft(special[0],body);return finish(out,{route:special[0],guide:body,record:d.record,reply:d.reply,blocked:false});}
-    if(input.noiseSpecial!=='ordinary')return finish(out,{route:'來源類型未支援',validation:'請重新選擇主要噪音來源。'});
 
     if(!['difficult','measurable'].includes(input.noiseNature))return finish(out,{route:`${a8Note}\n一般場所／工程／設施：判斷是否可量測`,validation:'請確認聲音是否具持續性且可量測。'});
     if(input.noiseNature==='difficult'){
@@ -281,17 +311,19 @@
     const next={...after};const clear=keys=>keys.forEach(k=>{next[k]='';});
     const exceptionKeys=a8ExceptionKeys();
     const zoneAssistFields=['noiseZoneAssistType','noiseZoneLandClass','noiseZoneTrafficSource','noiseZoneSourceZone','noiseZoneSideA','noiseZoneSideB','noiseZonePointSide','noiseZoneMajorPosition','noiseZoneOriginalFourth','noiseZoneAdjacentFirst','noiseZoneUnderlying','noiseZoneBoundaryPair'];
+    const zoneFields=['noiseZoneMode','noiseZone',...zoneAssistFields,'noiseHoliday','noiseA8Act'];
     const measurements=['noiseFacility','noiseBand','noiseSubject','noiseSource','noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow'];
+    if(before.noiseSpecial!==after.noiseSpecial)clear(['noiseVehicleExhaustA8','noiseA8Disturbance',...zoneFields,...exceptionKeys,'noiseNature','noiseA6Disturbance','noiseA9Type',...measurements]);
+    if(before.noiseVehicleExhaustA8!==after.noiseVehicleExhaustA8)clear(['noiseA8Disturbance']);
     if(before.noiseZoneMode!==after.noiseZoneMode){clear(zoneAssistFields);if(after.noiseZoneMode==='assist')next.noiseZone='';}
     if(['noiseDate','noiseTime','noiseZone','noiseZoneMode',...zoneAssistFields,'noiseHoliday'].some(k=>before[k]!==after[k]))clear(['noiseA8Disturbance',...exceptionKeys,'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     if(before.noiseA8Act!==after.noiseA8Act)clear(['noiseA8Disturbance',...exceptionKeys]);
-    if(before.noiseA8Disturbance!==after.noiseA8Disturbance)clear(exceptionKeys);
+    if(before.noiseA8Disturbance!==after.noiseA8Disturbance&&after.noiseSpecial==='ordinary')clear(exceptionKeys);
     for(const act of A8().acts||[])for(const ex of act.exceptions||[]){
       if(!ex.checks?.length)continue;
       const parent=exValue(act.id,ex.id);
       if(before[parent]!==after[parent]&&after[parent]!=='yes')clear(ex.checks.map(check=>exValue(act.id,ex.id,check.id)));
     }
-    if(before.noiseSpecial!==after.noiseSpecial)clear(['noiseNature','noiseA6Disturbance','noiseA9Type',...measurements]);
     if(before.noiseNature!==after.noiseNature)clear(['noiseA6Disturbance','noiseA9Type',...measurements]);
     if(before.noiseA9Type!==after.noiseA9Type)clear(measurements);
     if(before.noiseBand!==after.noiseBand)clear(['noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
