@@ -6,7 +6,8 @@ const APP_SHELL=[
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-180.png',
-  './icons/icon-512.png',
+  './src/styles.css',
+  './src/choice-cards.css',
   './data/provenance.js',
   './data/app-meta.js',
   './data/texts/noise-common.js',
@@ -30,7 +31,15 @@ const APP_SHELL=[
   './data/templates/water-field.js',
   './data/templates/water-main.js',
   './data/rules/noise-article8.js',
+  './src/noise-article8.js',
   './data/rules/noise-article9.js',
+  './src/noise-article9.js',
+  './data/templates/noise-article9-documents.js',
+  './src/noise-article9-documents.js',
+  './src/noise-article9-measurement.js',
+  './src/noise-backgrounds.js',
+  './src/noise-attempts.js',
+  './src/noise-main.js',
   './data/rules/water-article13.js',
   './data/rules/water-article14.js',
   './data/rules/water-article18.js',
@@ -47,14 +56,6 @@ const APP_SHELL=[
   './data/rules/water-article71.js',
   './data/rules/water-sublaw-core.js',
   './data/rules/water-industry.js',
-  './src/noise-article8.js',
-  './src/noise-article9.js',
-  './data/templates/noise-article9-documents.js',
-  './src/noise-article9-documents.js',
-  './src/noise-article9-measurement.js',
-  './src/noise-backgrounds.js',
-  './src/noise-attempts.js',
-  './src/noise-main.js',
   './src/water-law-versions.js',
   './src/water-facts.js',
   './src/water-rule-engine.js',
@@ -74,21 +75,13 @@ const APP_SHELL=[
   './src/field-renderer.js',
   './src/sentence-app.js',
   './src/pwa.js',
-  './src/styles.css',
-  './src/choice-cards.css'
+  './icons/icon-512.png'
 ];
-self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
-});
-self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
-});
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)));self.skipWaiting();});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{
-  if(event.request.method!=='GET')return;
-  const url=new URL(event.request.url);
-  if(url.origin!==self.location.origin)return;
+  if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
   event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{
-    if(response&&response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));}
-    return response;
+    const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));return response;
   }).catch(()=>caches.match('./index.html'))));
 });
