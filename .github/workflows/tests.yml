@@ -14,7 +14,20 @@ jobs:
         with:
           node-version: '22'
       - name: Run active regression tests
-        run: node tests/run-active-tests.cjs
+        shell: bash
+        run: |
+          set +e
+          node tests/run-active-tests.cjs 2>&1 | tee test-output.txt
+          TEST_STATUS=${PIPESTATUS[0]}
+          exit "$TEST_STATUS"
+      - name: Upload regression test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-test-output
+          path: test-output.txt
+          if-no-files-found: error
+          retention-days: 7
 
   package-windows:
     if: github.event_name == 'push'
