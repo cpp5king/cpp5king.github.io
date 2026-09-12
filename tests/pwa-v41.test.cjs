@@ -24,7 +24,7 @@ test('4.2 首頁載入 manifest、PWA 啟動程式及手機 viewport',()=>{
 
 test('4.2 service worker App Shell 僅快取本機現有資源',()=>{
   const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
-  assert.match(sw,/inspection-assistant-4\.7\.2-pp-7f3c9a21/);
+  assert.match(sw,/inspection-assistant-4\.7\.2-r1-pp-7f3c9a21/);
   assert.doesNotMatch(sw,/https?:\/\/(?!localhost|127\.0\.0\.1)/);
   const assets=[...sw.matchAll(/'\.\/([^']*)'/g)].map(match=>match[1]).filter(Boolean);
   for(const asset of new Set(assets))assert.ok(fs.existsSync(path.join(root,asset)),`missing cached asset: ${asset}`);
