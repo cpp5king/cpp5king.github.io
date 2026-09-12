@@ -1,6 +1,6 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
 const VERSION='4.9.0';
-const CACHE_REVISION='noise-rebuild-5';
+const CACHE_REVISION='noise-rebuild-6';
 const CACHE_NAME='inspection-assistant-4.9.0-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
@@ -35,14 +35,7 @@ const APP_SHELL=[
   './data/templates/water-field.js'+V,
   './data/templates/water-main.js'+V,
   './data/rules/noise-article8.js'+V,
-  './src/noise-article8.js'+V,
   './data/rules/noise-article9.js'+V,
-  './src/noise-article9.js'+V,
-  './data/templates/noise-article9-documents.js'+V,
-  './src/noise-article9-documents.js'+V,
-  './src/noise-article9-measurement.js'+V,
-  './src/noise-backgrounds.js'+V,
-  './src/noise-attempts.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,
   './src/noise-composite.js'+V,
