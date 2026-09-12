@@ -7,20 +7,31 @@ const root=path.join(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 function appMeta(){const context=vm.createContext({window:{}});vm.runInContext(read('data/app-meta.js'),context);return context.window.INSPECTION_APP_META;}
 
-test('4.8.6 PWA 更新器與版本化資源同步',()=>{
+test('4.8.7 PWA 更新器、Chrome 前景恢復檢查與版本化資源同步',()=>{
   const meta=appMeta();
   const pwa=read('src/pwa.js');
   const sw=read('service-worker.js');
   const html=read('index.html');
   const manifest=JSON.parse(read('manifest.webmanifest'));
-  assert.equal(meta.version,'4.8.6');
+  assert.equal(meta.version,'4.8.7');
+  assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
   assert.match(pwa,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(pwa,/app-meta\.js\?update=/);
   assert.match(pwa,/cache:'no-store'/);
   assert.match(pwa,/updateViaCache:'none'/);
   assert.match(pwa,/location\.replace/);
+  assert.match(pwa,/const checkForUpdate=async/);
+  assert.match(pwa,/addEventListener\('load'/);
+  assert.match(pwa,/addEventListener\('pageshow'/);
+  assert.match(pwa,/addEventListener\?\.\('visibilitychange'/);
+  assert.match(pwa,/visibilityState==='visible'/);
+  assert.match(pwa,/addEventListener\('online'/);
+  assert.match(pwa,/CHECK_THROTTLE_MS/);
+  assert.doesNotMatch(pwa,/localStorage|indexedDB|sessionStorage/);
   assert.match(sw,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(sw,new RegExp('inspection-assistant-'+meta.version.replaceAll('.','\\.')+'-pp-7f3c9a21'));
   assert.equal(manifest.start_url,'./index.html?v='+meta.version);
+  assert.equal(manifest.id,'./inspection-assistant-pp');
   assert.match(html,new RegExp('src/pwa\\.js\\?v='+meta.version.replaceAll('.','\\.')));
+  assert.match(html,/application-provenance" content="PP-IA-41-7F3C9A21/);
 });
