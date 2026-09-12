@@ -1,5 +1,5 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const CACHE_NAME='inspection-assistant-4.8.1-pp-7f3c9a21';
+const CACHE_NAME='inspection-assistant-4.8.2-pp-7f3c9a21';
 const APP_SHELL=[
   './',
   './index.html',
@@ -8,6 +8,7 @@ const APP_SHELL=[
   './icons/icon-180.png',
   './src/styles.css',
   './src/choice-cards.css',
+  './src/mobile-multiselect.css',
   './data/provenance.js',
   './data/app-meta.js',
   './data/texts/noise-common.js',
@@ -74,6 +75,7 @@ const APP_SHELL=[
   './src/choice-controls.js',
   './src/ui-profile.js',
   './src/field-renderer.js',
+  './src/water-v482.js',
   './src/inspection-flow-ui.js',
   './src/sentence-app.js',
   './src/pwa.js',
