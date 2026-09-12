@@ -79,6 +79,7 @@ const APP_SHELL=[
   './src/field-renderer.js'+V,
   './src/water-v482.js'+V,
   './src/water-industry-v485.js'+V,
+  './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
