@@ -3,14 +3,32 @@ const assert=require('node:assert/strict');
 const {loaded}=require('./helpers.cjs');
 const {documentStub,nodes}=require('./dom-stub.cjs');
 
-test('4.7.2 iPhone 日期 input 預覽被攔截，正式 change 仍由原渲染器處理',async()=>{
-  const fs=require('node:fs');
-  const code=fs.readFileSync('src/pwa.js','utf8');
-  assert.match(code,/target\?\.type==='date'/);
-  assert.match(code,/stopImmediatePropagation/);
-  assert.match(code,/addEventListener\('input',[\s\S]*true\)/);
-  const renderer=fs.readFileSync('src/field-renderer.js','utf8');
-  assert.match(renderer,/addEventListener\(\s*"change",\s*change/);
+test('4.7.2 iPhone 日期在原生選擇器仍開啟時不完成，關閉後才提交',async()=>{
+  const e=await loaded();
+  e.root.innerWidth=390;
+  const doc=documentStub();
+  e.context.document=doc;
+  e.root.document=doc;
+  e.run('src/field-renderer.js');
+  const template=e.config.templates.find(x=>x.id==='water-field');
+  let changes=0,lastFacts=null;
+  const r=e.root.FieldRenderer.render(template,facts=>{changes++;lastFacts=facts;});
+  const date=nodes(r.element).find(n=>n.id==='waterInspectionDate');
+  assert.ok(date,'找不到日期欄位');
+  date.value='2026-09-12';
+  doc.activeElement=date;
+  date.dispatch('input',{target:date});
+  date.dispatch('change',{target:date});
+  assert.equal(changes,0,'選擇器開啟期間不應提交日期');
+  doc.activeElement=null;
+  date.dispatch('focusout',{target:date});
+  assert.equal(changes,1,'關閉日期選擇器後應提交一次');
+  assert.equal(lastFacts.waterInspectionDate,'2026-09-12');
+
+  const renderer=require('node:fs').readFileSync('src/field-renderer.js','utf8');
+  assert.match(renderer,/shouldDeferMobileDate/);
+  assert.match(renderer,/activeElement === target/);
+  assert.match(renderer,/"focusout"/);
 });
 test('4.7.2 母法最上方加入簡易研判與缺漏事證，成立且無待查時標示違反法規',async()=>{
   const e=await loaded();
