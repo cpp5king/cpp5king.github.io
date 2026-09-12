@@ -27,7 +27,7 @@
   });
   const t={
     id:'noise-main',categoryId:'noise',caseTypeId:'noise-case',title:'噪音稽查－重建版',formTitle:'噪音案件判斷',
-    version:'4.9-rebuild-6',moduleVersion:'4.9-rebuild-6',workflow:'noiseMain',choiceStyle:'cards',initialGate:true,
+    version:'4.9-rebuild-7',moduleVersion:'4.9-rebuild-7',workflow:'noiseMain',choiceStyle:'cards',initialGate:true,
     validateOnSubmit:true,validationMessageField:'noiseValidation',workflowStatus:'noiseGuide',
     previewOnlyWhen:when('noiseBlocked'),previewOnlyMessage:'尚有必要事實未確認，暫不產生正式案件草稿。',
     fields:[
@@ -75,6 +75,10 @@
         ['factory','工廠（場）'],['entertainment','娛樂場所'],['business','營業場所'],['construction','營建工程'],['speaker','擴音設施'],['otherFacility','新北市公告之其他設施'],['renovation','非屬前述場所範圍之裝修工程'],['outside','不屬目前第9條列管場所／工程／設施']
       ],{displayWhen:when('noiseShowA9')}),
       select('noiseFacility','公告設施種類',facilities,{displayWhen:when('noiseShowOtherFacility')}),
+      select('noiseCompositeDifferentActors','複合音量｜是否由非同一行為人、法人或非法人之設施共同產生',ynu,{displayWhen:{field:'noiseA9Type',value:'otherFacility'}}),
+      select('noiseCompositeOverallExceeded','複合音量｜共同產生之音量是否已確認超過《噪音管制標準》第8條原標準值',ynu,{displayWhen:{field:'noiseCompositeDifferentActors',value:'yes'}}),
+      select('noiseCompositeSourceCount','複合音量｜非屬同一主體之音源數',[['two','2個'],['three','3個'],['four','4個'],['five','5個'],['sixPlus','6個以上']],{displayWhen:{field:'noiseCompositeOverallExceeded',value:'yes'}}),
+      computed('noiseCompositeText','複合音量標準修正',true,{field:'noiseA9Type',value:'otherFacility'}),
       field('noiseSubject','稽查對象代稱','text',{displayWhen:when('noiseShowMeasure')}),field('noiseSource','主要噪音源／設備說明','text',{displayWhen:when('noiseShowMeasure')}),
       select('noiseBand','量測頻帶',[['full','全頻 20Hz～20kHz'],['low','低頻 20Hz～200Hz'],['both','全頻＋低頻']],{displayWhen:when('noiseShowMeasure')}),
       select('noiseGeneralMethod','全頻評定方法',[['leq','非週期／非間歇性：Leq，連續取樣至少2分鐘'],['lmaxMean','週期／間歇且最大音量差≤5 dB：連續10次最大值平均'],['l5','週期／間歇且最大音量差>5 dB：至少20個最大值計算L5']],{displayWhen:when('noiseShowGeneralMethod')}),
