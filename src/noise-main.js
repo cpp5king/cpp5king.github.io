@@ -35,7 +35,7 @@
   for(const act of A8().acts||[])if(act.hasExceptions||act.exceptionChecks?.length)blankFlags[exFlag(act.id)]='no';
 
   function base(input){
-    return {...input,...blankFlags,noiseBlocked:'yes',noiseValidation:'',noiseRecord:'',noiseReply:'',noiseRouteText:'',noiseStandardText:'',noiseMeasurementPointText:'',noiseResultText:'',noiseGuide:'',noiseA8ExceptionSummary:''};
+    return {...input,...blankFlags,noiseBlocked:'yes',noiseValidation:'',noiseRecord:'',noiseReply:'',noiseRouteText:'',noiseStandardText:'',noiseMeasurementPointText:'',noiseResultText:'',noiseGuide:'',noiseA8ExceptionSummary:'',noiseZoneResultText:''};
   }
   function finish(out,{route='',guide='',validation='',record='',reply='',blocked=true}={}){
     out.noiseRouteText=route;out.noiseGuide=guide||route;out.noiseValidation=validation;out.noiseRecord=record;out.noiseReply=reply;out.noiseBlocked=yes(blocked);return out;
@@ -58,56 +58,32 @@
     const has=!!(act.hasExceptions||act.exceptionChecks?.length);
     if(!has)return {status:'none',summary:'無公告例外條件。'};
     out.noiseShowA8Exception='yes';out[exFlag(act.id)]='yes';
-
-    // 卡拉OK等「須全部符合」型例外。
     if(act.exceptionChecks?.length){
       const states=act.exceptionChecks.map(check=>({check,state:tri(input[exValue(act.id,check.id)])}));
       const no=states.find(x=>x.state==='no');
-      if(no){
-        const summary=`例外不成立：${no.check.label}為否；公告所列條件須全部符合。`;
-        out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};
-      }
+      if(no){const summary=`例外不成立：${no.check.label}為否；公告所列條件須全部符合。`;out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};}
       const pending=states.find(x=>x.state==='missing'||x.state==='unknown');
-      if(pending){
-        const summary=`例外尚待確認：${pending.check.label}。`;
-        out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條例外條件：${pending.check.label}。`};
-      }
-      const summary='公告所列例外條件均已確認成立。';
-      out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
+      if(pending){const summary=`例外尚待確認：${pending.check.label}。`;out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條例外條件：${pending.check.label}。`};}
+      const summary='公告所列例外條件均已確認成立。';out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
     }
-
-    let pending=null;
-    let requirementsFailed=null;
+    let pending=null;let requirementsFailed=null;
     for(const ex of act.exceptions||[]){
       const state=tri(input[exValue(act.id,ex.id)]);
       if(state==='yes'){
         if(ex.checks?.length){
           const checks=ex.checks.map(check=>({check,state:tri(input[exValue(act.id,ex.id,check.id)])}));
           const failed=checks.find(x=>x.state==='no');
-          if(failed){
-            requirementsFailed=`已確認「${ex.label}」，但未符合公告事項六附帶規定：${failed.check.label}。`;
-            continue;
-          }
+          if(failed){requirementsFailed=`已確認「${ex.label}」，但未符合公告事項六附帶規定：${failed.check.label}。`;continue;}
           const childPending=checks.find(x=>x.state==='missing'||x.state==='unknown');
-          if(childPending){
-            pending=`已確認「${ex.label}」，尚須確認：${childPending.check.label}`;
-            continue;
-          }
+          if(childPending){pending=`已確認「${ex.label}」，尚須確認：${childPending.check.label}`;continue;}
         }
-        const summary=`公告例外成立：${ex.label}。`;
-        out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
+        const summary=`公告例外成立：${ex.label}。`;out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
       }
       if((state==='missing'||state==='unknown')&&!pending)pending=`${ex.label}`;
     }
-    if(pending){
-      const summary=`公告例外尚待確認：${pending}。`;
-      out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條公告例外：${pending}。`};
-    }
-    if(requirementsFailed){
-      out.noiseA8ExceptionSummary=requirementsFailed;return {status:'requirementsFailed',summary:requirementsFailed};
-    }
-    const summary='已逐項確認，未符合公告所列例外情形。';
-    out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};
+    if(pending){const summary=`公告例外尚待確認：${pending}。`;out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條公告例外：${pending}。`};}
+    if(requirementsFailed){out.noiseA8ExceptionSummary=requirementsFailed;return {status:'requirementsFailed',summary:requirementsFailed};}
+    const summary='已逐項確認，未符合公告所列例外情形。';out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};
   }
 
   function sourceMeta(type){
@@ -149,9 +125,7 @@
     return {needed:true,decisive:true,exceeded,value:v,needBackground:true,line:`${label}整體 ${fmt(overall)} dB、背景 ${fmt(bg)} dB；${c.note} 修正後 ${fmt(v)} dB，標準 ${std} dB，${exceeded?'超過':'未超過'}標準。`};
   }
 
-  function generalMethodLabel(method){
-    return {leq:'Leq（非週期／非間歇性，連續取樣至少2分鐘）',lmaxMean:'Lmax平均（週期／間歇、最大音量差≤5 dB，連續10次最大值平均）',l5:'L5（週期／間歇、最大音量差>5 dB，至少20個最大值計算）'}[method]||'';
-  }
+  function generalMethodLabel(method){return {leq:'Leq（非週期／非間歇性，連續取樣至少2分鐘）',lmaxMean:'Lmax平均（週期／間歇、最大音量差≤5 dB，連續10次最大值平均）',l5:'L5（週期／間歇、最大音量差>5 dB，至少20個最大值計算）'}[method]||'';}
   function speakerMethodLabel(mode){return {fixed:'Leq（固定或停止移動，連續取樣至少2分鐘）',moving:'Lmax（移動性擴音設施通過時最大值）'}[mode]||'';}
   function measurementPoint(input,meta,band){
     const lines=[];
@@ -202,19 +176,22 @@
     if(!['yes','no','unknown'].includes(input.noiseA8Disturbance))return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,validation:'請確認是否已足以妨害他人生活環境安寧。'})};
     if(input.noiseA8Disturbance==='unknown')return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,validation:'「妨害他人生活環境安寧」尚待確認，暫不作成違規結論。'})};
     if(input.noiseA8Disturbance==='no')return {done:false,note:'現場尚不足認妨害他人生活環境安寧。'};
-
     const exception=evaluateA8Exceptions(input,out,act);
     if(exception.status==='pending')return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,guide:exception.summary,validation:exception.validation||'公告例外條件尚待確認，暫不作成違規結論。'})};
     if(exception.status==='exempt')return {done:false,note:`${exception.summary} 本案不以該第8條禁止行為成立。`};
-
     const exText=exception.status==='requirementsFailed'?`；${exception.summary}`:(exception.status==='notExempt'?`；${exception.summary}`:'');
     const body=`現場於新北市第${input.noiseZone}類噪音管制區、${input.noiseTime}查見「${act.label}」，落於公告管制範圍，且已確認足以妨害他人生活環境安寧${exText}，依噪音管制法第8條及新北市現行公告辦理。`;
     const d=routeDraft('第8條公告禁止行為',body);
     return {done:true,out:finish(out,{route:'第8條公告禁止行為成立路徑',guide:'本案依第8條公告禁止行為處理，不以第9條量測作為成立要件。',record:d.record,reply:d.reply,blocked:false})};
   }
 
-  function prepare(input={}){
-    const out=base(input);
+  function prepare(rawInput={}){
+    const zoneState=root.NoiseZone?.resolve?root.NoiseZone.resolve(rawInput):{status:['1','2','3','4'].includes(rawInput.noiseZone)?'resolved':'pending',zone:rawInput.noiseZone,note:'',message:'請確認噪音管制區。'};
+    const input={...rawInput};
+    if(zoneState.status==='resolved')input.noiseZone=zoneState.zone;
+    const out=base(input);out.noiseZoneResultText=zoneState.note||zoneState.message||'';
+    if(zoneState.status!=='resolved')return finish(out,{route:'第一步｜噪音管制區判定',guide:zoneState.note||zoneState.message,validation:zoneState.message||'請確認噪音管制區。'});
+
     const a8=article8Stage(input,out);if(a8.done)return a8.out;
     out.noiseShowAfterA8='yes';const a8Note=a8.note||'';
 
@@ -279,12 +256,8 @@
     if(!text(input.noiseSource))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請填入主要噪音源／設備說明。'});
 
     const results=[];let fullPrimary=null,fullLmax=null,lowResult=null;
-    if(useFull&&meta.kind==='general'){
-      fullPrimary=assessMetric(generalMethodLabel(input.noiseGeneralMethod),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);
-    }
-    if(useFull&&meta.kind==='speaker'){
-      fullPrimary=assessMetric(speakerMethodLabel(input.noiseSpeakerMode),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);
-    }
+    if(useFull&&meta.kind==='general'){fullPrimary=assessMetric(generalMethodLabel(input.noiseGeneralMethod),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);}
+    if(useFull&&meta.kind==='speaker'){fullPrimary=assessMetric(speakerMethodLabel(input.noiseSpeakerMode),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);}
     if(useFull&&meta.kind==='construction'){
       fullPrimary=assessMetric('全頻 Leq',num(input.noiseValueLeq),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);
       if(std.lmax!==undefined){fullLmax=assessMetric('Lmax',num(input.noiseValueLmax),std.lmax,input.noiseBgLmaxMode,num(input.noiseBgLmax));results.push(fullLmax);}
@@ -306,8 +279,10 @@
   function resetChange(before={},after={}){
     const next={...after};const clear=keys=>keys.forEach(k=>{next[k]='';});
     const exceptionKeys=a8ExceptionKeys();
+    const zoneAssistFields=['noiseZoneAssistType','noiseZoneLandClass','noiseZoneTrafficSource','noiseZoneSourceZone','noiseZoneSideA','noiseZoneSideB','noiseZonePointSide','noiseZoneMajorPosition','noiseZoneOriginalFourth','noiseZoneAdjacentFirst','noiseZoneUnderlying','noiseZoneBoundaryPair'];
     const measurements=['noiseFacility','noiseBand','noiseSubject','noiseSource','noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow'];
-    if(['noiseDate','noiseTime','noiseZone','noiseHoliday'].some(k=>before[k]!==after[k]))clear(['noiseA8Disturbance',...exceptionKeys,'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
+    if(before.noiseZoneMode!==after.noiseZoneMode){clear(zoneAssistFields);if(after.noiseZoneMode==='assist')next.noiseZone='';}
+    if(['noiseDate','noiseTime','noiseZone','noiseZoneMode',...zoneAssistFields,'noiseHoliday'].some(k=>before[k]!==after[k]))clear(['noiseA8Disturbance',...exceptionKeys,'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     if(before.noiseA8Act!==after.noiseA8Act)clear(['noiseA8Disturbance',...exceptionKeys]);
     if(before.noiseA8Disturbance!==after.noiseA8Disturbance)clear(exceptionKeys);
     for(const act of A8().acts||[])for(const ex of act.exceptions||[]){
