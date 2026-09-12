@@ -8,7 +8,7 @@
   const select=(id,label,options,extra={})=>field(id,label,'select',{allowCustom:false,options:options.map(([id,label])=>({id,label,value:label})),...extra});
   const yn=[['yes',window.NOISE_TEXTS.templates.text068],['no',window.NOISE_TEXTS.templates.text069]];
   const checks=root.NOISE_ARTICLE8_RULES.acts.flatMap(a=>[...(a.exceptionChecks||[]),...(a.exceptions||[]).flatMap(e=>e.checks||[])]).map(c=>c.id);
-  const flags=['mainShowDuration','mainRoute','mainBlocked','mainGuide','mainValidation','mainShowZone','mainShowHoliday','mainShowActs','mainShowType','mainShowFacts','mainShowSource','mainUnmeasured','mainOtherReason','mainRecord','mainReply'];
+  const flags=['mainShowDuration','mainRoute','mainBlocked','mainGuide','mainValidation','mainShowCore','mainShowZone','mainShowHoliday','mainShowActs','mainShowArticle9Scope','mainShowMeasure','mainShowType','mainShowFacts','mainShowSource','mainUnmeasured','mainOtherReason','mainRecord','mainReply'];
   const internal=legacy.fields.filter(f=>f.type==='computed').map(f=>{
     const copy=clone(f);
     if(copy.showWhen)copy.displayWhen=copy.showWhen;
@@ -17,6 +17,8 @@
   });
   const aliases=['scenario','date','article8Time','article8Zone','article8Holiday','prohibitedAct','a9Date','a9Time','a9Zone','a9Exit','measurementAttempts','backgroundMeasurements','backgroundRound','backgroundLocked','backgroundRepeated'].map(computed);
   const controls=legacy.fields.filter(f=>f.type!=='computed'&&(checks.includes(f.id)||['article8Exception','equipment','article8Operation','article8FactInput','subject'].includes(f.id)||f.id.startsWith('a9'))&&!aliases.some(a=>a.id===f.id)).map(clone);
+  const neighborControls=legacy.fields.filter(f=>['noiseType','hasCommittee'].includes(f.id)).map(clone);
+  for(const f of neighborControls){delete f.showWhen;delete f.displayWhen;f.showWhen=when('mainRoute','article6');}
   for(const f of controls){
     delete f.displayWhen;
     if(f.id==='subject')f.showWhen=when('a8Established');
@@ -40,7 +42,7 @@
     {id:'source',label:window.NOISE_TEXTS.main.text009,types:['factory','entertainment','business','speaker','other']},
     {id:'other',label:window.NOISE_TEXTS.templates.text078}
   ];
-  const main={id:'noise-main',categoryId:'noise',caseTypeId:'noise-case',title:window.NOISE_TEXTS.main.text010,version:'3.7.1',workflow:'noiseMain',choiceStyle:'cards',
+  const main={id:'noise-main',categoryId:'noise',caseTypeId:'noise-case',title:window.NOISE_TEXTS.main.text010,version:'3.7.1',moduleVersion:'4.9.0',workflow:'noiseMain',choiceStyle:'cards',
     formTitle:window.NOISE_TEXTS.main.text011,instructions:window.NOISE_TEXTS.main.text012,workflowStatus:'mainGuide',
     relatedTemplates:[{id:'noise-neighbor',label:window.NOISE_TEXTS.main.text013}],
     scope:{excludedActIds:['exhaust']},
@@ -49,12 +51,16 @@
     validateOnSubmit:true,
     persistedKeys:['a9Exit','measurementAttempts','backgroundMeasurements','backgroundRound','backgroundLocked'],
     fields:[...flags.map(computed),...aliases,...internal.filter(f=>!f.display),
-      field('mainDate',window.NOISE_TEXTS.templates.text022,'date',{format:'roc'}),field('mainTime',window.NOISE_TEXTS.templates.text125,'time',{timePicker:root.NOISE_TEXTS.ui.timePicker}),
+      select('mainContinuity',window.NOISE_TEXTS.main.routingQuestion,[['article6',window.NOISE_TEXTS.main.routingArticle6],['measurable',window.NOISE_TEXTS.main.routingMeasurable]]),
+      select('mainSpecial',window.NOISE_TEXTS.main.specialQuestion,[['ordinary',window.NOISE_TEXTS.main.specialOrdinary],['traffic',window.NOISE_TEXTS.main.specialTraffic],['aviation',window.NOISE_TEXTS.main.specialAviation],['military',window.NOISE_TEXTS.main.specialMilitary]],{showWhen:when('mainContinuity','measurable')}),
+      ...neighborControls,
+      field('mainDate',window.NOISE_TEXTS.templates.text022,'date',{format:'roc',showWhen:when('mainShowCore')}),field('mainTime',window.NOISE_TEXTS.templates.text125,'time',{timePicker:root.NOISE_TEXTS.ui.timePicker,showWhen:when('mainShowCore')}),
       select('mainZone',window.NOISE_TEXTS.main.text014,root.NOISE_ARTICLE8_RULES.zones.map(z=>[z.id,z.label]),{showWhen:when('mainShowZone')}),
       select('mainHoliday',window.NOISE_TEXTS.main.text015,yn,{showWhen:when('mainShowHoliday')}),
       select('mainAct',window.NOISE_TEXTS.templates.text112,[],{showWhen:when('mainShowActs')}),
       ...take(['article8Exception',...checks,'equipment','article8Operation','article8FactInput','subject']),
-      select('mainMeasure',window.NOISE_TEXTS.main.text016,yn,{showWhen:when('mainRoute','article9')}),
+      select('mainArticle9Scope',window.NOISE_TEXTS.main.article9ScopeQuestion,[['yes',window.NOISE_TEXTS.main.article9ScopeYes],['no',window.NOISE_TEXTS.main.article9ScopeNo]],{showWhen:when('mainShowArticle9Scope')}),
+      select('mainMeasure',window.NOISE_TEXTS.main.text016,yn,{showWhen:when('mainShowMeasure')}),
       ...take(['a9Type','a9Facility']),
       field('mainReasons',window.NOISE_TEXTS.main.text017,'checklist',{showWhen:when('mainUnmeasured'),separator:'，',emptyValue:'',items:reasons.map(r=>({id:r.id,label:r.label,...(r.types?{when:{field:'a9Type',operator:'in',value:r.types}}:{})}))}),
       field('mainReasonOther',window.NOISE_TEXTS.main.text018,'textarea',{showWhen:when('mainOtherReason')}),
@@ -63,8 +69,8 @@
       ...internal.filter(f=>f.display&&['a9Period','a9Standards'].includes(f.id)),
       ...controls.filter(f=>f.id.startsWith('a9')&&!['a9Type','a9Facility','a9Subject','a9Operation','a9Source'].includes(f.id)).flatMap(f=>f.id==='a9Value_leq'?[...internal.filter(c=>c.id==='a9Duration'),f]:[f]),
       ...internal.filter(f=>f.display&&!['a9Period','a9Standards','a9Duration'].includes(f.id)),
-      field('backgroundHistoryText',root.NOISE_TEXTS.ui.backgroundHistoryTitle,'computed',{display:true,displayWhen:when('mainRoute','article9')}),
-      field('attemptHistoryText',root.NOISE_TEXTS.ui.historyTitle,'computed',{display:true,displayWhen:when('mainRoute','article9')})
+      field('backgroundHistoryText',root.NOISE_TEXTS.ui.backgroundHistoryTitle,'computed',{display:true,displayWhen:when('mainShowMeasure')}),
+      field('attemptHistoryText',root.NOISE_TEXTS.ui.historyTitle,'computed',{display:true,displayWhen:when('mainShowMeasure')})
     ],record:['{{mainRecord}}'],reply:['{{mainReply}}'],previewOnlyWhen:when('mainBlocked'),previewOnlyMessage:window.NOISE_TEXTS.main.text020,
     retryWhen:when('a9Retry'),finishWhen:when('a9Retry'),retryLabelField:'a9RetryLabel',finishLabelField:'a9FinishLabel',
     unmeasured:{
