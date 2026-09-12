@@ -189,6 +189,7 @@
     const zoneState=root.NoiseZone?.resolve?root.NoiseZone.resolve(rawInput):{status:['1','2','3','4'].includes(rawInput.noiseZone)?'resolved':'pending',zone:rawInput.noiseZone,note:'',message:'請確認噪音管制區。'};
     const input={...rawInput};
     if(zoneState.status==='resolved')input.noiseZone=zoneState.zone;
+    else input.noiseZone='';
     const out=base(input);out.noiseZoneResultText=zoneState.note||zoneState.message||'';
     if(zoneState.status!=='resolved')return finish(out,{route:'第一步｜噪音管制區判定',guide:zoneState.note||zoneState.message,validation:zoneState.message||'請確認噪音管制區。'});
 
@@ -214,7 +215,7 @@
         const body=`${a8Note} 現場所聞聲音不具持續性或不易量測，但目前尚不足認足以妨害他人生活安寧，未逕作噪音管制法第6條違規判斷，亦不以第9條量測標準判定。`;
         const d=routeDraft('第6條要件未成立',body);return finish(out,{route:'第6條要件未成立／本次不進第9條量測',guide:body,record:d.record,reply:d.reply,blocked:false});
       }
-      const body=`${a8Note} 本案聲音屬不具持續性或不易量測，且已確認足以妨害他人生活安寧，依噪音管制法第6條，由警察機關依有關法規處理。`;
+      const body=`${a8Note} 本案聲音屬不具持續性或不易量測，且已確認足以妨害他人生活環境安寧，依噪音管制法第6條，由警察機關依有關法規處理。`;
       const d=routeDraft('噪音管制法第6條路徑',body);return finish(out,{route:'第6條／警察機關處理路徑',guide:body,record:d.record,reply:d.reply,blocked:false});
     }
 
