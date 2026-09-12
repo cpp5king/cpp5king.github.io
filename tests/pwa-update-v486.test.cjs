@@ -7,13 +7,13 @@ const root=path.join(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 function appMeta(){const context=vm.createContext({window:{}});vm.runInContext(read('data/app-meta.js'),context);return context.window.INSPECTION_APP_META;}
 
-test('4.8.7 PWA 更新器、Chrome 前景恢復檢查與版本化資源同步',()=>{
+test('4.8.8 PWA 更新器、iOS 前景恢復與導覽逾時保護同步',()=>{
   const meta=appMeta();
   const pwa=read('src/pwa.js');
   const sw=read('service-worker.js');
   const html=read('index.html');
   const manifest=JSON.parse(read('manifest.webmanifest'));
-  assert.equal(meta.version,'4.8.7');
+  assert.equal(meta.version,'4.8.8');
   assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
   assert.match(pwa,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(pwa,/app-meta\.js\?update=/);
@@ -30,6 +30,11 @@ test('4.8.7 PWA 更新器、Chrome 前景恢復檢查與版本化資源同步',(
   assert.doesNotMatch(pwa,/localStorage|indexedDB|sessionStorage/);
   assert.match(sw,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(sw,new RegExp('inspection-assistant-'+meta.version.replaceAll('.','\\.')+'-pp-7f3c9a21'));
+  assert.match(sw,/NAVIGATION_TIMEOUT_MS=6000/);
+  assert.match(sw,/fetchNavigationWithTimeout/);
+  assert.match(sw,/Promise\.race/);
+  assert.match(sw,/event\.request\.mode==='navigate'/);
+  assert.match(sw,/index\.html'\+V/);
   assert.equal(manifest.start_url,'./index.html?v='+meta.version);
   assert.equal(manifest.id,'./inspection-assistant-pp');
   assert.match(html,new RegExp('src/pwa\\.js\\?v='+meta.version.replaceAll('.','\\.')));
