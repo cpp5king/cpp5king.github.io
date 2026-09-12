@@ -6,6 +6,7 @@ async function loaded485(){
   const env=runtime();
   env.run('data/rules/water-industry-catalog-v485.js');
   env.run('src/water-industry-v485.js');
+  env.run('src/water-industry-v485-final.js');
   await env.root.TemplateLoader.load(env.root.INSPECTION_CONFIG,file=>env.run('data/templates/'+file));
   return {...env,config:env.root.INSPECTION_CONFIG};
 }
@@ -23,7 +24,11 @@ test('4.8.5 移除手動啟用題，確認業別後自動載入附加檢查',asy
     root.DraftEngine.validate(template);
     assert.equal(template.fields.some(field=>field.id==='waterIndustryCheckMode'),false);
     const industry=template.fields.find(field=>field.id==='waterIndustryType');
-    assert.deepEqual(industry.showWhen,{field:'waterShowIndustryChoice',value:'yes'});
+    assert.deepEqual(plain(industry.showWhen),{field:'waterShowIndustryChoice',value:'yes'});
+    assert.equal(industry.options[0].id,'other');
+    assert.equal(industry.options[0].label,'其他事業');
+    assert.equal(industry.options[1].id,'unknown');
+    assert.equal(industry.options[1].label,'尚待確認');
     assert.ok(industry.options.some(option=>option.id==='shipDismantling'));
     assert.ok(industry.options.some(option=>option.id==='dialysisClinic'));
     assert.ok(industry.options.some(option=>option.id==='semiconductor'));
