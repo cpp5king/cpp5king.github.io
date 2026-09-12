@@ -16,7 +16,7 @@ test('4.0-rc1 §13 指定事業於設立變更前查無核准水措計畫可形�
 
 test('4.0-rc1 §18 未進子法時只提示待查，已確認具體義務且不符才成立',async()=>{
   const pending=await norm({waterSubjectType:'business',waterSubjectConfirmed:'yes',waterArticle18SpecificDutyConfirmed:'unknown'});
-  assert.match(pending.waterArticle18Text,/V1不自行補入子法細節/);
+  assert.match(pending.waterArticle18Text,/4\.3 已接入部分共通子法規則/);
   const hit=await norm({waterSubjectType:'business',waterSubjectConfirmed:'yes',waterArticle18SpecificDutyConfirmed:'yes',waterArticle18NoncomplianceConfirmed:'yes'});
   assert.match(hit.waterArticle18Text,/構成要件完整/);
 });
