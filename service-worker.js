@@ -1,6 +1,6 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
 const VERSION='4.9.0';
-const CACHE_REVISION='noise-rebuild-3';
+const CACHE_REVISION='noise-rebuild-4';
 const CACHE_NAME='inspection-assistant-4.9.0-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
@@ -45,6 +45,7 @@ const APP_SHELL=[
   './src/noise-attempts.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,
+  './src/noise-boundary.js'+V,
   './data/rules/water-article13.js'+V,
   './data/rules/water-article14.js'+V,
   './data/rules/water-article18.js'+V,
