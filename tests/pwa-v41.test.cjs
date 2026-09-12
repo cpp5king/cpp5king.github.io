@@ -6,7 +6,7 @@ const root=path.join(__dirname,'..');
 
 test('4.2 提供可安裝 PWA manifest 與手機圖示',()=>{
   const manifest=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
-  assert.equal(manifest.name,'稽查助手4.7.1');
+  assert.equal(manifest.name,'稽查助手4.7.2');
   assert.equal(manifest.display,'standalone');
   assert.equal(manifest.start_url,'./index.html');
   assert.ok(manifest.icons.some(icon=>icon.sizes==='192x192'));
@@ -24,7 +24,7 @@ test('4.2 首頁載入 manifest、PWA 啟動程式及手機 viewport',()=>{
 
 test('4.2 service worker App Shell 僅快取本機現有資源',()=>{
   const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
-  assert.match(sw,/inspection-assistant-4\.7\.1-pp-7f3c9a21/);
+  assert.match(sw,/inspection-assistant-4\.7\.2-pp-7f3c9a21/);
   assert.doesNotMatch(sw,/https?:\/\/(?!localhost|127\.0\.0\.1)/);
   const assets=[...sw.matchAll(/'\.\/([^']*)'/g)].map(match=>match[1]).filter(Boolean);
   for(const asset of new Set(assets))assert.ok(fs.existsSync(path.join(root,asset)),`missing cached asset: ${asset}`);
