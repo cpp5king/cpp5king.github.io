@@ -1,6 +1,6 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.8.4';
-const CACHE_NAME='inspection-assistant-4.8.4-pp-7f3c9a21';
+const VERSION='4.8.5';
+const CACHE_NAME='inspection-assistant-4.8.5-pp-7f3c9a21';
 const V='?v='+VERSION;
 const APP_SHELL=[
   './index.html'+V,
@@ -58,6 +58,7 @@ const APP_SHELL=[
   './data/rules/water-article71.js'+V,
   './data/rules/water-sublaw-core.js'+V,
   './data/rules/water-industry.js'+V,
+  './data/rules/water-industry-catalog-v485.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,
   './src/water-rule-engine.js'+V,
@@ -77,6 +78,7 @@ const APP_SHELL=[
   './src/ui-profile.js'+V,
   './src/field-renderer.js'+V,
   './src/water-v482.js'+V,
+  './src/water-industry-v485.js'+V,
   './src/inspection-flow-ui.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
