@@ -57,7 +57,7 @@
 
   // Chrome 安裝型 PWA 從背景恢復時不一定重新觸發 load。
   // 除首次載入外，在 pageshow、重新回到前景及恢復網路時都再確認已發布版本。
-  // 節流狀態只放記憶體，不使用 localStorage / IndexedDB 等持久儲存。
+  // 節流狀態只放記憶體，不寫入任何持久儲存。
   if(secure && 'serviceWorker' in root.navigator){
     root.addEventListener('load',()=>{void checkForUpdate(true);});
     root.addEventListener('pageshow',()=>{void checkForUpdate();});
