@@ -7,7 +7,7 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.8.4';
+  const VERSION='4.8.5';
 
   // Safari / iOS 容易長時間保留舊 service worker。使用版本化 SW URL + updateViaCache:none
   // 強制更新檢查；新版接手後僅自動重新整理一次。
