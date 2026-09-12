@@ -8,26 +8,32 @@
   const tri=[['yes','是，已確認'],['no','否，已確認不是／不符合'],['unknown','已查證但目前仍無法確認']];
   const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
   const permit=[['valid','有有效許可'],['none','查無有效許可'],['expired','許可已逾有效期間'],['unknown','許可狀態尚待確認']];
+  const compare=[['match','與核准內容一致'],['mismatch','已確認不一致'],['unknown','已查但目前仍無法確認'],['notChecked','本次未查此項'],['notApplicable','本案無此項／不適用']];
   const template={
-    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.7',workflow:'waterMain',choiceStyle:'cards',mobileFocusMode:true,formTitle:T.main.formTitle,instructions:T.main.instructions,
+    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.8',workflow:'waterMain',choiceStyle:'cards',mobileFocusMode:true,formTitle:T.main.formTitle,instructions:T.main.instructions,
+    quickActions:{ariaLabel:'案件研判快速操作',summaryField:'waterLiveDecisionText',missingField:'waterLiveMissingText',labels:{summary:'研判摘要',missing:'缺漏事證'}},
     initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'完成案件查證後即可產生案件文字。',
     fields:[
       computed('waterNoDrafts'),
       computed('waterRecordDraftText'),computed('waterReplyDraftText'),
       computed('waterShowSubjectConfirmed'),computed('waterShowArticle13Details'),computed('waterShowArticle14'),computed('waterShowMatterType'),computed('waterShowWastewater'),computed('waterShowDischarge'),computed('waterShowDestination'),computed('waterShowSurfaceDetails'),computed('waterShowDitchDetails'),computed('waterShowPermit'),
       computed('waterShowStorageDetails'),computed('waterShowStorageMismatch'),computed('waterShowArticle7'),computed('waterShowSampleDetails'),computed('waterShowLabDetails'),computed('waterShowEffluentResult'),
+      computed('waterShowPermitCheck'),computed('waterShowPermitQuick'),computed('waterShowPermitDetailed'),computed('waterShowPermitReference'),computed('waterShowPermitComparison'),computed('waterShowPermitMismatchNote'),computed('waterPermitDifferenceStatus'),computed('waterPermitLegalComparisonActive'),computed('waterShowLegacySublawApprovedMeasures'),computed('waterShowLegacySublawOperationMatches'),
       computed('waterShowArticle181'),computed('waterShowBypassRoute'),computed('waterShowBypassQuestion'),computed('waterShowBypassEmergency'),computed('waterShowDilutionDetails'),computed('waterShowDilutionMismatch'),computed('waterShowDilutionEmergency'),computed('waterShowTreatmentDetails'),
       computed('waterShowArticle18Noncompliance'),computed('waterShowArticle28'),computed('waterShowArticle28Details'),computed('waterShowArticle28LeakChecks'),computed('waterShowArticle28Prevention'),computed('waterShowArticle28Emergency'),
       computed('waterShowArticle27'),computed('waterShowArticle27Actions'),computed('waterShowArticle32'),computed('waterShowSoilPermit'),computed('waterShowGroundwaterCheck'),computed('waterShowArticle30'),computed('waterShowArticle30Details'),
       computed('waterShowReportingNoncompliance'),computed('waterShowReportedMismatch'),computed('waterShowFalseDetails'),computed('waterShowArticle26Obstruction'),computed('waterShowArticle59Details'),computed('waterShowPolluter'),computed('waterShowAssessment'),computed('waterRuleStatus'),computed('waterArticle14ElementsText'),computed('waterAssessmentText'),computed('waterMissingText'),computed('waterNextChecksText'),
       computed('waterShowSublawCore'),computed('waterShowSublawRainException'),computed('waterShowSublawRunoff'),computed('waterShowSublawOutsource'),computed('waterShowSublawStorage'),computed('waterShowSublawReuse'),computed('waterShowSublawOutlet'),computed('waterShowSublawOutletMixing'),computed('waterShowSublawMeter'),computed('waterShowSublawReporting'),
+      computed('waterLiveDecisionText','案件研判摘要',{display:true,className:'live-assessment'}),
+      computed('waterLiveMissingText','尚缺關鍵事證',{display:true,className:'live-assessment'}),
       computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
       field('waterInspectionDate',T.main.inspectionDate,'date',{format:'iso'}),
       select('waterSubjectType',T.main.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
       select('waterSubjectConfirmed',T.main.subjectConfirmed,tri,{showWhen:when('waterShowSubjectConfirmed')}),
 
-      computed('waterShowIndustry'),computed('waterShowIndustryArticle9'),computed('waterShowIndustryConstruction'),computed('waterShowIndustryLivestock'),computed('waterShowIndustryLivestockFertilizer'),
+      computed('waterShowIndustryChoice'),computed('waterShowIndustry'),computed('waterShowIndustryArticle9'),computed('waterShowIndustryConstruction'),computed('waterShowIndustryLivestock'),computed('waterShowIndustryLivestockFertilizer'),
+      select('waterIndustryCheckMode',T.main.industryCheckMode,[['check','進行特定業別附加檢核'],['skip','本次不進行特定業別附加檢核']],{showWhen:when('waterShowIndustryChoice')}),
       select('waterIndustryType','實際業別／特定水措業別',[['construction','營建工地'],['readyMix','預拌混凝土（第9條所稱水泥業）'],['stoneProcessing','土石加工業'],['stoneExtraction','土石採取業'],['mining','採礦業'],['earthworkDump','土石方堆（棄）置場'],['livestock','畜牧業'],['other','其他事業'],['unknown','尚待確認']],{showWhen:when('waterShowIndustry')}),
       select('waterIndustryRainProtectionStatus','開挖面／堆置場所之遮雨、擋雨、導雨設施是否符合規定？',[['compliant','符合'],['approvedException','設置困難且已取得主管機關同意例外'],['noncompliant','不符合／未設置'],['unknown','尚待確認']],{showWhen:when('waterShowIndustryArticle9')}),
       select('waterIndustrySedimentationBasinPresent','是否設有收集處理初期降雨及洗車平台廢水之沉砂池？',tri,{showWhen:when('waterShowIndustryArticle9')}),
@@ -51,6 +57,19 @@
       checklist('waterSourceTypes',T.main.sourceType,[['manufacturing','製造製程'],['operation','操作過程'],['naturalResource','自然資源開發'],['workEnvironment','作業環境'],['domestic','生活污水'],['cleaning','清洗水'],['cooling','冷卻水'],['rain','雨水'],['groundwater','地下水'],['other','其他'],['unknown','來源尚待確認',{exclusive:true}]],{showWhen:when('waterShowWastewater')}),
       select('waterActualDischarge',T.main.actualDischarge,yn,{showWhen:when('waterShowDischarge')}),
       select('waterDestination',T.main.destination,[['surfaceWater','地面水體'],['sewer','污水下水道'],['storage','貯留'],['reuse','回收使用'],['outsourced','委外處理'],['soil','排放於土壤'],['groundwater','注入地下／疑似地下水體'],['unknown','最終去向仍無法確認']],{showWhen:when('waterShowDestination')}),
+
+      select('waterPermitCheckMode',T.main.permitCheckMode,[['detailed','進行詳細差異檢核'],['quick','快速確認'],['skip','本次跳過許可／水措差異檢核']],{showWhen:when('waterShowPermitCheck')}),
+      select('waterPermitQuickDifferenceObserved',T.main.permitQuickDifference,yn,{showWhen:when('waterShowPermitQuick')}),
+      select('waterPermitReferenceStatus',T.main.permitReferenceStatus,[['full','已取得完整核准內容／許可資料'],['partial','僅有部分核准內容可供比對'],['unavailable','本次無法取得可供比對資料'],['unknown','資料狀態尚待確認']],{showWhen:when('waterShowPermitReference')}),
+      select('waterPermitSourceCompare',T.main.permitSourceCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      select('waterPermitProcessCompare',T.main.permitProcessCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      select('waterPermitOutletCompare',T.main.permitOutletCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      select('waterPermitDestinationCompare',T.main.permitDestinationCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      select('waterPermitFacilityCompare',T.main.permitFacilityCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      select('waterPermitOperationCompare',T.main.permitOperationCompare,compare,{showWhen:when('waterShowPermitComparison')}),
+      field('waterPermitMismatchDetail',T.main.permitMismatchDetail,'textarea',{showWhen:when('waterShowPermitMismatchNote')}),
+      computed('waterPermitCheckSummaryText',T.main.permitCheckSummary,{display:true,displayWhen:when('waterShowPermitCheck')}),
+      computed('waterPermitCheckMissingText',T.main.permitCheckMissing,{display:true,displayWhen:when('waterShowPermitCheck')}),
 
       select('waterSurfaceType',T.main.surfaceType,[['river','河川'],['ocean','海洋'],['lake','湖潭'],['reservoir','水庫'],['pond','池塘'],['irrigationChannel','灌溉渠道'],['drainage','各級排水路'],['roadsideDitch','道路側溝'],['other','其他疑似地面水體'],['unknown','類型仍無法確認']],{showWhen:when('waterShowSurfaceDetails')}),
       select('waterSurfaceWaterConfirmed',T.main.surfaceConfirmed,tri,{showWhen:when('waterShowSurfaceDetails')}),
@@ -111,8 +130,8 @@
       select('waterFalseReportOrBusinessRecordConfirmed',T.main.falseReportRecord,yn,{showWhen:when('waterShowFalseDetails')}),
       select('waterKnowingFalseEvidenceConfirmed',T.main.knowingFalse,yn,{showWhen:when('waterShowFalseDetails')}),
 
-      select('waterSublawApprovedMeasuresConfirmed',T.main.sublawApprovedMeasures,yn,{showWhen:when('waterShowSublawCore')}),
-      select('waterSublawOperationMatchesApprovedMeasures',T.main.sublawOperationMatches,yn,{showWhen:{field:'waterSublawApprovedMeasuresConfirmed',value:'yes'}}),
+      select('waterSublawApprovedMeasuresConfirmed',T.main.sublawApprovedMeasures,yn,{showWhen:when('waterShowLegacySublawApprovedMeasures')}),
+      select('waterSublawOperationMatchesApprovedMeasures',T.main.sublawOperationMatches,yn,{showWhen:when('waterShowLegacySublawOperationMatches')}),
       select('waterSublawWastewaterRainwaterCombined',T.main.sublawRainCombined,yn,{showWhen:when('waterShowSublawCore')}),
       select('waterSublawRainwaterCombinationApprovedException',T.main.sublawRainException,yn,{showWhen:when('waterShowSublawRainException')}),
       select('waterSublawRunoffArticle8Applicable',T.main.sublawRunoffApplicable,yn,{showWhen:when('waterShowSublawCore')}),
