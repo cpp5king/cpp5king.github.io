@@ -80,10 +80,8 @@
     function showOnlyHistoryTarget(records,target){
       for(const record of records){
         const isTarget=record===target;
-        const answered=root.UiProfile?.answered?.(record.spec,latestFacts)??false;
         record.slot.setAttribute?.('data-ui-current',isTarget?'yes':'no');
-        if(isTarget)record.slot.setAttribute?.('data-ui-hidden','no');
-        else if(answered||record.slot.getAttribute?.('data-ui-current')==='yes')record.slot.setAttribute?.('data-ui-hidden','yes');
+        record.slot.setAttribute?.('data-ui-hidden',isTarget?'no':'yes');
       }
       return focusDomRecord(target);
     }
