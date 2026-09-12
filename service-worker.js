@@ -1,7 +1,8 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.8.7';
-const CACHE_NAME='inspection-assistant-4.8.7-pp-7f3c9a21';
+const VERSION='4.8.8';
+const CACHE_NAME='inspection-assistant-4.8.8-pp-7f3c9a21';
 const V='?v='+VERSION;
+const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
   './index.html'+V,
   './manifest.webmanifest'+V,
@@ -107,23 +108,38 @@ self.addEventListener('activate',event=>{
   })());
 });
 
+const fetchNetwork=request=>fetch(request,{cache:'no-store'});
+const fetchNavigationWithTimeout=request=>{
+  let timer;
+  return Promise.race([
+    fetchNetwork(request),
+    new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(new Error('Navigation network timeout')),NAVIGATION_TIMEOUT_MS);
+    })
+  ]).finally(()=>clearTimeout(timer));
+};
+
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;
+  const isNavigation=event.request.mode==='navigate';
   event.respondWith((async()=>{
     try{
-      const response=await fetch(event.request,{cache:'no-store'});
+      const response=isNavigation
+        ? await fetchNavigationWithTimeout(event.request)
+        : await fetchNetwork(event.request);
       if(response&&response.ok){
         const cache=await caches.open(CACHE_NAME);
         await cache.put(event.request,response.clone());
       }
       return response;
-    }catch(_){
+    }catch(error){
       const cached=await caches.match(event.request);
       if(cached)return cached;
-      if(event.request.mode==='navigate'){
-        return (await caches.match('./index.html'+V))||(await caches.match('./index.html'));
+      if(isNavigation){
+        const fallback=(await caches.match('./index.html'+V))||(await caches.match('./index.html'));
+        if(fallback)return fallback;
       }
-      throw _;
+      throw error;
     }
   })());
 });
