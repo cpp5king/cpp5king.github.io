@@ -181,14 +181,15 @@ test('主流程整合：特殊來源先分流，不應要求一般噪音管制�
   assert.equal(out.noiseZoneResultText,'');
 });
 
-test('主流程整合：交界案件停在管制區判定，不自行選較寬鬆或較嚴格單一區',async()=>{
+test('主流程整合：交界案件保留雙區身分，後續事實不足時仍不得自行選單一區',async()=>{
   const {flow}=await setup();
   const out=flow.prepare({
     ...assist({noiseZoneAssistType:'boundary',noiseZoneBoundaryPair:'1-2'}),
     noiseTime:'23:00',noiseHoliday:'no',noiseA8Act:'none',noiseSpecial:'ordinary',noiseNature:'measurable'
   });
   assert.equal(out.noiseBlocked,'yes');
-  assert.match(out.noiseRouteText,/噪音管制區判定/);
-  assert.match(out.noiseValidation,/同時套用兩區標準|單一管制區/);
   assert.equal(out.noiseZone,'');
+  assert.equal(out.noiseBoundaryZones,'1-2');
+  assert.match(out.noiseValidation,/第9條噪音源類型/);
+  assert.match(out.noiseZoneResultText,/交界|任何一區/);
 });
