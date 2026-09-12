@@ -28,12 +28,21 @@
   function prepare(input={}){
     const out={...input};
     normaliseSources(out);
+    if(!out.fieldSourceMode&&out.waterSubjectType)out.fieldSourceMode='known';
     const base=root.TemplateWorkflows.waterMain.prepare(out);
     Object.assign(out,base);
     const facts=root.WaterFacts.build(out);
 
-    out.fieldShowSubjectConfirmed=bool(out.waterSubjectType==='business');
-    out.fieldShowOperation=bool(!!out.waterSubjectType&&(out.waterSubjectType!=='business'||!!out.waterSubjectConfirmed));
+    out.fieldShowSourceMode='yes';
+    out.fieldShowUnknownObserved=bool(out.fieldSourceMode==='unknown');
+    out.fieldShowUnknownSigns=bool(out.fieldShowUnknownObserved==='yes'&&out.fieldUnknownWaterObserved==='yes');
+    out.fieldShowUnknownFlow=bool(out.fieldShowUnknownSigns==='yes'&&Array.isArray(out.fieldUnknownWaterSigns)&&out.fieldUnknownWaterSigns.length>0);
+    out.fieldShowUnknownTrace=bool(out.fieldShowUnknownFlow==='yes'&&out.fieldUnknownFlowDirectionConfirmed==='yes');
+    out.fieldShowUnknownOutlet=bool(out.fieldShowUnknownTrace==='yes'&&!!out.fieldUnknownUpstreamTraceStatus&&!!out.fieldUnknownBranchStatus);
+    out.fieldShowUnknownConnection=bool(out.fieldShowUnknownOutlet==='yes'&&out.fieldUnknownOutletFound==='yes');
+    out.fieldShowKnownSubject=bool(out.fieldSourceMode==='known'||root.WaterWorkflow.unknownTraceReadyForSubject(out));
+    out.fieldShowSubjectConfirmed=bool(out.fieldShowKnownSubject==='yes'&&out.waterSubjectType==='business');
+    out.fieldShowOperation=bool(out.fieldShowKnownSubject==='yes'&&!!out.waterSubjectType&&(out.waterSubjectType!=='business'||!!out.waterSubjectConfirmed));
     out.fieldShowProcess=bool(out.fieldShowOperation==='yes'&&!!out.fieldOperationStatus);
     out.fieldShowWaterUse=bool(out.fieldShowProcess==='yes'&&!!out.fieldProcessObserved);
     out.fieldShowMatter=bool(out.fieldShowWaterUse==='yes'&&!!out.fieldWaterUseObserved);
@@ -60,16 +69,20 @@
     out.fieldShowSampleDetails=bool(out.fieldShowSampling==='yes'&&out.waterSampleTaken==='yes');
     out.fieldShowLab=bool(out.fieldShowSampleDetails==='yes'&&out.waterSampleRepresentative==='yes'&&out.waterSampleBeforeReceivingWater==='yes');
     out.fieldShowEffluent=bool(out.fieldShowLab==='yes'&&out.waterLabResultAvailable==='yes');
-    out.fieldShowEvidence=bool(out.fieldShowIncident==='yes'&&!!out.waterArticle28Scenario&&(out.fieldShowSampling!=='yes'||!!out.waterSampleTaken));
+    const unknownTraceEvidence=out.fieldSourceMode==='unknown'&&!!out.fieldUnknownWaterObserved;
+    out.fieldShowEvidence=bool((out.fieldShowIncident==='yes'&&!!out.waterArticle28Scenario&&(out.fieldShowSampling!=='yes'||!!out.waterSampleTaken))||unknownTraceEvidence);
     out.fieldShowComplete=bool(out.fieldShowEvidence==='yes'&&Array.isArray(out.waterEvidenceTypes)&&out.waterEvidenceTypes.length>0);
-    out.fieldShowAssessment=bool(out.fieldShowComplete==='yes'&&out.waterInvestigationComplete==='yes');
-
-    const step=root.WaterWorkflow.currentFieldStep(out);
-    out.fieldProgressText=`STEP ${step} / 10｜${['','認人','看營運／製程','認水','找收集／處理','追水','確認排放','查事故','採樣','補證據','完成研判'][step]}`;
+    out.fieldShowAssessment=bool(out.waterInvestigationComplete==='yes');
+    out.fieldCanHandoff=bool(root.WaterWorkflow.fieldCanHandoff(out));
+    out.fieldEmergencyActive=bool(root.WaterWorkflow.fieldEmergencyActive(out));
+    out.fieldLiveDecisionText=root.WaterWorkflow.fieldLiveDecision(out,facts);
+    out.fieldProgressText=root.WaterWorkflow.fieldProgress(out);
     out.fieldCurrentGuidanceText=root.WaterWorkflow.fieldGuidance(out,facts);
     out.fieldEvidenceSummaryText=evidenceSummary(out);
     out.fieldNoDrafts=out.waterInvestigationComplete==='yes'?'no':'yes';
-    out.fieldFinalConclusionText=out.waterFinalConclusionText||'';
+    if(out.waterInvestigationComplete==='yes'&&out.fieldSourceMode==='unknown'&&out.fieldUnknownSourceConnectionConfirmed!=='yes'){
+      out.fieldFinalConclusionText='C｜事證不足\n本次查察尚未建立異常水與特定污染來源／行為人的客觀連結，現階段不足以認定特定對象違反水污染防治法。可依陳情主要時段、流向、岔流、排水圖資或再次追查補強。';
+    }else out.fieldFinalConclusionText=out.waterFinalConclusionText||'';
     out.fieldRulesOverviewText=out.waterRulesOverviewText||'';
     out.waterRecordDraftText=out.waterRecordDraftText||'';
     out.waterReplyDraftText=out.waterReplyDraftText||'';
@@ -78,7 +91,12 @@
   function resetChange(previous={},current={}){
     const next={...current};
     const clear=keys=>keys.forEach(k=>{next[k]=Array.isArray(previous[k])?[]:'';});
-    if(previous.waterSubjectType!==current.waterSubjectType)clear(['waterSubjectConfirmed','waterIndustryType','waterIndustryRainProtectionStatus','waterIndustrySedimentationBasinPresent','waterIndustrySedimentationCapacityCompliant','waterIndustrySedimentationFreeboardCompliant','waterIndustryMaintenanceRecordsCompliant','waterConstructionReductionPlanApprovedBeforeWork','waterConstructionImplementedApprovedPlan','waterLivestockFertilizerUse','waterLivestockFertilizerPlanApproved','waterLivestockFertilizerMatchesPlan','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','waterTreatmentOperatingNormally','fieldRouteTraced','waterDestination','waterSurfaceType','waterSurfaceWaterConfirmed','waterDrainageFunctionConfirmed','waterDownstreamConfirmed','waterDrainageConnectionConfirmed','waterActualDischarge','waterDischargePermit','waterDumpingConfirmed','waterControlZoneConfirmed','waterDesignatedWaterRangeConfirmed','waterArticle28Scenario','waterTransportStorageEquipmentConfirmed','waterLeakCause','waterLeakRiskToWaterBodyConfirmed','waterMaintenancePreventionTaken','waterLeakPollutedWaterBody','waterSevereHazardRiskConfirmed','waterEmergencyActionTaken','waterThreeHourNotice','waterSampleTaken','waterSampleRepresentative','waterSampleBeforeReceivingWater','waterLabResultAvailable','waterEffluentExceeded','waterEvidenceTypes','waterInvestigationComplete']);
+    if(previous.fieldSourceMode!==current.fieldSourceMode)clear(['fieldUnknownWaterObserved','fieldUnknownWaterSigns','fieldUnknownFlowDirectionConfirmed','fieldUnknownUpstreamTraceStatus','fieldUnknownBranchStatus','fieldUnknownOutletFound','fieldUnknownSourceConnectionConfirmed','waterSubjectType','waterSubjectConfirmed','waterIndustryType','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','waterTreatmentOperatingNormally','fieldRouteTraced','waterDestination','waterSurfaceType','waterSurfaceWaterConfirmed','waterDrainageFunctionConfirmed','waterDownstreamConfirmed','waterDrainageConnectionConfirmed','waterActualDischarge','waterDischargePermit','waterDumpingConfirmed','waterControlZoneConfirmed','waterDesignatedWaterRangeConfirmed','waterArticle28Scenario','waterTransportStorageEquipmentConfirmed','waterLeakCause','waterLeakRiskToWaterBodyConfirmed','waterMaintenancePreventionTaken','waterLeakPollutedWaterBody','waterSevereHazardRiskConfirmed','waterEmergencyActionTaken','waterThreeHourNotice','waterSampleTaken','waterSampleRepresentative','waterSampleBeforeReceivingWater','waterLabResultAvailable','waterEffluentExceeded','waterEvidenceTypes','waterInvestigationComplete']);
+    else if(previous.fieldUnknownWaterObserved!==current.fieldUnknownWaterObserved)clear(['fieldUnknownWaterSigns','fieldUnknownFlowDirectionConfirmed','fieldUnknownUpstreamTraceStatus','fieldUnknownBranchStatus','fieldUnknownOutletFound','fieldUnknownSourceConnectionConfirmed','waterSubjectType','waterSubjectConfirmed','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','fieldRouteTraced','waterDestination','waterActualDischarge','waterEvidenceTypes','waterInvestigationComplete']);
+    else if(previous.fieldUnknownFlowDirectionConfirmed!==current.fieldUnknownFlowDirectionConfirmed)clear(['fieldUnknownUpstreamTraceStatus','fieldUnknownBranchStatus','fieldUnknownOutletFound','fieldUnknownSourceConnectionConfirmed','waterSubjectType','waterSubjectConfirmed','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','fieldRouteTraced','waterDestination','waterActualDischarge','waterEvidenceTypes','waterInvestigationComplete']);
+    else if(previous.fieldUnknownOutletFound!==current.fieldUnknownOutletFound)clear(['fieldUnknownSourceConnectionConfirmed','waterSubjectType','waterSubjectConfirmed','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','fieldRouteTraced','waterDestination','waterActualDischarge','waterEvidenceTypes','waterInvestigationComplete']);
+    else if(previous.fieldUnknownSourceConnectionConfirmed!==current.fieldUnknownSourceConnectionConfirmed)clear(['waterSubjectType','waterSubjectConfirmed','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','fieldRouteTraced','waterDestination','waterActualDischarge','waterEvidenceTypes','waterInvestigationComplete']);
+    else if(previous.waterSubjectType!==current.waterSubjectType)clear(['waterSubjectConfirmed','waterIndustryType','waterIndustryRainProtectionStatus','waterIndustrySedimentationBasinPresent','waterIndustrySedimentationCapacityCompliant','waterIndustrySedimentationFreeboardCompliant','waterIndustryMaintenanceRecordsCompliant','waterConstructionReductionPlanApprovedBeforeWork','waterConstructionImplementedApprovedPlan','waterLivestockFertilizerUse','waterLivestockFertilizerPlanApproved','waterLivestockFertilizerMatchesPlan','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','waterTreatmentOperatingNormally','fieldRouteTraced','waterDestination','waterSurfaceType','waterSurfaceWaterConfirmed','waterDrainageFunctionConfirmed','waterDownstreamConfirmed','waterDrainageConnectionConfirmed','waterActualDischarge','waterDischargePermit','waterDumpingConfirmed','waterControlZoneConfirmed','waterDesignatedWaterRangeConfirmed','waterArticle28Scenario','waterTransportStorageEquipmentConfirmed','waterLeakCause','waterLeakRiskToWaterBodyConfirmed','waterMaintenancePreventionTaken','waterLeakPollutedWaterBody','waterSevereHazardRiskConfirmed','waterEmergencyActionTaken','waterThreeHourNotice','waterSampleTaken','waterSampleRepresentative','waterSampleBeforeReceivingWater','waterLabResultAvailable','waterEffluentExceeded','waterEvidenceTypes','waterInvestigationComplete']);
     else if(previous.waterIndustryType!==current.waterIndustryType)clear(['waterIndustryRainProtectionStatus','waterIndustrySedimentationBasinPresent','waterIndustrySedimentationCapacityCompliant','waterIndustrySedimentationFreeboardCompliant','waterIndustrySedimentationImpermeableCompliant','waterIndustryMaintenanceRecordsCompliant','waterConstructionReductionPlanApprovedBeforeWork','waterConstructionImplementedApprovedPlan','waterLivestockFertilizerUse','waterLivestockFertilizerPlanApproved','waterLivestockFertilizerMatchesPlan']);
     else if(previous.waterLivestockFertilizerUse!==current.waterLivestockFertilizerUse)clear(['waterLivestockFertilizerPlanApproved','waterLivestockFertilizerMatchesPlan']);
     else if(previous.waterSubjectConfirmed!==current.waterSubjectConfirmed)clear(['waterIndustryType','waterIndustryRainProtectionStatus','waterIndustrySedimentationBasinPresent','waterIndustrySedimentationCapacityCompliant','waterIndustrySedimentationFreeboardCompliant','waterIndustrySedimentationImpermeableCompliant','waterIndustryMaintenanceRecordsCompliant','waterConstructionReductionPlanApprovedBeforeWork','waterConstructionImplementedApprovedPlan','waterLivestockFertilizerUse','waterLivestockFertilizerPlanApproved','waterLivestockFertilizerMatchesPlan','fieldOperationStatus','fieldProcessObserved','fieldWaterUseObserved','waterMatterType','waterWastewaterStatus','waterSourceTypes','fieldCollectionStatus','waterTreatmentFacilityApplicable','waterTreatmentOperatingNormally','fieldRouteTraced','waterDestination','waterSurfaceType','waterSurfaceWaterConfirmed','waterDrainageFunctionConfirmed','waterDownstreamConfirmed','waterDrainageConnectionConfirmed','waterActualDischarge','waterDischargePermit','waterDumpingConfirmed','waterControlZoneConfirmed','waterDesignatedWaterRangeConfirmed','waterArticle28Scenario','waterTransportStorageEquipmentConfirmed','waterLeakCause','waterLeakRiskToWaterBodyConfirmed','waterMaintenancePreventionTaken','waterLeakPollutedWaterBody','waterSevereHazardRiskConfirmed','waterEmergencyActionTaken','waterThreeHourNotice','waterSampleTaken','waterSampleRepresentative','waterSampleBeforeReceivingWater','waterLabResultAvailable','waterEffluentExceeded','waterEvidenceTypes','waterInvestigationComplete']);
@@ -107,5 +125,8 @@
     else if(JSON.stringify(previous.waterEvidenceTypes||[])!==JSON.stringify(current.waterEvidenceTypes||[]))clear(['waterInvestigationComplete']);
     return next;
   }
-  root.TemplateWorkflows.waterField={prepare,resetChange};
+  function endEarly(input={}){return root.WaterWorkflow.fieldEnd(input);}
+  function canHandoff(input={}){return root.WaterWorkflow.fieldCanHandoff(input);}
+  function emergencyActive(input={}){return root.WaterWorkflow.fieldEmergencyActive(input);}
+  root.TemplateWorkflows.waterField={prepare,resetChange,endEarly,canHandoff,emergencyActive};
 })(typeof window==='undefined'?globalThis:window);

@@ -90,12 +90,14 @@
     function renderForm(template) {
       const draftActionLabel = template.draftActionLabel || '填入兩份草稿';
       const form = el('form'); form.autocomplete = 'off';
+      if(template.floatingFieldActions)form.className='field-floating-enabled';
       form.addEventListener('submit', event => event.preventDefault());
       form.append(el('h2', template.formTitle || '填寫案件事實'));
       for (const related of template.relatedTemplates || []) form.append(button(related.label, () => navigate(() => session.selectTemplate(related.id)), true));
       const instructions=el('p',template.instructions||'');
       if(template.instructions)form.append(instructions);
       const status = el('p'); status.setAttribute('role', 'status');
+      let updateFloatingActions=()=>{};
       const fields = root.FieldRenderer.render(template, facts => {
         session.setInputs(facts);
         finish.hidden=!template.finishWhen || !root.DraftEngine.matches(template.finishWhen,facts);
@@ -110,6 +112,7 @@
           status.textContent = '';
         }
         if (session.snapshot().stale) status.textContent = `輸入已變更，下方仍為上次草稿；請重新${draftActionLabel}。`;
+        updateFloatingActions(facts);
       });
       form.append(fields.element);
       const outputs = el('div'); outputs.hidden = true;
@@ -164,19 +167,58 @@
         outputs.hidden=true;drafts.record.value='';drafts.reply.value='';status.textContent='';
       },true);finish.hidden=true;
       const handoffActions=el('div','','actions');
+      const performHandoff=()=>{
+        if(!template.handoff)return;
+        const facts=fields.read();
+        if(template.handoff.confirmMessage&&!window.confirm(template.handoff.confirmMessage))return;
+        session.handoff(template.handoff.caseTypeId,template.handoff.templateId,facts);
+        render();
+      };
       if(template.handoff){
-        const handoff=button(template.handoff.label||'繼續下一步',()=>{
-          const facts=fields.read();
-          if(template.handoff.confirmMessage&&!window.confirm(template.handoff.confirmMessage))return;
-          session.handoff(template.handoff.caseTypeId,template.handoff.templateId,facts);
-          render();
-        });
+        const handoff=button(template.handoff.label||'繼續下一步',performHandoff);
         handoffActions.append(handoff);
-        const updateHandoff=facts=>{handoffActions.hidden=!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts);};
+        const updateHandoff=facts=>{handoffActions.hidden=!!template.floatingFieldActions||(!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts));};
         updateHandoff(session.snapshot().inputs);
         form.addEventListener('change',()=>updateHandoff(session.snapshot().inputs));
         form.addEventListener('input',()=>updateHandoff(session.snapshot().inputs));
       }else handoffActions.hidden=true;
+
+      if(template.floatingFieldActions){
+        const workflow=root.TemplateWorkflows?.[template.workflow];
+        const floating=el('div','','field-floating-actions');
+        floating.setAttribute('aria-label','現場流程快速操作');
+        const left=el('div','','field-action-rail field-action-left');
+        const right=el('div','','field-action-rail field-action-right');
+        const back=button('← 上一步',()=>fields.navigateStep(-1),true);
+        const decision=button('目前判定',()=>fields.focusField('fieldLiveDecisionText'),true);
+        const next=button('下一步 →',()=>fields.focusCurrent());
+        const assess=button('進入案件研判',performHandoff);
+        const end=button('結束本次查察',()=>{
+          const facts=fields.read();
+          if(!window.confirm('將以目前已查得事實結束本次現場查察；未確認事項會保留為事證不足，是否繼續？'))return;
+          const ended=workflow?.endEarly?workflow.endEarly(facts):{...facts,waterInvestigationComplete:'yes'};
+          const normalized=fields.write(ended); session.setInputs(normalized);
+          actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen&&root.DraftEngine.matches(template.previewOnlyWhen,normalized);
+          instructions.textContent=(template.instructionWhen&&root.DraftEngine.matches(template.instructionWhen,normalized))?template.previewInstructions:(actions.hidden?(template.previewInstructions||template.instructions):template.instructions);
+          outputs.hidden=true; drafts.record.value=''; drafts.reply.value=''; status.textContent='已結束本次現場查察；可查看上方／下方研判或產生案件文字。';
+          updateFloatingActions(normalized);
+        },true);
+        const emergency=button('立即處置／緊急應變',()=>{
+          if(!fields.focusField('waterEmergencyActionTaken'))fields.focusField('waterSevereHazardRiskConfirmed');
+        });
+        emergency.className+=' danger';
+        left.append(back,decision); right.append(next,assess,end,emergency); floating.append(left,right); form.append(floating);
+        updateFloatingActions=facts=>{
+          const hasStart=!!(facts.fieldSourceMode||facts.waterSubjectType);
+          back.disabled=!hasStart;
+          next.disabled=!hasStart;
+          assess.hidden=!(workflow?.canHandoff?.(facts)||root.DraftEngine.matches(template.handoff?.when,facts));
+          end.disabled=!hasStart||facts.waterInvestigationComplete==='yes';
+          emergency.hidden=!workflow?.emergencyActive?.(facts);
+        };
+        updateFloatingActions(session.snapshot().inputs);
+      }
+
       form.append(actions,retry,finish,handoffActions); app.append(form, status, outputs);
       const existing=session.snapshot().inputs;
       if(Object.values(existing).some(value=>Array.isArray(value)?value.length:value!=='')){
@@ -184,7 +226,8 @@
         finish.hidden=!template.finishWhen||!root.DraftEngine.matches(template.finishWhen,facts);
         retry.hidden=finish.hidden;
         actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen&&root.DraftEngine.matches(template.previewOnlyWhen,facts);
-        if(template.handoff)handoffActions.hidden=!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts);
+        if(template.handoff)handoffActions.hidden=!!template.floatingFieldActions||(!!template.handoff.when&&!root.DraftEngine.matches(template.handoff.when,facts));
+        updateFloatingActions(facts);
       }
     }
     render();

@@ -83,3 +83,29 @@ button:disabled { cursor: default; background: #e4e9e6; color: #617269; border-c
   .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-current="yes"] label,
   .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-current="yes"] legend { font-size:1rem; }
 }
+
+/* 4.7.1 water field workflow V2 */
+.sentence-slot.live-assessment { display:block; width:100%; grid-column:1 / -1; background:#eef8f4; border:2px solid #146552; padding:14px 16px; margin:4px 0 12px; }
+.sentence-slot.live-assessment > span { display:block; font-weight:800; margin-bottom:4px; }
+.sentence-slot.live-assessment p { margin:0; font-weight:600; }
+.field-floating-actions { pointer-events:none; }
+.field-action-rail { position:fixed; top:50%; transform:translateY(-50%); z-index:30; display:flex; flex-direction:column; gap:8px; width:118px; }
+.field-action-rail button { pointer-events:auto; width:100%; min-height:46px; padding:9px 10px; font-size:.9rem; box-shadow:0 4px 18px rgba(24,58,54,.14); }
+.field-action-left { left:max(10px, calc(50vw - 580px)); }
+.field-action-right { right:max(10px, calc(50vw - 580px)); }
+button.danger { background:#a93226; border-color:#a93226; color:#fff; }
+button.danger:hover { background:#7f241c; }
+.field-floating-enabled { position:relative; }
+@media (max-width:1049px) {
+  .field-floating-enabled { padding-bottom:138px; }
+  .field-floating-actions { position:fixed; left:0; right:0; bottom:0; z-index:40; padding:8px max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background:rgba(255,255,255,.97); border-top:1px solid #b8c9c2; box-shadow:0 -4px 18px rgba(24,58,54,.12); display:grid; grid-template-columns:1fr 1.5fr; gap:8px; pointer-events:auto; }
+  .field-action-rail { position:static; transform:none; width:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+  .field-action-right { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .field-action-rail button { min-height:44px; padding:7px 8px; font-size:.82rem; box-shadow:none; }
+}
+@media (max-width:560px) {
+  .field-floating-enabled { padding-bottom:188px; }
+  .field-floating-actions { grid-template-columns:1fr; }
+  .field-action-rail { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .field-action-rail button { font-size:.8rem; }
+}

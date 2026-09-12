@@ -76,7 +76,6 @@
     return out;
   }
 
-  // 目前 4.3 的完整案件研判以 show flags 表示流程階段；不新增對外欄位，避免改變既有輸出。
   function stage(input,facts,out={}){
     const view=apply(input,facts,{...out});
     if(view.waterShowAssessment!=='yes')return 'subject';
@@ -85,69 +84,131 @@
     return 'assessment';
   }
 
+  function fieldSourceMode(input={}){
+    if(input.fieldSourceMode)return input.fieldSourceMode;
+    return input.waterSubjectType?'known':'';
+  }
 
-  function currentFieldStep(input){
-    if(!input.waterSubjectType)return 1;
-    if(input.waterSubjectType==='business'&&!input.waterSubjectConfirmed)return 1;
-    if(!input.fieldOperationStatus||!input.fieldProcessObserved||!input.fieldWaterUseObserved)return 2;
-    if(!input.waterMatterType)return 3;
-    if(input.waterMatterType==='wastewater'){
-      if(!input.waterWastewaterStatus)return 3;
-      if(input.waterWastewaterStatus==='yes'&&(!Array.isArray(input.waterSourceTypes)||!input.waterSourceTypes.length))return 3;
-      if(input.waterWastewaterStatus==='yes'&&!input.fieldCollectionStatus)return 4;
-      if(input.waterWastewaterStatus==='yes'&&!input.fieldRouteTraced)return 5;
-      if(input.waterWastewaterStatus==='yes'&&!input.waterDestination)return 5;
-      if(input.waterWastewaterStatus==='yes'&&!input.waterActualDischarge)return 6;
-    }else if(input.waterMatterType!=='unknown'){
-      if(!input.waterDumpingConfirmed)return 5;
-      if(input.waterDumpingConfirmed==='yes'&&(!input.waterControlZoneConfirmed||!input.waterDesignatedWaterRangeConfirmed))return 5;
+  function unknownTraceReadyForSubject(input={}){
+    return fieldSourceMode(input)==='unknown'&&input.fieldUnknownSourceConnectionConfirmed==='yes';
+  }
+
+  function fieldCanHandoff(input={}){
+    const sourceReady=fieldSourceMode(input)==='known'||unknownTraceReadyForSubject(input);
+    return !!(sourceReady&&input.waterSubjectType&&input.waterSubjectType!=='unknown');
+  }
+
+  function fieldEmergencyActive(input={}){
+    return input.waterSevereHazardRiskConfirmed==='yes'||input.waterLeakPollutedWaterBody==='yes';
+  }
+
+  function fieldLiveDecision(input={},facts={}){
+    const mode=fieldSourceMode(input);
+    if(fieldEmergencyActive(input))return '【目前判定】\nD｜重大／緊急污染風險\n優先控制污染、保護下游並確認緊急應變與通報；現場流程可暫停，先處置再補查。';
+    if(!mode)return '【目前判定】\n? 尚未選擇案件起點\n先確認本案是「已知污染來源」或「只看到異常水／污染源不明」。';
+    if(mode==='unknown'){
+      if(input.fieldUnknownWaterObserved==='no')return '【目前判定】\n? 本次到場未發現陳情所述異常水體\n可補陳情時間、照片、流向或上游可能來源；若仍無其他事證，可結束本次查察。';
+      if(input.fieldUnknownWaterObserved!=='yes')return '【目前判定】\n? 是否存在異常水體尚待確認\n先固定陳情位置及現況。';
+      if(input.fieldUnknownFlowDirectionConfirmed!=='yes')return '【目前判定】\n? 已看到異常水，但流向尚未確認\n先判斷水往哪裡流，再往上游逆向追查。';
+      if(input.fieldUnknownOutletFound!=='yes')return '【目前判定】\n? 污染來源尚未確認\n持續往上游追水；遇岔流時逐支排除，找出異常水首次出現的區段與疑似出口。';
+      if(input.fieldUnknownSourceConnectionConfirmed!=='yes')return '【目前判定】\n? 已找到疑似出口，但尚未建立與場所／行為人的來源連結\n應確認管線、集水井、場內溝渠、示蹤、操作前後水流變化或其他連通證據。';
+      if(!input.waterSubjectType||input.waterSubjectType==='unknown')return '【目前判定】\n✓ 已建立疑似污染來源連結\n下一步確認污染行為人／管制主體；確認後可直接進入案件研判或繼續來源稽查。';
     }
-    if(!input.waterArticle28Scenario)return 7;
-    if(input.waterArticle28Scenario==='yes'&&!input.waterLeakCause)return 7;
-    if(input.waterDestination==='surfaceWater'&&input.waterActualDischarge==='yes'&&!input.waterSampleTaken)return 8;
-    if(!Array.isArray(input.waterEvidenceTypes)||!input.waterEvidenceTypes.length)return 9;
-    if(!input.waterInvestigationComplete)return 10;
-    return 10;
+    if(fieldCanHandoff(input)){
+      const legal=(input.waterFinalConclusionText||'').split('\n')[0];
+      return `【目前判定】\n✓ 已確認可進入案件研判${legal?`\n後台目前：${legal}`:''}\n流程仍可繼續補證，也可直接轉完整案件研判。`;
+    }
+    if(input.waterSubjectType==='unknown')return '【目前判定】\n? 管制主體尚未確認\n目前可以繼續查證；尚不宜直接套用事業排放許可等規則。';
+    return '【目前判定】\n? 仍在查證\n依目前事實繼續完成下一個必要確認事項；流程不是強制問卷，可隨時結束本次查察。';
+  }
+
+  function currentFieldStep(input={}){
+    const mode=fieldSourceMode(input);
+    if(!mode)return 1;
+    if(mode==='unknown'){
+      if(!input.fieldUnknownWaterObserved)return 2;
+      if(input.fieldUnknownWaterObserved==='no')return (!Array.isArray(input.waterEvidenceTypes)||!input.waterEvidenceTypes.length)?15:16;
+      if(input.fieldUnknownWaterObserved==='yes'&&(!Array.isArray(input.fieldUnknownWaterSigns)||!input.fieldUnknownWaterSigns.length))return 2;
+      if(input.fieldUnknownWaterObserved==='yes'&&!input.fieldUnknownFlowDirectionConfirmed)return 3;
+      if(input.fieldUnknownFlowDirectionConfirmed==='yes'&&!input.fieldUnknownUpstreamTraceStatus)return 4;
+      if(input.fieldUnknownFlowDirectionConfirmed==='yes'&&!input.fieldUnknownBranchStatus)return 4;
+      if(input.fieldUnknownFlowDirectionConfirmed==='yes'&&!input.fieldUnknownOutletFound)return 5;
+      if(input.fieldUnknownOutletFound==='yes'&&!input.fieldUnknownSourceConnectionConfirmed)return 6;
+      if(input.fieldUnknownSourceConnectionConfirmed!=='yes')return 6;
+    }
+    if(!input.waterSubjectType)return 7;
+    if(input.waterSubjectType==='business'&&!input.waterSubjectConfirmed)return 7;
+    if(!input.fieldOperationStatus||!input.fieldProcessObserved||!input.fieldWaterUseObserved)return 8;
+    if(!input.waterMatterType)return 9;
+    if(input.waterMatterType==='wastewater'){
+      if(!input.waterWastewaterStatus)return 9;
+      if(input.waterWastewaterStatus==='yes'&&(!Array.isArray(input.waterSourceTypes)||!input.waterSourceTypes.length))return 9;
+      if(input.waterWastewaterStatus==='yes'&&!input.fieldCollectionStatus)return 10;
+      if(input.waterWastewaterStatus==='yes'&&!input.fieldRouteTraced)return 11;
+      if(input.waterWastewaterStatus==='yes'&&!input.waterDestination)return 11;
+      if(input.waterWastewaterStatus==='yes'&&input.waterDestination==='surfaceWater'&&input.waterSurfaceType==='roadsideDitch'&&input.waterSurfaceWaterConfirmed!=='yes')return 11;
+      if(input.waterWastewaterStatus==='yes'&&!input.waterActualDischarge)return 12;
+    }else if(input.waterMatterType!=='unknown'){
+      if(!input.waterDumpingConfirmed)return 11;
+      if(input.waterDumpingConfirmed==='yes'&&(!input.waterControlZoneConfirmed||!input.waterDesignatedWaterRangeConfirmed))return 11;
+    }
+    if(!input.waterArticle28Scenario)return 13;
+    if(input.waterArticle28Scenario==='yes'&&!input.waterLeakCause)return 13;
+    if(input.waterDestination==='surfaceWater'&&input.waterActualDischarge==='yes'&&!input.waterSampleTaken)return 14;
+    if(!Array.isArray(input.waterEvidenceTypes)||!input.waterEvidenceTypes.length)return 15;
+    return 16;
+  }
+
+  const fieldStepLabels={
+    1:'選案件起點',2:'固定異常水現況',3:'判斷流向',4:'逆向追水／排除岔流',5:'找疑似出口',6:'建立來源連結',7:'認人',8:'看營運／製程',9:'認水／污染物',10:'找收集／處理',11:'追水／追去向',12:'確認排放',13:'查事故',14:'採樣',15:'補證據',16:'完成／研判'
+  };
+  function fieldProgress(input={}){
+    const step=currentFieldStep(input);
+    return `STEP ${step} / 16｜${fieldStepLabels[step]||'現場查證'}`;
   }
 
   function fieldGuidance(input,facts){
     const step=currentFieldStep(input);
-    if(step===1)return '先確認受檢對象身分。公司、商號或工廠登記本身不等於水污法事業；應核對實際作業、業別、規模及列管資料。';
+    if(step===1)return '先選案件起點：若已知被陳情業者／場所，走「污染源已知」；若只有看到異常水，走「污染源不明」並從水逆向追查。';
     if(step===2){
+      if(input.fieldUnknownWaterObserved==='no')return '本次未看到異常水，不代表已證明沒有污染。先固定陳情位置、時間、既有照片或影像，必要時確認主要發生時段後再查。';
+      return '先固定異常水現況：顏色、氣味、泡沫、油膜、混濁、沉積物、持續流水情形及照片／影片；這些是追源線索，不直接等於放流水超標。';
+    }
+    if(step===3)return '先確認水往哪裡流，再逆著流向往上游走。若流向不明，可從坡度、集水井、箱涵、雨水孔或實際水流判斷。';
+    if(step===4)return '持續往上游追查。遇側溝或支流岔口時逐支確認是否有相同異常；清澈支線可先排除，異常支線繼續追。';
+    if(step===5)return '找異常水首次出現的位置或疑似出口，例如PVC管、雨排口、集水井、箱涵支線、場內溝渠；先拍攝位置與上下游關係。';
+    if(step===6)return '找到出口後仍不能直接認定排放人。應建立「異常水→出口→管線／溝渠→場所」的客觀連通，可用追管、示蹤、水位／操作變化、排水圖或監視影像佐證。';
+    if(step===7)return '確認污染行為人／管制主體。公司、商號或工廠登記本身不等於水污法事業；應核對實際作業、業別、規模及列管資料。';
+    if(step===8){
       if(input.fieldOperationStatus==='notOperating')return '現場未營運也不要直接結案：確認設備狀態、近期操作痕跡、槽體液位、管線濕痕及業者最近營運時段。';
       return '先看實際製程與用水，不要先找法條。確認哪些設備正在運轉、哪裡用水、哪裡可能產生廢（污）水。';
     }
-    if(step===3){
+    if(step===9){
       if(input.waterMatterType==='wastewater'&&input.waterWastewaterStatus==='no')return '目前已確認不是廢（污）水。請重新確認是否其實屬污泥、酸鹼廢液、垃圾或其他污染物；若確無其他管制物質，可補足現場證據後結束本次流程。';
       return '認水／認污染物：確認來源、作業關聯、接觸物及污染性。從工廠流出的水不當然就是廢水，其他污染物則另走棄置或設備疏漏支線。';
     }
-    if(step===4)return '沿產生點找收集槽、集水井、處理設備與連接管線；建議拍攝全景與各單元銜接關係。';
-    if(step===5){
-      if(input.waterMatterType&&input.waterMatterType!=='wastewater'&&input.waterMatterType!=='unknown'){
-        if(!input.waterDumpingConfirmed||input.waterDumpingConfirmed==='unknown')return '確認這批污染物實際怎麼處理：是否直接載運／傾倒／棄置於水體或沿岸，並固定位置、數量、行為方式與現場照片。';
-        if(input.waterDumpingConfirmed==='yes')return '已發現棄置態樣：接著確認是否位於水污染管制區，以及公告指定水體與沿岸管制距離。';
-        return '目前未確認棄置行為；仍要確認污染物最終合法處理去向及是否另有設備疏漏。';
-      }
-      if(input.fieldRouteTraced==='no'||input.waterDestination==='unknown')return '追水不要停：由產生點沿管線／溝渠逐段追查，必要時比對水量、槽體液位、排水圖資或示蹤，直到能說明最終去向。';
-      if(input.waterDestination==='surfaceWater'&&input.waterSurfaceType==='roadsideDitch'&&facts.surfaceWaterConfirmed!=='yes')return '道路側溝不能直接等於地面水體。固定側溝位置、水流方向、上下游，並查排水功能、下游連通及官方圖資。';
-      return '已找到去向後，固定出口、上下游及與處理流程的連接證據，再確認是否真的有向外排放。';
+    if(step===10)return '沿產生點找收集槽、集水井、處理設備與連接管線；建議拍攝全景與各單元銜接關係。';
+    if(step===11){
+      if(input.waterDestination==='surfaceWater'&&input.waterSurfaceType==='roadsideDitch'&&input.waterSurfaceWaterConfirmed!=='yes')return '道路側溝不能直接等於地面水體。往下游追流，確認排水功能、集水井／箱涵／雨水下水道或排水路連通，必要時調圖資或示蹤。';
+      if(input.fieldRouteTraced==='no'||input.waterDestination==='unknown')return '去向仍不明時不要停止：追管線、閥門、槽體液位、回收／委外單據及水量平衡，找出廢水最後實際去向。';
+      return '把「來源→收集→處理→最終去向」串成一條水路，再拿核准資料來比對，不要先因系統查無許可就下違規結論。';
     }
-    if(step===6){
-      if(input.waterDestination==='surfaceWater'&&input.waterSurfaceType==='roadsideDitch'&&facts.surfaceWaterConfirmed!=='yes')return '道路側溝不能直接等於地面水體。先確認排水功能、下游流向與排水體系連通，再判斷是否進入排放許可與放流水支線。';
-      if(!input.waterActualDischarge||input.waterActualDischarge==='unknown')return '先確認是否真的有廢（污）水向外排出。可用當場水流、影片、監視影像、水位變化、操作紀錄或其他客觀證據固定排放事實。';
-      if(input.waterActualDischarge==='no')return '未看到排放時，仍需確認廢水目前是貯留、回收、納管、委外或其他方式；必要時以水量平衡與操作紀錄補強。';
-      if(input.waterDestination==='surfaceWater')return '已見排放地面水體：先拍／錄排放行為與放流口，確認許可及放流口，再評估採樣。';
-      return '固定實際排放方式、出口與去向，並與核准資料比對。';
+    if(step===12){
+      if(input.waterActualDischarge==='no')return '本次沒有看到排放仍可繼續查：確認是否只是當下停排、是否有排放痕跡、槽體容量、回收／委外／納管資料與操作時段。';
+      return '若正在排放，先固定排放口、水流、流向與持續時間，再確認出口與許可／水措是否一致。';
     }
-    if(step===7){
-      if(input.waterArticle28Scenario==='yes')return '若為槽體／管線破裂、溢流等事故，先控制污染再談告發：確認是否為輸送／貯存設備、疏漏原因、污染流向、維護防範、止漏措施、通報時間與下游影響。';
-      return '確認現場是否另有漏洩、溢流或設備事故；人為開閥／私管主動排放與設備疏漏應分開判斷。';
+    if(step===13){
+      if(input.waterLeakCause==='humanDischarge')return '目前較像人為開閥、私管或主動抽排，不要硬套設備疏漏；固定操作、閥門、管線及排放路徑後交由後台§14／§18-1研判。';
+      return '區分主動排放與設備事故。槽體／管線破裂、液位故障或溢流，應拍故障點、污染流向、止漏措施並確認是否進入水體。';
     }
-    if(step===8)return '採樣前先確認樣品代表性與位置。水黑、臭、有泡沫只能作現場觀察，不能單獨取代放流水檢測結果。';
-    if(step===9)return '補證據：至少把「來源－收集／處理－管線－出口／去向」串起來。若要認定側溝為地面水體，另補上下游連通與排水系統證據。';
-    if(input.waterInvestigationComplete!=='yes')return '最後檢查是否還有關鍵水路、許可、採樣或事故事實未確認；未確認的必要要件應保留為「？」。';
-    return '現場流程已完成。先查看下方初步研判；需要補查§18、申報、繞流／稀釋等構成要件時，按下「繼續案件研判」，本次已填事實會直接帶入，不需重新填寫。';
+    if(step===14)return '採樣前確認樣品能代表該股放流水，並位於進入承受水體前。外觀、泡沫或氣味只能作為查證線索，不能直接取代檢測超標證據。';
+    if(step===15)return '依本案態樣補固定證據。至少確認能回答「水從哪裡來、經過哪裡、最後去哪裡」，以及排放／事故與對象間的連結。';
+    return '目前可依上方即時判定選擇：繼續補查、直接進入案件研判，或結束本次查察；流程不要求把所有無關欄位走完。';
   }
 
-  root.WaterWorkflow={apply,stage,currentFieldStep,fieldGuidance};
+  function fieldEnd(input={}){
+    return {...input,waterInvestigationComplete:'yes',fieldEarlyEnded:'yes'};
+  }
+
+  root.WaterWorkflow={apply,stage,currentFieldStep,fieldGuidance,fieldProgress,fieldSourceMode,fieldCanHandoff,fieldEmergencyActive,fieldLiveDecision,fieldEnd,unknownTraceReadyForSubject};
 })(typeof window==='undefined'?globalThis:window);

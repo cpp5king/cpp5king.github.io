@@ -8,19 +8,30 @@
   const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
   const tri=[['yes','是，已確認'],['no','否，已確認不是／不符合'],['unknown','已查證但目前仍無法確認']];
   const template={
-    id:'water-field',categoryId:'water',caseTypeId:'water-field-inspection',title:T.title,version:'4.7',workflow:'waterField',choiceStyle:'cards',mobileFocusMode:true,formTitle:T.formTitle,instructions:T.instructions,
+    id:'water-field',categoryId:'water',caseTypeId:'water-field-inspection',title:T.title,version:'4.7.1',workflow:'waterField',choiceStyle:'cards',mobileFocusMode:true,floatingFieldActions:true,formTitle:T.formTitle,instructions:T.instructions,
     initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('fieldNoDrafts'),previewOnlyMessage:'完成現場查察後即可產生案件文字。',
     handoff:{label:'繼續案件研判',caseTypeId:'water-inspection',templateId:'water-main',when:when('fieldShowAssessment'),confirmMessage:'將把本次現場稽查已填事實帶入「案件研判（完整母法）」繼續補查，是否繼續？'},
     fields:[
       computed('fieldNoDrafts'),
       computed('waterRecordDraftText'),computed('waterReplyDraftText'),
+      computed('fieldShowSourceMode'),computed('fieldShowUnknownObserved'),computed('fieldShowUnknownSigns'),computed('fieldShowUnknownFlow'),computed('fieldShowUnknownTrace'),computed('fieldShowUnknownOutlet'),computed('fieldShowUnknownConnection'),computed('fieldShowKnownSubject'),computed('fieldCanHandoff'),computed('fieldEmergencyActive'),
+      computed('fieldLiveDecisionText',T.liveDecision,{display:true,className:'live-assessment'}),
       field('waterInspectionDate',T.inspectionDate,'date',{format:'iso'}),
       computed('waterLawVersionText',T.lawVersion,{display:true}),
       computed('fieldShowSubjectConfirmed'),computed('waterShowIndustry'),computed('waterShowIndustryArticle9'),computed('waterShowIndustryConstruction'),computed('waterShowIndustryLivestock'),computed('waterShowIndustryLivestockFertilizer'),computed('fieldShowOperation'),computed('fieldShowProcess'),computed('fieldShowWaterUse'),computed('fieldShowMatter'),computed('fieldShowWastewater'),computed('fieldShowSources'),computed('fieldShowCollection'),computed('fieldShowTreatment'),computed('fieldShowRoute'),computed('fieldShowDestination'),computed('fieldShowSurface'),computed('fieldShowDitch'),computed('fieldShowDischarge'),computed('fieldShowDumping'),computed('fieldShowDumpingDetails'),computed('fieldShowPermit'),computed('fieldShowIncident'),computed('fieldShowIncidentDetails'),computed('fieldShowLeakPolluted'),computed('fieldShowLeakPrevention'),computed('fieldShowEmergency'),computed('fieldShowSampling'),computed('fieldShowSampleDetails'),computed('fieldShowLab'),computed('fieldShowEffluent'),computed('fieldShowEvidence'),computed('fieldShowComplete'),computed('fieldShowAssessment'),
       computed('fieldProgressText',T.progress,{display:true}),
       computed('fieldCurrentGuidanceText',T.guidance,{display:true}),
 
-      select('waterSubjectType',T.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
+      select('fieldSourceMode',T.sourceMode,[['known','已知污染來源／特定業者'],['unknown','只看到異常水／污染源不明']]),
+      select('fieldUnknownWaterObserved',T.unknownWaterObserved,yn,{showWhen:when('fieldShowUnknownObserved')}),
+      checklist('fieldUnknownWaterSigns',T.unknownWaterSigns,[['color','顏色異常'],['odor','氣味異常'],['foam','泡沫'],['oil','油膜'],['turbid','混濁'],['sediment','沉積物／浮渣'],['temperature','溫度異常'],['continuous','持續流水'],['other','其他']],{showWhen:when('fieldShowUnknownSigns')}),
+      select('fieldUnknownFlowDirectionConfirmed',T.unknownFlowDirection,yn,{showWhen:when('fieldShowUnknownFlow')}),
+      select('fieldUnknownUpstreamTraceStatus',T.unknownUpstreamTrace,[['continuing','異常水往上游仍持續存在，繼續追查'],['normalBoundary','已找到「上游恢復正常／下游仍異常」區段'],['sourceArea','已縮小到疑似來源區段'],['notFound','目前仍追不到來源'],['unknown','尚待確認']],{showWhen:when('fieldShowUnknownTrace')}),
+      select('fieldUnknownBranchStatus',T.unknownBranchStatus,[['noBranch','沿線未遇明顯岔流／支線'],['checked','已逐支確認並排除／鎖定異常支線'],['unchecked','有岔流但尚未逐支確認'],['unknown','尚待確認']],{showWhen:when('fieldShowUnknownTrace')}),
+      select('fieldUnknownOutletFound',T.unknownOutletFound,yn,{showWhen:when('fieldShowUnknownOutlet')}),
+      select('fieldUnknownSourceConnectionConfirmed',T.unknownSourceConnection,yn,{showWhen:when('fieldShowUnknownConnection')}),
+
+      select('waterSubjectType',T.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']],{showWhen:when('fieldShowKnownSubject')}),
       select('waterSubjectConfirmed',T.subjectConfirmed,tri,{showWhen:when('fieldShowSubjectConfirmed')}),
 
       select('waterIndustryType','實際業別／特定水措業別',[['construction','營建工地'],['readyMix','預拌混凝土（第9條所稱水泥業）'],['stoneProcessing','土石加工業'],['stoneExtraction','土石採取業'],['mining','採礦業'],['earthworkDump','土石方堆（棄）置場'],['livestock','畜牧業'],['other','其他事業'],['unknown','尚待確認']],{showWhen:when('waterShowIndustry')}),

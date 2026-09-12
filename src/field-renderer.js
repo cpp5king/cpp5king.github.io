@@ -45,6 +45,8 @@
 
     function field(spec) {
       const wrap = el("span", "", "sentence-slot");
+      if(spec.className)wrap.className += " "+spec.className;
+      wrap.setAttribute("data-field-id",spec.id);
 
       if (spec.type === "computed" && spec.display) {
         const output=el("p"); output.id=spec.id; output.setAttribute("style","white-space: pre-line");
@@ -543,12 +545,43 @@
       change
     );
 
+    function visibleInputRecords(){
+      return slotRecords.filter(({spec,wrap})=>!wrap.hidden&&!['computed','fixed'].includes(spec.type));
+    }
+    function focusRecord(record){
+      if(!record)return false;
+      record.wrap.scrollIntoView?.({behavior:'smooth',block:'center'});
+      const target=record.wrap.querySelector?.('input,select,textarea,button');
+      target?.focus?.();
+      return true;
+    }
+    function focusCurrent(){
+      const list=visibleInputRecords();
+      const current=list.find(({spec})=>!root.UiProfile.answered(spec,previousFacts))||list[list.length-1];
+      return focusRecord(current);
+    }
+    function navigateStep(direction){
+      const list=visibleInputRecords();
+      if(!list.length)return false;
+      const current=list.find(({spec})=>!root.UiProfile.answered(spec,previousFacts));
+      let index=current?list.indexOf(current):list.length-1;
+      if(direction<0)index=Math.max(0,index-1);
+      else if(direction>0&&current&&root.UiProfile.answered(current.spec,previousFacts))index=Math.min(list.length-1,index+1);
+      return focusRecord(list[index]);
+    }
+    function focusField(id){
+      return focusRecord(slotRecords.find(({spec,wrap})=>spec.id===id&&!wrap.hidden));
+    }
+
     write({});
 
     return {
       element: container,
       read,
-      write
+      write,
+      focusCurrent,
+      navigateStep,
+      focusField
     };
   }
 
