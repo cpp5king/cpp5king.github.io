@@ -82,6 +82,7 @@
     const facts=root.WaterFacts.build(out);
     const lawVersion=root.WaterLawVersions.resolve(out.waterInspectionDate);
     facts.sublawVersionResolved=(lawVersion.status==='resolved'&&lawVersion.date>='2026-04-20')?'yes':'unknown';
+    out.sublawVersionResolved=facts.sublawVersionResolved;
     out.waterLawVersionText=lawVersion.text;
 
     const results=evaluateRules(facts);
