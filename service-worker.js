@@ -1,6 +1,6 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.8.5';
-const CACHE_NAME='inspection-assistant-4.8.5-pp-7f3c9a21';
+const VERSION='4.8.6';
+const CACHE_NAME='inspection-assistant-4.8.6-pp-7f3c9a21';
 const V='?v='+VERSION;
 const APP_SHELL=[
   './index.html'+V,
