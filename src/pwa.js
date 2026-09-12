@@ -7,7 +7,7 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.8.7';
+  const VERSION='4.8.8';
   const CHECK_THROTTLE_MS=15000;
   let checkingUpdate=null;
   let lastCheckedAt=0;
@@ -55,7 +55,7 @@
     }
   };
 
-  // Chrome 安裝型 PWA 從背景恢復時不一定重新觸發 load。
+  // iOS/WebKit 與安裝型 PWA 從背景恢復時不一定重新觸發 load。
   // 除首次載入外，在 pageshow、重新回到前景及恢復網路時都再確認已發布版本。
   // 節流狀態只放記憶體，不寫入任何持久儲存。
   if(secure && 'serviceWorker' in root.navigator){
@@ -82,7 +82,7 @@
   }
   const isiOS=/iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'');
   if(isiOS){
-    if(message)message.textContent='iPhone／iPad：請用 Safari 開啟，點「分享」→「加入主畫面」。完成後可離線使用。';
+    if(message)message.textContent='iPhone／iPad：可用目前瀏覽器的「分享」→「加入主畫面」。完成後可離線使用。';
     if(installButton)installButton.hidden=true;
     return;
   }
