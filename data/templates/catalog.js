@@ -70,16 +70,8 @@ window.INSPECTION_CONFIG = {
       "file": "restaurant-odor-sampling-pending.js"
     },
     {
-      "id": "noise-case",
-      "file": "noise-case.js"
-    },
-    {
       "id": "noise-main",
       "file": "noise-main.js"
-    },
-    {
-      "id": "noise-neighbor",
-      "file": "noise-neighbor.js"
     },
     {
       "id": "water-field",

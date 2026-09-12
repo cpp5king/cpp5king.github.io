@@ -1,183 +1,338 @@
 (function(root){
   'use strict';
-  const legacy=()=>root.TemplateWorkflows.noiseArticle8;
-  const template=()=>root.INSPECTION_CONFIG.templates.find(t=>t.id==='noise-main');
-  const common=['mainDate','mainTime','mainZone','mainHoliday'];
-  const text=x=>typeof x==='string'?x.trim():'';
+  root.TemplateWorkflows=root.TemplateWorkflows||{};
+
+  const A8=()=>root.NOISE_ARTICLE8_RULES;
+  const A9=()=>root.NOISE_ARTICLE9_RULES;
   const yes=b=>b?'yes':'no';
-  function article8(input){return {...input,scenario:'article8',date:input.mainDate,article8Time:input.mainTime,article8Zone:input.mainZone,article8Holiday:input.mainHoliday,prohibitedAct:template().scope.excludedActIds.includes(input.mainAct)?'':input.mainAct};}
-  function article9(input){
-    // Only Article 9 inputs cross the branch boundary. No Article 8 facts reach its documents.
-    return {...Object.fromEntries(Object.entries(input).filter(([key])=>key.startsWith('a9'))),scenario:'article9',a9RepeatedBackground:input.backgroundRepeated||'',a9BackgroundMeasurements:input.backgroundMeasurements||'',a9Date:input.mainDate,a9Time:input.mainTime,a9Zone:input.mainZone,a9Operation:input.mainMeasure==='yes'?root.NOISE_TEXTS.main.measuredOperation:''};
-  }
-  function route(input){
-    const state=root.NoiseArticle8.evaluate(article8(input));
-    // Unit scope filters engine results; the official rule collection is never altered.
-    state.candidates=state.candidates.filter(a=>!template().scope.excludedActIds.includes(a.id));
-    const confirmed=state.zoneValid&&(!state.needsHoliday||['yes','no'].includes(input.mainHoliday));
-    let branch='article8';
-    if(confirmed&&(!state.candidates.length||input.mainAct==='none'||state.status===root.NOISE_ARTICLE8_RULES.messages.exempt))branch='article9';
-    return {branch,state,confirmed};
-  }
-  function reasons(input){return template().unmeasured.reasons.filter(r=>Array.isArray(input.mainReasons)&&input.mainReasons.includes(r.id)&&(!r.types||r.types.includes(input.a9Type)));}
-  function dateTime(input){const [y,m,d]=(input.mainDate||'').split('-').map(Number);return {date:`${y-1911}年${m}月${d}日`,time:root.NoiseFormat.inspectionHour(input.mainTime)};}
-  function knownSource(input){
-    if(input.mainMeasure!=='no'||!input.mainReasons?.includes('source'))return '';
-    const r=root.NOISE_ARTICLE9_RULES;
-    if(input.a9Type==='speaker')return r.types.find(t=>t.id==='speaker').label;
-    if(input.a9Type==='other')return r.facilities.find(f=>f.id===input.a9Facility)?.label||'';
-    return '';
-  }
-  function validate(input){
-    const {branch,state}=route(input),errors=[];
-    const required=(key,label)=>{if(!text(input[key])||text(input[key]).includes(window.NOISE_TEXTS.common.missing))errors.push(window.NOISE_TEXTS.main.requiredPrefix+label);};
-    if(!root.NoiseFormat.validTime(input.mainTime))return [root.NOISE_TEXTS.ui.timeInvalid];
-    if(!root.NOISE_ARTICLE9_RULES.zones.some(z=>z.id===input.mainZone))return [root.NOISE_TEXTS.ui.zoneRequired];
-    const subjectRequired=key=>{if(!text(input[key])||text(input[key]).includes(root.NOISE_TEXTS.common.missing))errors.push(root.NOISE_TEXTS.ui.subjectRequired);};
-    if(branch==='article8'){
-      if(!state.established)return [state.status];
-      subjectRequired('subject');
-      return errors;
-    }
-    if(!['yes','no'].includes(input.mainMeasure))return [window.NOISE_TEXTS.main.text029];
-    if(!root.NOISE_ARTICLE9_RULES.types.some(t=>t.id===input.a9Type))return [window.NOISE_TEXTS.main.text030];
-    if(input.a9Type==='other'&&!root.NOISE_ARTICLE9_RULES.facilities.some(f=>f.id===input.a9Facility))return [window.NOISE_TEXTS.main.text031];
-    if(input.mainMeasure==='no'){
-      const selected=reasons(input).map(r=>r.id);
-      if(!selected.length)return [window.NOISE_TEXTS.main.text032];
-      subjectRequired('a9Subject');
-      if(selected.includes('source')&&!knownSource(input))required('a9Source',window.NOISE_TEXTS.templates.text039);
-      if(selected.includes('other'))required('mainReasonOther',window.NOISE_TEXTS.main.text018);
-    }else{
-      subjectRequired('a9Subject');required('a9Source',window.NOISE_TEXTS.templates.text039);
-      const measure=root.NoiseArticle9Measurement.assess(article9(input));
-      if(!measure.ready){
-        if(!['yes','no'].includes(input.a9Rain))errors.push(window.NOISE_TEXTS.main.text033);
-        else if(input.a9Rain==='no'&&!['yes','no'].includes(input.a9Home))errors.push(window.NOISE_TEXTS.main.text034);
-        else if(!measure.items.length)errors.push(window.NOISE_TEXTS.main.text035);
-        else if(!text(input.a9WindSpeed))errors.push(window.NOISE_TEXTS.main.text036);
-        else if(input.a9Unavailable?.includes('unavailable')&&!text(input.a9CannotReason))errors.push(window.NOISE_TEXTS.main.text037);
-        else errors.push(measure.status==='difference'?root.NOISE_TEXTS.ui.backgroundFailure:measure.message===window.NOISE_TEXTS.common.missing?window.NOISE_TEXTS.main.text038:measure.message);
+  const text=v=>typeof v==='string'?v.trim():'';
+  const num=v=>text(String(v??''))!==''&&Number.isFinite(Number(v))?Number(v):null;
+  const fmt=v=>Number.isFinite(v)?(Math.round(v*10)/10).toFixed(1).replace(/\.0$/,''):'';
+  const clock=v=>{const m=/^(\d{1,2}):(\d{2})$/.exec(text(v));if(!m)return null;const h=Number(m[1]),n=Number(m[2]);return h>=0&&h<24&&n>=0&&n<60?h*60+n:null;};
+  const inWindow=(time,start,end)=>{const t=clock(time),s=clock(start),e=clock(end);if(t===null||s===null||e===null)return false;return s<e?t>=s&&t<e:t>=s||t<e;};
+  const tri=v=>['yes','no','unknown'].includes(v)?v:'missing';
+  const exFlag=actId=>`noiseShowA8Exception_${actId}`;
+  const exValue=(actId,...ids)=>['noiseA8Ex',actId,...ids].join('_');
+
+  function a8ExceptionKeys(){
+    const keys=[];
+    for(const act of A8().acts||[]){
+      for(const check of act.exceptionChecks||[])keys.push(exValue(act.id,check.id));
+      for(const ex of act.exceptions||[]){
+        keys.push(exValue(act.id,ex.id));
+        for(const check of ex.checks||[])keys.push(exValue(act.id,ex.id,check.id));
       }
     }
-    return errors;
+    return keys;
   }
-  function unmeasured(input){
-    const data=template().unmeasured;
-    const selected=reasons(input),source=selected.some(r=>r.id==='source');
-    // Each selected fact contributes exactly one fragment, in data-file order.
-    // Document envelopes contain no unselected inspection findings.
-    const phrase=r=>{
-      if(r.id==='other')return text(input.mainReasonOther).replace(/^[，。；、\s]+|[，。；、\s]+$/g,'');
-      if(r.id==='source')return data.sourceFact.replace(/\{\{noiseSource\}\}/g,()=>knownSource(input)||text(input.a9Source));
-      return r.phrase;
+
+  const blankFlags={
+    noiseShowA8:'no',noiseShowA8Disturbance:'no',noiseShowA8Exception:'no',noiseShowAfterA8:'no',noiseShowA6Disturbance:'no',
+    noiseShowA9:'no',noiseShowOtherFacility:'no',noiseShowMeasure:'no',noiseShowFull:'no',noiseShowFullPoint:'no',noiseShowSpeakerLocation:'no',noiseShowWeather:'no',
+    noiseShowGeneralMethod:'no',noiseShowSpeakerMode:'no',noiseShowFullAssessment:'no',noiseShowConstructionFull:'no',noiseShowLow:'no',
+    noiseShowConstructionLmax:'no',noiseShowBgFull:'no',noiseShowBgLmax:'no',noiseShowBgLow:'no'
+  };
+  for(const act of A8().acts||[])if(act.hasExceptions||act.exceptionChecks?.length)blankFlags[exFlag(act.id)]='no';
+
+  function base(input){
+    return {...input,...blankFlags,noiseBlocked:'yes',noiseValidation:'',noiseRecord:'',noiseReply:'',noiseRouteText:'',noiseStandardText:'',noiseMeasurementPointText:'',noiseResultText:'',noiseGuide:'',noiseA8ExceptionSummary:'',noiseZoneResultText:''};
+  }
+  function finish(out,{route='',guide='',validation='',record='',reply='',blocked=true}={}){
+    out.noiseRouteText=route;out.noiseGuide=guide||route;out.noiseValidation=validation;out.noiseRecord=record;out.noiseReply=reply;out.noiseBlocked=yes(blocked);return out;
+  }
+  function routeDraft(title,body){return {record:`${title}：${body}`,reply:`有關噪音陳情案，${body}`};}
+
+  function specialCase(out,type,prefix=''){
+    const special={
+      vehicle:['使用中機動車輛','屬使用中機動車輛噪音管制範圍；依噪音管制法第11條至第13條等規定辦理，不套用一般場所第9條量測流程。'],
+      landTransport:['陸上運輸系統','快速道路、高速公路、鐵路及大眾捷運系統之行駛噪音，依噪音管制法第14條及陸上運輸系統噪音管制標準辦理。'],
+      civilAviation:['民用航空噪音','民用航空器及民用機場相關噪音依噪音管制法第11條、第15條至第16條等規定辦理。'],
+      militaryAviation:['軍用航空噪音','軍用航空噪音依噪音管制法第17條等規定，由軍用航空主管機關會商地方主管機關辦理。']
+    }[type];
+    if(!special)return null;
+    const body=`${prefix?prefix+' ':''}${special[1]}`;
+    const d=routeDraft(special[0],body);
+    return finish(out,{route:special[0],guide:body,record:d.record,reply:d.reply,blocked:false});
+  }
+
+  function period(zone,time){
+    const z=A9().zones.find(x=>x.id===zone);if(!z||clock(time)===null)return null;
+    for(const id of ['day','evening','night']){const [s,e]=z.periods[id];if(inWindow(time,s,e))return id;}
+    return null;
+  }
+  function actApplicable(act,zone,time,holiday){
+    if(!act||!act.zones.includes(zone))return false;
+    if(act.allDay)return true;
+    const windows=holiday==='yes'&&act.holidayPeriods?act.holidayPeriods:act.periods||[];
+    return windows.some(([s,e])=>inWindow(time,s,e));
+  }
+
+  function evaluateA8Exceptions(input,out,act){
+    const has=!!(act.hasExceptions||act.exceptionChecks?.length);
+    if(!has)return {status:'none',summary:'無公告例外條件。'};
+    out.noiseShowA8Exception='yes';out[exFlag(act.id)]='yes';
+    if(act.exceptionChecks?.length){
+      const states=act.exceptionChecks.map(check=>({check,state:tri(input[exValue(act.id,check.id)])}));
+      const no=states.find(x=>x.state==='no');
+      if(no){const summary=`例外不成立：${no.check.label}為否；公告所列條件須全部符合。`;out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};}
+      const pending=states.find(x=>x.state==='missing'||x.state==='unknown');
+      if(pending){const summary=`例外尚待確認：${pending.check.label}。`;out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條例外條件：${pending.check.label}。`};}
+      const summary='公告所列例外條件均已確認成立。';out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
+    }
+    let pending=null;let requirementsFailed=null;
+    for(const ex of act.exceptions||[]){
+      const state=tri(input[exValue(act.id,ex.id)]);
+      if(state==='yes'){
+        if(ex.checks?.length){
+          const checks=ex.checks.map(check=>({check,state:tri(input[exValue(act.id,ex.id,check.id)])}));
+          const failed=checks.find(x=>x.state==='no');
+          if(failed){requirementsFailed=`已確認「${ex.label}」，但未符合公告事項六附帶規定：${failed.check.label}。`;continue;}
+          const childPending=checks.find(x=>x.state==='missing'||x.state==='unknown');
+          if(childPending){pending=`已確認「${ex.label}」，尚須確認：${childPending.check.label}`;continue;}
+        }
+        const summary=`公告例外成立：${ex.label}。`;out.noiseA8ExceptionSummary=summary;return {status:'exempt',summary};
+      }
+      if((state==='missing'||state==='unknown')&&!pending)pending=`${ex.label}`;
+    }
+    if(pending){const summary=`公告例外尚待確認：${pending}。`;out.noiseA8ExceptionSummary=summary;return {status:'pending',summary,validation:`請確認第8條公告例外：${pending}。`};}
+    if(requirementsFailed){out.noiseA8ExceptionSummary=requirementsFailed;return {status:'requirementsFailed',summary:requirementsFailed};}
+    const summary='已逐項確認，未符合公告所列例外情形。';out.noiseA8ExceptionSummary=summary;return {status:'notExempt',summary};
+  }
+
+  function sourceMeta(type){
+    const map={
+      factory:{table:'factory',kind:'general',label:'工廠（場）',basis:'噪音管制法第9條第1項第1款'},
+      entertainment:{table:'business',kind:'general',label:'娛樂場所',basis:'噪音管制法第9條第1項第2款'},
+      business:{table:'business',kind:'general',label:'營業場所',basis:'噪音管制法第9條第1項第3款'},
+      construction:{table:'construction',kind:'construction',label:'營建工程',basis:'噪音管制法第9條第1項第4款'},
+      speaker:{table:'speaker',kind:'speaker',label:'擴音設施',basis:'噪音管制法第9條第1項第5款'},
+      otherFacility:{table:'other',kind:'general',label:'新北市公告之其他設施',basis:'噪音管制法第9條第1項第6款及新北市115年3月5日公告'},
+      renovation:{table:'construction',kind:'construction',label:'公告裝修工程',basis:'噪音管制法第9條第1項第6款、新北市115年3月5日公告及噪音管制標準第8條第2項'}
     };
-    const values={...dateTime(input),subject:text(input.a9Subject),ending:data.ending,factsText:selected.map(phrase).filter(Boolean).join('，')};
-    const record=root.NoiseText.render(data[source?'source':'place'],values);
-    return {record,reply:data.prefix+record+data.suffix};
+    return map[type]||null;
   }
-  function prepare(input){
-    input=reconcile(input);
-    input=root.NoiseBackgrounds.sync(input,article9(input));
-    const {branch,state,confirmed}=route(input);
-    const eight=legacy().prepare(article8(input));
-    for(const id of template().scope.excludedActIds)eight['a8Candidate_'+id]='no';
-    const measuring=branch==='article9'&&input.mainMeasure==='yes';
-    const validType=root.NOISE_ARTICLE9_RULES.types.some(t=>t.id===input.a9Type);
-    const validFacility=input.a9Type!=='other'||root.NOISE_ARTICLE9_RULES.facilities.some(f=>f.id===input.a9Facility);
-    const factsReady=branch==='article9'&&['yes','no'].includes(input.mainMeasure)&&validType&&validFacility;
-    const nine=legacy().prepare({...article9(input),scenario:measuring&&factsReady?'article9':''});
-    const out={...input,...eight,...Object.fromEntries(Object.entries(nine).filter(([k])=>k.startsWith('a9')))};
-    // Hidden does not mean invalid: keep sanitized user facts while another route is visible.
-    for(const f of template().fields)if(!['computed','fixed'].includes(f.type))out[f.id]=input[f.id]??(f.type==='checklist'?[]:'');
-    for(const key of common)out[key]=input[key]||'';
-    out.mainAct=state.candidates.some(a=>a.id===input.mainAct)||input.mainAct==='none'?input.mainAct:'';
-    out.scenario=measuring&&factsReady?'article9':'article8';
-    out.mainRoute=branch;
-    out.mainShowZone=yes(state.ready);out.mainShowHoliday=yes(state.needsHoliday);out.mainShowActs=yes(confirmed&&state.candidates.length);
-    out.mainShowType=yes(branch==='article9'&&['yes','no'].includes(input.mainMeasure));
-    const selected=reasons(input).map(r=>r.id);
-    out.mainReasons=selected;
-    out.mainShowFacts=yes(factsReady&&(measuring||selected.length));out.mainUnmeasured=yes(factsReady&&input.mainMeasure==='no');
-    out.mainShowSource=yes(factsReady&&(measuring||(selected.includes('source')&&!knownSource(input))));
-    out.mainOtherReason=yes(out.mainUnmeasured==='yes'&&selected.includes('other'));
-    const formatted=dateTime(input);
-    out.mainSummary=factsReady?window.NOISE_TEXTS.main.text039+formatted.date+window.NOISE_TEXTS.main.text040+input.mainTime+window.NOISE_TEXTS.main.text041+input.mainZone+window.NOISE_TEXTS.main.text042+(measuring?window.NOISE_TEXTS.main.text043+nine.a9Period:''):'';
-    // Measured controls remain governed by the existing engine, after type and site facts.
-    if(!factsReady||!measuring){for(const k of Object.keys(out))if(k.startsWith('a9Show'))out[k]='no';}
-    out.mainRecord='';out.mainReply='';let documents=null;
-    const errors=validate(input);out.mainValidation=errors[0]||'';
-    if(!errors.length){
-      if(branch==='article8'&&state.established)documents=root.DraftEngine.generate(root.INSPECTION_CONFIG,'noise-case',article8(input));
-      if(factsReady&&input.mainMeasure==='no')documents=unmeasured(input);
-      if(measuring&&factsReady&&nine.a9Blocked==='no')documents={record:nine.a9Record,reply:nine.a9Reply};
-    }
-    if(documents){out.mainRecord=documents.record;out.mainReply=documents.reply;}
-    out.mainBlocked=yes(!documents);
-    out.mainGuide=state.status;
-    if(branch==='article9'){
-      const entry=!state.candidates.length?window.NOISE_TEXTS.main.text044:window.NOISE_TEXTS.main.enterArticle9;
-      const step=out.mainShowType!=='yes'?window.NOISE_TEXTS.main.text046:!factsReady?window.NOISE_TEXTS.main.text047:!measuring?window.NOISE_TEXTS.main.noMeasurementGuide:nine.a9ShowBackground==='yes'?window.NOISE_TEXTS.main.text049:nine.a9ShowValues==='yes'?window.NOISE_TEXTS.main.measurementGuide:window.NOISE_TEXTS.main.text051;
-      out.mainGuide=entry+'\n'+(documents?window.NOISE_TEXTS.main.text052:nine.a9Retry==='yes'?window.NOISE_TEXTS.main.text053:step);
-    }
-    if(out.mainValidation&&!template().validateOnSubmit)out.mainGuide+='\n'+out.mainValidation;
-    if(measuring&&nine.a9ShowValues==='yes')out.mainGuide+='\n'+root.NOISE_TEXTS.ui.metricsHint;
-    const backgroundFailed=measuring&&nine.a9Retry==='yes'&&nine.a9RetryLabel===root.NOISE_TEXTS.ui.retryDifference;
-    out.mainShowDuration=yes(nine.a9ShowValues==='yes'&&input.backgroundLocked!=='yes'&&!backgroundFailed);
-    out.backgroundHistoryText=measuring?root.NoiseBackgrounds.describe(input.backgroundMeasurements):'';
-    if(measuring&&input.backgroundLocked==='yes'&&nine.a9Blocked!=='no')out.mainGuide=root.NOISE_TEXTS.ui.backgroundGuide;
-    if(backgroundFailed){out.mainGuide=root.NOISE_TEXTS.ui.backgroundFailure;out.a9MeasurementStatus=root.NOISE_TEXTS.ui.backgroundFailure;}
-    out.attemptHistoryText=measuring?root.NoiseAttempts.describe(input.measurementAttempts):'';
-    return out;
+  function standards(meta,zone,p){
+    if(!meta||!p)return null;const table=A9().tables[meta.table],zi=Number(zone)-1,pi={day:0,evening:1,night:2}[p];
+    if(!table||zi<0||zi>3||pi===undefined)return null;
+    return {full:table.full?.leq?.[zi]?.[pi],lmax:table.full?.lmax?.[zi]?.[pi],low:table.low?.leqLF?.[zi]?.[pi]};
   }
-  function resetChange(before,after){
-    const changed=keys=>keys.some(k=>JSON.stringify(before[k]??'')!==JSON.stringify(after[k]??''));
-    const checks=root.NOISE_ARTICLE8_RULES.acts.flatMap(a=>[...(a.exceptionChecks||[]),...(a.exceptions||[]).flatMap(e=>e.checks||[])]).map(c=>c.id);
-    const next={...after};
-    if(before.backgroundLocked==='yes'&&after.backgroundLocked==='yes')for(const key of root.NoiseBackgrounds.sourceKeys)next[key]=before[key];
-    if(before.mainDate&&changed(['mainDate']))next.mainHoliday=''; // Holiday confirmation belongs to a particular date.
-    if(changed(['mainAct']))for(const k of ['article8Exception','equipment','article8Operation','article8FactInput','subject',...checks])next[k]='';
-    if(changed(['a9Unavailable']))for(const k of ['a9CannotReason','a9AllYear','a9AnnualValid',...root.NoiseArticle9Measurement.keys.filter(k=>/^a9(Bg|Annual)_/.test(k))])next[k]='';
-    if(changed([...common,'mainMeasure','a9Type','a9Facility','a9Rain','a9Home',...root.NoiseArticle9Measurement.keys.filter(k=>k!=='a9Exit')]))next.a9Exit='';
-    return reconcile(next);
+
+  function correction(overall,bg){
+    const diff=overall-bg;
+    if(diff<3)return {status:'invalid',message:'整體音量與背景音量相差小於3 dB，依噪音管制標準應停止測量，另尋適合測點或排除／降低其他噪音源後重新量測。'};
+    if(diff>=10)return {status:'ok',value:overall,note:'與背景音量相差10 dB以上，不需修正。'};
+    const energy=Math.pow(10,overall/10)-Math.pow(10,bg/10);
+    if(!(energy>0))return {status:'invalid',message:'背景音量資料無法進行有效修正，請重新確認量測值。'};
+    return {status:'ok',value:10*Math.log10(energy),note:`與背景音量相差${fmt(diff)} dB，已依公式扣除背景音量影響。`};
   }
-  function reconcile(input){
-    const next={...input},clear=keys=>keys.forEach(k=>{next[k]=Array.isArray(next[k])?[]:'';});
-    let {state}=route(next);
-    if(!state.needsHoliday)next.mainHoliday='';
-    if(next.mainAct!=='none'&&!state.candidates.some(a=>a.id===next.mainAct))next.mainAct='';
-    state=route(next).state;
-    if(!state.showException)next.article8Exception='';
-    for(const act of root.NOISE_ARTICLE8_RULES.acts)for(const c of [...(act.exceptionChecks||[]),...(act.exceptions||[]).flatMap(e=>e.checks||[])])if(!state.visibleChecks.includes(c.id))next[c.id]='';
-    if(!state.act)clear(['article8Exception','equipment','article8Operation','article8FactInput','subject']);
-    else if(!state.established)clear(['equipment','article8Operation','article8FactInput']);
-    else if(next.mainAct!=='construction')clear(['equipment','article8Operation']);
-    if(next.a9Type!=='other')next.a9Facility='';
-    next.mainReasons=next.mainMeasure==='no'?reasons(next).map(r=>r.id):[];
-    if(!next.mainReasons.includes('other'))next.mainReasonOther='';
-    if(next.mainMeasure==='no')clear(['backgroundMeasurements','backgroundRound','backgroundLocked','a9Rain','a9Home',...root.NoiseArticle9Measurement.keys]);
-    const rules=root.NOISE_ARTICLE9_RULES,type=rules.types.find(t=>t.id===next.a9Type);
-    const table=type&&rules.tables[type.table];
-    const lookup=root.NoiseArticle9.evaluate({...article9(next),a9Frequency:'both'});
-    const required=[];
-    for(const metric of rules.measurement.metrics){
-      const applicable=table?.[metric.band]?.[metric.id]!==undefined;
-      if(!applicable){clear(['a9Value_'+metric.id,'a9Bg_'+metric.id,'a9Annual_'+metric.id]);continue;}
-      const standard=lookup.standards.find(s=>s.band===metric.band)?.values[metric.id];
-      const raw=text(next['a9Value_'+metric.id]);
-      const needs=raw!==''&&standard!==undefined&&Number(raw)>standard&&next.a9Rain!=='yes';
-      if(needs)required.push(metric.id);
-      if(!needs&&lookup.standards.length)clear(['a9Bg_'+metric.id,'a9Annual_'+metric.id]);
+  function assessMetric(label,overall,std,mode,bg){
+    if(std===undefined)return {needed:false,decisive:true,line:''};
+    if(overall===null)return {needed:true,decisive:false,line:`${label}：尚未輸入測量值。`,validation:`請輸入${label}測量值。`};
+    if(overall<=std)return {needed:true,decisive:true,exceeded:false,value:overall,line:`${label} ${fmt(overall)} dB，標準 ${std} dB，未超過標準。`};
+    if(mode==='uncooperative')return {needed:true,decisive:true,exceeded:true,value:overall,line:`${label} ${fmt(overall)} dB，標準 ${std} dB；現場人員無法配合背景音量量測，依規定不修正並註明，結果超過標準。`};
+    if(mode!=='measured')return {needed:true,decisive:false,needBackground:true,line:`${label} ${fmt(overall)} dB 高於標準 ${std} dB，需完成背景音量確認後才能判定。`,validation:`${label}高於標準，請完成背景音量處理。`};
+    if(bg===null)return {needed:true,decisive:false,needBackground:true,line:`${label}需輸入背景音量。`,validation:`請輸入${label}背景音量。`};
+    const c=correction(overall,bg);
+    if(c.status!=='ok')return {needed:true,decisive:false,invalid:true,needBackground:true,line:`${label}：${c.message}`,validation:c.message};
+    const v=c.value,exceeded=v>std;
+    return {needed:true,decisive:true,exceeded,value:v,needBackground:true,line:`${label}整體 ${fmt(overall)} dB、背景 ${fmt(bg)} dB；${c.note} 修正後 ${fmt(v)} dB，標準 ${std} dB，${exceeded?'超過':'未超過'}標準。`};
+  }
+
+  function generalMethodLabel(method){return {leq:'Leq（非週期／非間歇性，連續取樣至少2分鐘）',lmaxMean:'Lmax平均（週期／間歇、最大音量差≤5 dB，連續10次最大值平均）',l5:'L5（週期／間歇、最大音量差>5 dB，至少20個最大值計算）'}[method]||'';}
+  function speakerMethodLabel(mode){return {fixed:'Leq（固定或停止移動，連續取樣至少2分鐘）',moving:'Lmax（移動性擴音設施通過時最大值）'}[mode]||'';}
+  function measurementPoint(input,meta,band){
+    const lines=[];
+    if(meta.kind==='speaker'&&(band==='full'||band==='both')){
+      lines.push('擴音設施：於音源水平投影距離3公尺以上之主管機關指定位置量測；移動音源則取最近距離不少於3公尺之指定位置。');
+      if(input.noiseSpeakerOutdoor==='yes')lines.push('本次擴音設施測點位於室外。');
+      if(input.noiseSpeakerOutdoor==='no')lines.push('本次擴音設施測點位於室內。');
+    }else if(band==='full'||band==='both'){
+      if(input.noiseFullPoint==='complainant')lines.push('全頻：於陳情人指定之居住生活地點量測。');
+      else if(input.noiseFullPoint==='authority')lines.push('全頻：陳情人不指定時，由主管機關指定周界外測點，並距最近建築物牆面線1公尺以上。');
+      else lines.push('全頻：尚未確認測點。');
     }
-    if(!required.length&&lookup.standards.length)clear(['a9Unavailable','a9CannotReason','a9AllYear','a9AnnualValid']);
-    if(next.a9Unavailable?.includes('unavailable'))clear(rules.measurement.metrics.map(m=>'a9Bg_'+m.id));
-    else clear(['a9CannotReason','a9AllYear','a9AnnualValid',...rules.measurement.metrics.map(m=>'a9Annual_'+m.id)]);
-    if(next.a9Type!==rules.measurement.annualBackgroundType)clear(['a9AllYear','a9AnnualValid',...rules.measurement.metrics.map(m=>'a9Annual_'+m.id)]);
-    if(next.a9AllYear!=='yes'||next.a9AnnualValid!=='yes')clear(rules.measurement.metrics.map(m=>'a9Annual_'+m.id));
+    if(band==='low'||band==='both')lines.push('低頻：於陳情人指定之居住生活室內地點量測；原則距最近建築物牆面線1公尺以上，門窗關閉。');
+    lines.push('測量高度原則為離地面或樓板1.2～1.5公尺。');
+    if(meta.kind==='general'&&input.noiseGeneralMethod)lines.push(`全頻評定方法：${generalMethodLabel(input.noiseGeneralMethod)}。`);
+    if(meta.kind==='speaker'&&input.noiseSpeakerMode)lines.push(`擴音設施評定方法：${speakerMethodLabel(input.noiseSpeakerMode)}。`);
+    if(meta.kind==='construction')lines.push('工程音源：連續測量取樣至少2分鐘，並記錄 Lmax、Leq；有低頻時並記錄 Leq,LF。');
+    return lines.join('\n');
+  }
+  function weatherState(input,meta,band){
+    if(!(band==='full'||band==='both'))return {show:false,error:''};
+    if(meta.kind==='speaker'){
+      if(!['yes','no'].includes(input.noiseSpeakerOutdoor))return {show:false,error:'請確認擴音設施實際量測點是否位於室外。'};
+      return {show:input.noiseSpeakerOutdoor==='yes',error:''};
+    }
+    if(input.noiseFullPoint==='authority')return {show:true,error:''};
+    if(input.noiseFullPoint!=='complainant')return {show:false,error:'請確認全頻測量地點。'};
+    if(!['yes','no'].includes(input.noiseFullIndoor))return {show:false,error:'請確認全頻測點是否位於室內。'};
+    return {show:input.noiseFullIndoor==='no',error:''};
+  }
+  function weatherValidation(input,show){
+    if(!show)return '';
+    if(!['yes','no'].includes(input.noiseRain))return '室外量測請確認是否下雨。';
+    if(input.noiseRain==='yes')return '室外量測時有雨，不符合噪音管制標準之氣象條件。';
+    const wind=num(input.noiseWind);if(wind===null)return '室外量測請輸入風速。';
+    if(wind>5)return '室外量測風速大於5 m/s，不符合噪音管制標準之氣象條件。';
+    return '';
+  }
+
+  function article8Stage(input,out){
+    if(!text(input.noiseDate)||clock(input.noiseTime)===null||!['1','2','3','4'].includes(input.noiseZone)||!['yes','no'].includes(input.noiseHoliday))return {done:true,out:finish(out,{route:'第8條前置判斷',validation:'請完成稽查日期、時間、噪音管制區及假日別。'})};
+    if(!input.noiseA8Act)return {done:true,out:finish(out,{route:'第8條公告禁止行為優先判斷',validation:'請確認現場是否涉及第8條公告禁止行為。'})};
+    if(input.noiseA8Act==='none')return {done:false,note:'未見第8條公告禁止行為。'};
+    const act=A8().acts.find(a=>a.id===input.noiseA8Act&&a.id!=='exhaust');
+    if(!act)return {done:true,out:finish(out,{route:'第8條公告禁止行為',validation:'無法辨識所選公告行為，請重新選擇。'})};
+    if(!actApplicable(act,input.noiseZone,input.noiseTime,input.noiseHoliday))return {done:false,note:'所選行為於本次管制區／時段條件下不落入第8條公告管制。'};
+    out.noiseShowA8Disturbance='yes';
+    if(!['yes','no','unknown'].includes(input.noiseA8Disturbance))return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,validation:'請確認是否已足以妨害他人生活環境安寧。'})};
+    if(input.noiseA8Disturbance==='unknown')return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,validation:'「妨害他人生活環境安寧」尚待確認，暫不作成違規結論。'})};
+    if(input.noiseA8Disturbance==='no')return {done:false,note:'現場尚不足認妨害他人生活環境安寧。'};
+    const exception=evaluateA8Exceptions(input,out,act);
+    if(exception.status==='pending')return {done:true,out:finish(out,{route:`第8條候選：${act.label}`,guide:exception.summary,validation:exception.validation||'公告例外條件尚待確認，暫不作成違規結論。'})};
+    if(exception.status==='exempt')return {done:false,note:`${exception.summary} 本案不以該第8條禁止行為成立。`};
+    const exText=exception.status==='requirementsFailed'?`；${exception.summary}`:(exception.status==='notExempt'?`；${exception.summary}`:'');
+    const body=`現場於新北市第${input.noiseZone}類噪音管制區、${input.noiseTime}查見「${act.label}」，落於公告管制範圍，且已確認足以妨害他人生活環境安寧${exText}，依噪音管制法第8條及新北市現行公告辦理。`;
+    const d=routeDraft('第8條公告禁止行為',body);
+    return {done:true,out:finish(out,{route:'第8條公告禁止行為成立路徑',guide:'本案依第8條公告禁止行為處理，不以第9條量測作為成立要件。',record:d.record,reply:d.reply,blocked:false})};
+  }
+
+  function prepare(rawInput={}){
+    const input={...rawInput};
+    const out=base(input);
+    if(!input.noiseSpecial)return finish(out,{route:'第一步｜主要噪音來源／主管機關分流',validation:'請先確認主要噪音來源，以判斷主管機關與法規路徑。'});
+
+    if(['landTransport','civilAviation','militaryAviation'].includes(input.noiseSpecial))return specialCase(out,input.noiseSpecial);
+
+    if(input.noiseSpecial==='vehicle'){
+      const exhaust=tri(input.noiseVehicleExhaustA8);
+      if(exhaust==='missing')return finish(out,{route:'使用中機動車輛｜先檢查第8條排氣管公告行為',validation:'請確認車輛是否涉及變更合格排氣管，或使用未經噪音審驗／檢驗合格排氣管行駛道路之行為。'});
+      if(exhaust==='unknown')return finish(out,{route:'使用中機動車輛｜第8條排氣管公告行為待確認',validation:'排氣管第8條公告行為尚待確認，不得直接略過後轉機動車輛專章。'});
+      if(exhaust==='yes'){
+        out.noiseShowA8Disturbance='yes';
+        const disturbance=tri(input.noiseA8Disturbance);
+        if(disturbance==='missing')return finish(out,{route:'第8條車輛排氣管公告禁止行為候選',validation:'請確認該排氣管公告行為是否已足以妨害他人生活環境安寧。'});
+        if(disturbance==='unknown')return finish(out,{route:'第8條車輛排氣管公告禁止行為候選',validation:'「妨害他人生活環境安寧」尚待確認，暫不作成第8條結論。'});
+        if(disturbance==='yes'){
+          const body='現場查見使用中機動車輛涉及任意變更經噪音檢（查）驗合格排氣管，或使用未經噪音審驗／檢驗合格排氣管行駛道路之公告禁止行為，且已確認足以妨害他人生活環境安寧；該行為為新北市各類噪音管制區全時段禁止事項，依噪音管制法第8條及新北市現行公告辦理。';
+          const d=routeDraft('第8條車輛排氣管公告禁止行為',body);
+          return finish(out,{route:'第8條車輛排氣管公告禁止行為成立路徑',guide:'本案先依第8條公告禁止行為處理，不以一般場所第9條量測流程判定。',record:d.record,reply:d.reply,blocked:false});
+        }
+        return specialCase(out,'vehicle','已確認排氣管公告行為尚不足認妨害他人生活環境安寧，未逕以第8條成立。');
+      }
+      return specialCase(out,'vehicle','未見第8條車輛排氣管公告禁止行為。');
+    }
+
+    if(input.noiseSpecial!=='ordinary')return finish(out,{route:'來源類型未支援',validation:'請重新選擇主要噪音來源。'});
+
+    const zoneState=root.NoiseZone?.resolve?root.NoiseZone.resolve(input):{status:['1','2','3','4'].includes(input.noiseZone)?'resolved':'pending',zone:input.noiseZone,note:'',message:'請確認噪音管制區。'};
+    if(zoneState.status==='resolved')input.noiseZone=zoneState.zone;
+    else input.noiseZone='';
+    Object.assign(out,input);out.noiseZoneResultText=zoneState.note||zoneState.message||'';
+    if(zoneState.status!=='resolved')return finish(out,{route:'第二步｜噪音管制區判定',guide:zoneState.note||zoneState.message,validation:zoneState.message||'請確認噪音管制區。'});
+
+    out.noiseShowA8='yes';
+    const a8=article8Stage(input,out);if(a8.done)return a8.out;
+    out.noiseShowAfterA8='yes';const a8Note=a8.note||'';
+
+    if(!['difficult','measurable'].includes(input.noiseNature))return finish(out,{route:`${a8Note}\n一般場所／工程／設施：判斷是否可量測`,validation:'請確認聲音是否具持續性且可量測。'});
+    if(input.noiseNature==='difficult'){
+      out.noiseShowA6Disturbance='yes';
+      if(!['yes','no','unknown'].includes(input.noiseA6Disturbance))return finish(out,{route:'噪音管制法第6條候選',validation:'請確認該不具持續性或不易量測聲音是否足以妨害他人生活安寧。'});
+      if(input.noiseA6Disturbance==='unknown')return finish(out,{route:'噪音管制法第6條候選',validation:'是否足以妨害他人生活安寧尚待確認，暫不作成第6條結論。'});
+      if(input.noiseA6Disturbance==='no'){
+        const body=`${a8Note} 現場所聞聲音不具持續性或不易量測，但目前尚不足認足以妨害他人生活安寧，未逕作噪音管制法第6條違規判斷，亦不以第9條量測標準判定。`;
+        const d=routeDraft('第6條要件未成立',body);return finish(out,{route:'第6條要件未成立／本次不進第9條量測',guide:body,record:d.record,reply:d.reply,blocked:false});
+      }
+      const body=`${a8Note} 本案聲音屬不具持續性或不易量測，且已確認足以妨害他人生活環境安寧，依噪音管制法第6條，由警察機關依有關法規處理。`;
+      const d=routeDraft('噪音管制法第6條路徑',body);return finish(out,{route:'第6條／警察機關處理路徑',guide:body,record:d.record,reply:d.reply,blocked:false});
+    }
+
+    out.noiseShowA9='yes';
+    if(!input.noiseA9Type)return finish(out,{route:`${a8Note}\n第9條場所／工程／設施判斷`,validation:'請確認第9條噪音源類型。'});
+    if(input.noiseA9Type==='outside')return finish(out,{route:`${a8Note}\n目前不屬第9條列管場所／工程／設施。`,guide:'不得因「不屬第9條」直接推論無其他法規責任；請回到噪音來源與主管機關重新確認。',blocked:true});
+    const meta=sourceMeta(input.noiseA9Type);if(!meta)return finish(out,{route:'第9條來源類型無法辨識',validation:'請重新確認噪音源類型。'});
+    if(input.noiseA9Type==='otherFacility'){
+      out.noiseShowOtherFacility='yes';
+      if(!A9().facilities.some(f=>f.id===input.noiseFacility))return finish(out,{route:`${a8Note}\n第9條第1項第6款／新北市公告設施`,validation:'請確認公告設施種類。'});
+    }
+
+    out.noiseShowMeasure='yes';
+    if(!['full','low','both'].includes(input.noiseBand))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請選擇量測頻帶。'});
+    if(meta.kind==='speaker'&&input.noiseBand!=='full')return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'擴音設施現行標準僅採20 Hz～20 kHz全頻評定，請選擇「全頻」。'});
+    const p=period(input.noiseZone,input.noiseTime),std=standards(meta,input.noiseZone,p);if(!p||!std)return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'無法依管制區與時段解析噪音標準。'});
+    const periodLabel={day:'日間',evening:'晚間',night:'夜間'}[p];
+    const useFull=input.noiseBand==='full'||input.noiseBand==='both',useLow=input.noiseBand==='low'||input.noiseBand==='both';
+    out.noiseShowFull=yes(useFull);out.noiseShowLow=yes(useLow);out.noiseShowFullPoint=yes(useFull&&meta.kind!=='speaker');out.noiseShowSpeakerLocation=yes(useFull&&meta.kind==='speaker');
+    out.noiseShowGeneralMethod=yes(useFull&&meta.kind==='general');out.noiseShowSpeakerMode=yes(useFull&&meta.kind==='speaker');
+    out.noiseShowFullAssessment=yes(useFull&&['general','speaker'].includes(meta.kind));out.noiseShowConstructionFull=yes(useFull&&meta.kind==='construction');out.noiseShowConstructionLmax=yes(useFull&&meta.kind==='construction'&&std.lmax!==undefined);
+    if(useFull&&meta.kind==='general'&&!generalMethodLabel(input.noiseGeneralMethod))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請依聲音發聲特性選擇全頻評定方法。'});
+    if(useFull&&meta.kind==='speaker'&&!speakerMethodLabel(input.noiseSpeakerMode))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請確認擴音設施為移動性或固定／停止移動。'});
+    if(useLow&&std.low===undefined)return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'此噪音源類型沒有可套用的低頻標準，請重新選擇量測頻帶。'});
+
+    const standardLines=[];
+    if(useFull&&meta.kind==='construction'){
+      if(std.full!==undefined)standardLines.push(`全頻 Leq ${std.full} dB(A)`);
+      if(std.lmax!==undefined)standardLines.push(`Lmax ${std.lmax} dB(A)`);
+    }else if(useFull&&std.full!==undefined)standardLines.push(`全頻評定值 ${std.full} dB(A)`);
+    if(useLow&&std.low!==undefined)standardLines.push(`低頻 Leq,LF ${std.low} dB(A)`);
+    out.noiseStandardText=`第${input.noiseZone}類／${periodLabel}：${standardLines.join('；')}`;
+
+    const weather=weatherState(input,meta,input.noiseBand);out.noiseShowWeather=yes(weather.show);
+    out.noiseMeasurementPointText=measurementPoint(input,meta,input.noiseBand);
+    if(weather.error)return finish(out,{route:`${a8Note}\n${meta.basis}`,guide:weather.error,validation:weather.error});
+    const weatherError=weatherValidation(input,weather.show);if(weatherError)return finish(out,{route:`${a8Note}\n${meta.basis}`,guide:weatherError,validation:weatherError});
+    if(!text(input.noiseSubject))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請填入稽查對象代稱。'});
+    if(!text(input.noiseSource))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請填入主要噪音源／設備說明。'});
+
+    const results=[];let fullPrimary=null,fullLmax=null,lowResult=null;
+    if(useFull&&meta.kind==='general'){fullPrimary=assessMetric(generalMethodLabel(input.noiseGeneralMethod),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);}
+    if(useFull&&meta.kind==='speaker'){fullPrimary=assessMetric(speakerMethodLabel(input.noiseSpeakerMode),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);}
+    if(useFull&&meta.kind==='construction'){
+      fullPrimary=assessMetric('全頻 Leq',num(input.noiseValueLeq),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);
+      if(std.lmax!==undefined){fullLmax=assessMetric('Lmax',num(input.noiseValueLmax),std.lmax,input.noiseBgLmaxMode,num(input.noiseBgLmax));results.push(fullLmax);}
+    }
+    if(useLow&&std.low!==undefined){lowResult=assessMetric('低頻 Leq,LF',num(input.noiseValueLow),std.low,input.noiseBgLowMode,num(input.noiseBgLow));results.push(lowResult);}
+    out.noiseShowBgFull=yes(!!fullPrimary?.needBackground);out.noiseShowBgLmax=yes(!!fullLmax?.needBackground);out.noiseShowBgLow=yes(!!lowResult?.needBackground);
+    out.noiseResultText=results.map(r=>r.line).filter(Boolean).join('\n');
+    const pending=results.find(r=>!r.decisive);
+    if(pending)return finish(out,{route:`${a8Note}\n${meta.basis}`,guide:out.noiseResultText,validation:pending.validation||'量測資料尚未完成。'});
+
+    const exceeded=results.some(r=>r.exceeded);
+    const facility=input.noiseA9Type==='otherFacility'?`（${A9().facilities.find(f=>f.id===input.noiseFacility)?.label||''}）`:'';
+    const body=`現場稽查對象「${text(input.noiseSubject)}」，主要噪音源為「${text(input.noiseSource)}」，屬${meta.label}${facility}；適用第${input.noiseZone}類噪音管制區${periodLabel}標準。${out.noiseResultText.replace(/\n/g,' ')}${exceeded?'量測結果有項目超過噪音管制標準，依噪音管制法第24條辦理限期改善。':'量測結果未超過本次適用噪音管制標準。'}`;
+    const reply=exceeded?'本案經量測有項目超過噪音管制標準，將依噪音管制法第24條辦理限期改善。':'本案經依適用噪音管制標準量測，結果未超過標準。';
+    out.noiseRouteText=`${a8Note}\n${meta.basis}`;
+    return finish(out,{route:out.noiseRouteText,guide:exceeded?'第9條量測超標：進入第24條限期改善程序。':'第9條量測未超標。',record:body,reply,blocked:false});
+  }
+
+  function resetChange(before={},after={}){
+    const next={...after};const clear=keys=>keys.forEach(k=>{next[k]='';});
+    const exceptionKeys=a8ExceptionKeys();
+    const zoneAssistFields=['noiseZoneAssistType','noiseZoneLandClass','noiseZoneTrafficSource','noiseZoneSourceZone','noiseZoneSideA','noiseZoneSideB','noiseZonePointSide','noiseZoneMajorPosition','noiseZoneOriginalFourth','noiseZoneAdjacentFirst','noiseZoneUnderlying','noiseZoneBoundaryPair'];
+    const zoneFields=['noiseZoneMode','noiseZone',...zoneAssistFields,'noiseHoliday','noiseA8Act'];
+    const measurements=['noiseFacility','noiseBand','noiseSubject','noiseSource','noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow'];
+    if(before.noiseSpecial!==after.noiseSpecial)clear(['noiseVehicleExhaustA8','noiseA8Disturbance',...zoneFields,...exceptionKeys,'noiseNature','noiseA6Disturbance','noiseA9Type',...measurements]);
+    if(before.noiseVehicleExhaustA8!==after.noiseVehicleExhaustA8)clear(['noiseA8Disturbance']);
+    if(before.noiseZoneMode!==after.noiseZoneMode){clear(zoneAssistFields);if(after.noiseZoneMode==='assist')next.noiseZone='';}
+    if(['noiseDate','noiseTime','noiseZone','noiseZoneMode',...zoneAssistFields,'noiseHoliday'].some(k=>before[k]!==after[k]))clear(['noiseA8Disturbance',...exceptionKeys,'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
+    if(before.noiseA8Act!==after.noiseA8Act)clear(['noiseA8Disturbance',...exceptionKeys]);
+    if(before.noiseA8Disturbance!==after.noiseA8Disturbance&&after.noiseSpecial==='ordinary')clear(exceptionKeys);
+    for(const act of A8().acts||[])for(const ex of act.exceptions||[]){
+      if(!ex.checks?.length)continue;
+      const parent=exValue(act.id,ex.id);
+      if(before[parent]!==after[parent]&&after[parent]!=='yes')clear(ex.checks.map(check=>exValue(act.id,ex.id,check.id)));
+    }
+    if(before.noiseNature!==after.noiseNature)clear(['noiseA6Disturbance','noiseA9Type',...measurements]);
+    if(before.noiseA9Type!==after.noiseA9Type)clear(measurements);
+    if(before.noiseBand!==after.noiseBand)clear(['noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
+    if(before.noiseGeneralMethod!==after.noiseGeneralMethod||before.noiseSpeakerMode!==after.noiseSpeakerMode)clear(['noiseValueFull','noiseBgFullMode','noiseBgFull']);
+    if(before.noiseFullPoint!==after.noiseFullPoint||before.noiseFullIndoor!==after.noiseFullIndoor||before.noiseSpeakerOutdoor!==after.noiseSpeakerOutdoor)clear(['noiseRain','noiseWind','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax']);
     return next;
   }
-  root.NoiseMain={route,article8,article9,prepare,resetChange,validate};
-  root.TemplateWorkflows.noiseMain={prepare,resetChange,validate,clearDraft:()=>true,
-    restart:input=>root.NoiseAttempts.restart(input,article9(input)),
-    finish:input=>({...input,...root.NoiseArticle9Measurement.finish(article9(input))})};
-})(window);
+
+  function validate(input){const out=prepare(input);return out.noiseBlocked==='yes'&&out.noiseValidation?[out.noiseValidation]:[];}
+  root.NoiseMain={prepare,resetChange,validate,period,actApplicable,correction,evaluateA8Exceptions};
+  root.TemplateWorkflows.noiseMain={prepare,resetChange,validate,clearDraft:()=>true};
+})(typeof window==='undefined'?globalThis:window);
