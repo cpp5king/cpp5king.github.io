@@ -6,7 +6,8 @@
     const wastewaterPath=facts.matterType==='wastewater'||(!facts.matterType&&!!input.waterWastewaterStatus);
     out.waterNoDrafts=input.waterInvestigationComplete==='yes'?'no':'yes';
     out.waterShowSubjectConfirmed=bool(input.waterSubjectType==='business');
-    out.waterShowIndustry=bool(facts.subjectIsBusiness==='yes');
+    out.waterShowIndustryChoice=bool(facts.subjectIsBusiness==='yes');
+    out.waterShowIndustry=bool(out.waterShowIndustryChoice==='yes'&&(input.waterIndustryCheckMode==='check'||(!input.waterIndustryCheckMode&&!!input.waterIndustryType)));
     out.waterShowIndustryArticle9=bool(out.waterShowIndustry==='yes'&&['mining','stoneExtraction','stoneProcessing','readyMix','earthworkDump','construction'].includes(input.waterIndustryType));
     out.waterShowIndustryConstruction=bool(out.waterShowIndustry==='yes'&&input.waterIndustryType==='construction');
     out.waterShowIndustryLivestock=bool(out.waterShowIndustry==='yes'&&input.waterIndustryType==='livestock');
@@ -122,6 +123,25 @@
     return '【目前判定】\n? 仍在查證\n依目前事實繼續完成下一個必要確認事項；流程不是強制問卷，可隨時結束本次查察。';
   }
 
+  function fieldPermitCheckComplete(input={}){
+    if(input.waterSubjectType!=='business'&&input.waterSubjectType!=='sewerSystem')return true;
+    if(input.waterSubjectType==='business'&&input.waterSubjectConfirmed!=='yes')return true;
+    if(input.waterWastewaterStatus!=='yes')return true;
+    const mode=input.waterPermitCheckMode;
+    if(!mode)return false;
+    if(mode==='skip')return true;
+    if(mode==='quick'&&['no','unknown'].includes(input.waterPermitQuickDifferenceObserved))return true;
+    if(mode==='quick'&&input.waterPermitQuickDifferenceObserved!=='yes')return false;
+    const reference=input.waterPermitReferenceStatus;
+    if(!reference)return false;
+    if(['unavailable','unknown'].includes(reference))return true;
+    const keys=['waterPermitSourceCompare','waterPermitProcessCompare','waterPermitOutletCompare','waterPermitDestinationCompare','waterPermitFacilityCompare','waterPermitOperationCompare'];
+    if(keys.some(key=>!input[key]))return false;
+    const hasMismatch=keys.some(key=>input[key]==='mismatch');
+    if(hasMismatch&&!String(input.waterPermitMismatchDetail||'').trim())return false;
+    return true;
+  }
+
   function currentFieldStep(input={}){
     const mode=fieldSourceMode(input);
     if(!mode)return 1;
@@ -152,19 +172,21 @@
       if(!input.waterDumpingConfirmed)return 11;
       if(input.waterDumpingConfirmed==='yes'&&(!input.waterControlZoneConfirmed||!input.waterDesignatedWaterRangeConfirmed))return 11;
     }
-    if(!input.waterArticle28Scenario)return 13;
-    if(input.waterArticle28Scenario==='yes'&&!input.waterLeakCause)return 13;
-    if(input.waterDestination==='surfaceWater'&&input.waterActualDischarge==='yes'&&!input.waterSampleTaken)return 14;
-    if(!Array.isArray(input.waterEvidenceTypes)||!input.waterEvidenceTypes.length)return 15;
-    return 16;
+    if(!fieldPermitCheckComplete(input))return 12;
+    if(!input.waterActualDischarge)return 13;
+    if(!input.waterArticle28Scenario)return 14;
+    if(input.waterArticle28Scenario==='yes'&&!input.waterLeakCause)return 14;
+    if(input.waterDestination==='surfaceWater'&&input.waterActualDischarge==='yes'&&!input.waterSampleTaken)return 15;
+    if(!Array.isArray(input.waterEvidenceTypes)||!input.waterEvidenceTypes.length)return 16;
+    return 17;
   }
 
   const fieldStepLabels={
-    1:'選案件起點',2:'固定異常水現況',3:'判斷流向',4:'逆向追水／排除岔流',5:'找疑似出口',6:'建立來源連結',7:'認人',8:'看營運／製程',9:'認水／污染物',10:'找收集／處理',11:'追水／追去向',12:'確認排放',13:'查事故',14:'採樣',15:'補證據',16:'完成／研判'
+    1:'選案件起點',2:'固定異常水現況',3:'判斷流向',4:'逆向追水／排除岔流',5:'找疑似出口',6:'建立來源連結',7:'認人',8:'看營運／製程',9:'認水／污染物',10:'找收集／處理',11:'追水／追去向',12:'對許可／水措',13:'確認排放',14:'查事故',15:'採樣',16:'補證據',17:'完成／研判'
   };
   function fieldProgress(input={}){
     const step=currentFieldStep(input);
-    return `STEP ${step} / 16｜${fieldStepLabels[step]||'現場查證'}`;
+    return `STEP ${step} / 17｜${fieldStepLabels[step]||'現場查證'}`;
   }
 
   function fieldGuidance(input,facts){
@@ -194,15 +216,20 @@
       return '把「來源→收集→處理→最終去向」串成一條水路，再拿核准資料來比對，不要先因系統查無許可就下違規結論。';
     }
     if(step===12){
+      if(input.waterPermitCheckMode==='skip')return '本次已選擇跳過許可／水措逐項差異檢核；系統只記錄「本次未查」，不會把它當成一致。';
+      if(input.waterPermitCheckMode==='quick')return '常去或既有資料熟悉的場所可用快速確認；若發現設備、管線、排放口、處理方式或操作有明顯變更，再展開逐項差異檢核。';
+      return '把現場實際來源、收集／處理流程、排放口、最終去向、設施與操作方式，和本案可取得的核准內容逐項比對；無資料就標示不足，不要猜。';
+    }
+    if(step===13){
       if(input.waterActualDischarge==='no')return '本次沒有看到排放仍可繼續查：確認是否只是當下停排、是否有排放痕跡、槽體容量、回收／委外／納管資料與操作時段。';
       return '若正在排放，先固定排放口、水流、流向與持續時間，再確認出口與許可／水措是否一致。';
     }
-    if(step===13){
+    if(step===14){
       if(input.waterLeakCause==='humanDischarge')return '目前較像人為開閥、私管或主動抽排，不要硬套設備疏漏；固定操作、閥門、管線及排放路徑後交由後台§14／§18-1研判。';
       return '區分主動排放與設備事故。槽體／管線破裂、液位故障或溢流，應拍故障點、污染流向、止漏措施並確認是否進入水體。';
     }
-    if(step===14)return '採樣前確認樣品能代表該股放流水，並位於進入承受水體前。外觀、泡沫或氣味只能作為查證線索，不能直接取代檢測超標證據。';
-    if(step===15)return '依本案態樣補固定證據。至少確認能回答「水從哪裡來、經過哪裡、最後去哪裡」，以及排放／事故與對象間的連結。';
+    if(step===15)return '採樣前確認樣品能代表該股放流水，並位於進入承受水體前。外觀、泡沫或氣味只能作為查證線索，不能直接取代檢測超標證據。';
+    if(step===16)return '依本案態樣補固定證據。至少確認能回答「水從哪裡來、經過哪裡、最後去哪裡」，以及排放／事故與對象間的連結。';
     return '目前可依上方即時判定選擇：繼續補查、直接進入案件研判，或結束本次查察；流程不要求把所有無關欄位走完。';
   }
 
@@ -210,5 +237,5 @@
     return {...input,waterInvestigationComplete:'yes',fieldEarlyEnded:'yes'};
   }
 
-  root.WaterWorkflow={apply,stage,currentFieldStep,fieldGuidance,fieldProgress,fieldSourceMode,fieldCanHandoff,fieldEmergencyActive,fieldLiveDecision,fieldEnd,unknownTraceReadyForSubject};
+  root.WaterWorkflow={apply,stage,currentFieldStep,fieldPermitCheckComplete,fieldGuidance,fieldProgress,fieldSourceMode,fieldCanHandoff,fieldEmergencyActive,fieldLiveDecision,fieldEnd,unknownTraceReadyForSubject};
 })(typeof window==='undefined'?globalThis:window);
