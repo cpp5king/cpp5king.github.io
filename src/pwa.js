@@ -7,16 +7,40 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.8.5';
+  const VERSION='4.8.6';
 
-  // Safari / iOS 容易長時間保留舊 service worker。使用版本化 SW URL + updateViaCache:none
-  // 強制更新檢查；新版接手後僅自動重新整理一次。
+  const readPublishedVersion=async()=>{
+    try{
+      const response=await root.fetch(`./data/app-meta.js?update=${Date.now()}`,{cache:'no-store'});
+      if(!response?.ok)return '';
+      const text=await response.text();
+      return text.match(/version\s*:\s*['\"]([^'\"]+)/)?.[1]||'';
+    }catch(_){return '';}
+  };
+
+  const moveToPublishedVersion=async(version)=>{
+    if(!version||version===VERSION)return;
+    try{
+      await root.navigator.serviceWorker?.register?.(`./service-worker.js?v=${encodeURIComponent(version)}`,{updateViaCache:'none'});
+    }catch(_){/* 下一次開啟仍會再次檢查 */}
+    try{
+      const target=new URL('./index.html',root.location.href);
+      target.searchParams.set('v',version);
+      target.searchParams.set('update',String(Date.now()));
+      root.location.replace(target.href);
+    }catch(_){/* 保留目前可用版本 */}
+  };
+
+  // 每次上線時向伺服器確認版本；未來即使瀏覽器仍握有舊 App Shell，
+  // 只要這支更新程式已進入裝置，就會自行切到新版本化網址。
   if(secure && 'serviceWorker' in root.navigator){
     root.addEventListener('load',async()=>{
       try{
         const registration=await root.navigator.serviceWorker.register(`./service-worker.js?v=${VERSION}`,{updateViaCache:'none'});
         if(registration?.update)await registration.update();
       }catch(_){/* 離線時維持既有離線版本 */}
+      const published=await readPublishedVersion();
+      await moveToPublishedVersion(published);
     });
     let refreshing=false;
     root.navigator.serviceWorker.addEventListener?.('controllerchange',()=>{
