@@ -17,13 +17,14 @@ const legacyExecutors=[
   'src/noise-v490.js'
 ];
 
-const rebuilt=['src/noise-zone.js','src/noise-main.js','src/noise-composite.js','src/noise-boundary.js'];
+const rebuilt=['src/noise-zone.js','src/noise-main.js','src/noise-method-guidance.js','src/noise-composite.js','src/noise-boundary.js'];
 
 test('重建版依賴：首頁不再執行舊噪音引擎',()=>{
   const html=read('index.html');
   for(const file of legacyExecutors)assert.equal(html.includes(file),false,`${file} 不應再由首頁執行`);
   for(const file of rebuilt)assert.equal(html.includes(file),true,`${file} 應由首頁載入`);
-  assert.ok(html.indexOf('src/noise-main.js')<html.indexOf('src/noise-composite.js'));
+  assert.ok(html.indexOf('src/noise-main.js')<html.indexOf('src/noise-method-guidance.js'));
+  assert.ok(html.indexOf('src/noise-method-guidance.js')<html.indexOf('src/noise-composite.js'));
   assert.ok(html.indexOf('src/noise-composite.js')<html.indexOf('src/noise-boundary.js'));
 });
 
