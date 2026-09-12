@@ -65,8 +65,8 @@
   function combined181(input,results){
     const active=[];
     if(input.waterActualDischarge==='yes')active.push(results[0]);
-    if(input.waterDilutionObserved)active.push(results[1]);
-    if(input.waterTreatmentFacilityApplicable)active.push(results[2]);
+    if(input.waterDilutionObserved==='yes')active.push(results[1]);
+    if(input.waterTreatmentFacilityApplicable==='yes')active.push(results[2]);
     if(!active.length)return '請依現場情形完成繞流、稀釋及處理設施檢核；未確認事項不會自動認定違規。';
     return active.map(({rule,result})=>`【${rule.title}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n');
   }
@@ -178,10 +178,46 @@
     lines.push('※ 4.3 僅處理共通子法義務；特定業別、另定施行日之自動監測／附表項目仍須進一步查核，不由本版自動認定違規。');
     return lines.join('\n\n');
   }
+  function unique(items){return [...new Set(items.filter(Boolean))];}
+  function parseOverview(text){
+    const established=[],pending=[];
+    String(text||'').split(/\r?\n/).forEach(line=>{
+      const clean=line.trim();
+      if(!clean)return;
+      const label=clean.split('：')[0]?.trim();
+      if(!label)return;
+      if(clean.includes('☑ 構成要件完整')||clean.includes('⚠ 疑似不符合'))established.push(label);
+      if(clean.includes('? 事證不足')||clean.includes('? 待確認')||clean.includes('? 待查子法'))pending.push(label);
+    });
+    return {established:unique(established),pending:unique(pending)};
+  }
+  function bullets(list){return list.map(x=>'• '+x).join('\n');}
+  function liveDecision(out){
+    const final=String(out.waterFinalConclusionText||'');
+    const {established,pending}=parseOverview(out.waterRulesOverviewText);
+    if(final.startsWith('D｜'))return '目前狀態：🔴 重大／緊急污染\n\n優先控制污染、保護下游並完成緊急應變與證據固定。';
+    if(established.length){
+      const finalReady=out.waterInvestigationComplete==='yes'&&pending.length===0;
+      const parts=[`目前狀態：🔴 構成要件完整`,`【${finalReady?'違反法規':'目前已具完整要件'}】\n${bullets(established)}`];
+      if(pending.length)parts.push('【另待確認】\n'+bullets(pending));
+      return parts.join('\n\n');
+    }
+    if(pending.length||out.waterInvestigationComplete!=='yes'){
+      const involved=pending.length?pending:['案件必要查證事項'];
+      return '目前狀態：🟡 尚在查證\n\n【目前可能涉及】\n'+bullets(involved);
+    }
+    return '目前狀態：🟢 本次查無違規事證\n\n依本次已完成查證之事實，尚無足資認定違反水污染防治法之事證。';
+  }
+  function liveMissing(out){
+    const {pending}=parseOverview(out.waterRulesOverviewText);
+    if(pending.length)return '【尚缺關鍵事證】\n'+bullets(pending.map(x=>'完成「'+x+'」構成要件／證據確認'));
+    if(out.waterInvestigationComplete!=='yes')return '【尚缺關鍵事證】\n• 確認本次案件必要查證事項是否均已完成';
+    return '目前無關鍵缺漏。';
+  }
   function apply(input,facts,out,lawVersion,results,sub,industry){
     const {r13,r14,r7,r18,rb,rd,rt,r20s,r20sm,r20d,r20dm,r22,r35,r26,r27e,r27n,r28p,r28e,r28n,r30,r32s,r32g,r59,r71}=results;
     const subItems=[
-      {key:'sub4',label:'水措管理辦法§4 核准內容與現場',result:sub.approvedMeasuresMismatch,active:out.waterShowSublawCore==='yes'},
+      {key:'sub4',label:'水措管理辦法§4 核准內容與現場',result:sub.approvedMeasuresMismatch,active:out.waterShowSublawCore==='yes'&&(out.waterPermitLegalComparisonActive==='yes'||!input.waterPermitCheckMode)},
       {key:'sub7',label:'水措管理辦法§7 雨污分流',result:sub.rainWastewaterSeparation,active:out.waterShowSublawCore==='yes'&&facts.wastewaterConfirmed==='yes'},
       {key:'sub8',label:'水措管理辦法§8 逕流廢水收集處理',result:sub.runoffCollection,active:out.waterShowSublawRunoff==='yes'},
       {key:'sub31s',label:'水措管理辦法§31 委託前處理／貯留',result:sub.outsourceStorage,active:out.waterShowSublawOutsource==='yes'},
@@ -276,8 +312,8 @@
     if(facts.subjectIsBusiness==='yes'&&input.waterArticle18SpecificDutyConfirmed==='yes')add('a18','§18 水污染防治措施',r18);
     if(out.waterShowArticle181==='yes'){
       if(input.waterActualDischarge==='yes')add('a181b','§18-1 繞流',rb);
-      if(input.waterDilutionObserved)add('a181d','§18-1 稀釋',rd);
-      if(input.waterTreatmentFacilityApplicable)add('a181t','§18-1 處理設施',rt);
+      if(input.waterDilutionObserved==='yes')add('a181d','§18-1 稀釋',rd);
+      if(input.waterTreatmentFacilityApplicable==='yes')add('a181t','§18-1 處理設施',rt);
       if(input.waterDestination==='storage'){add('a20s','§20 貯留',r20s);if(input.waterStoragePermit==='valid')add('a20sm','§20 貯留登記事項',r20sm);}
       if(input.waterDilutionObserved==='yes'){add('a20d','§20 稀釋',r20d);if(input.waterDilutionPermit==='valid')add('a20dm','§20 稀釋登記事項',r20dm);}
       if(input.waterArticle22ReportingDutyConfirmed==='yes')add('a22','§22 申報',r22);
@@ -291,6 +327,8 @@
     subItems.filter(x=>x.active).forEach(x=>add(x.key,x.label,x.result));
     industryItems.forEach(([key,label,,result])=>add(key,label,result));
     out.waterFinalConclusionText=finalConclusion(input,activeForFinal,r59);
+    out.waterLiveDecisionText=liveDecision(out);
+    out.waterLiveMissingText=liveMissing(out);
 
     out.waterRuleStatus=r14.status;
     out.waterArticle14ElementsText=ruleLines(root.WATER_RULES.article14NoPermit,r14);
