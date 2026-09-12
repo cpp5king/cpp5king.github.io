@@ -7,8 +7,8 @@ async function setup(){
   return {...env,flow:env.root.NoiseMain};
 }
 
-const base={noiseDate:'2026-09-13',noiseTime:'14:00',noiseZone:'2',noiseHoliday:'no',noiseA8Act:'none'};
-const ordinary=(extra={})=>({...base,noiseSpecial:'ordinary',noiseNature:'measurable',...extra});
+const base={noiseDate:'2026-09-13',noiseTime:'14:00',noiseZone:'2',noiseHoliday:'no',noiseA8Act:'none',noiseSpecial:'ordinary'};
+const ordinary=(extra={})=>({...base,noiseNature:'measurable',...extra});
 
 test('重建版契約：單一 NoiseMain 與 noiseMain workflow 已註冊',async()=>{
   const {root,flow}=await setup();
@@ -18,14 +18,27 @@ test('重建版契約：單一 NoiseMain 與 noiseMain workflow 已註冊',async
   assert.equal(typeof root.TemplateWorkflows.noiseMain.prepare,'function');
 });
 
-test('重建版表單：第8條改為具體例外欄位，不再使用籠統 noiseA8Exception',async()=>{
+test('重建版表單：主管機關先分流，排氣管第8條為車輛專屬前置檢查',async()=>{
   const {root}=await setup();
   const tpl=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const ids=tpl.fields.map(x=>x.id);
+  assert.ok(ids.includes('noiseSpecial'));
+  assert.ok(ids.includes('noiseVehicleExhaustA8'));
   assert.ok(ids.includes('noiseA8Ex_fireworks_government'));
   assert.ok(ids.includes('noiseA8Ex_karaoke_a8KaraokeRegistered'));
   assert.ok(ids.includes('noiseA8Ex_construction_approved_a8Notice'));
   assert.ok(!ids.includes('noiseA8Exception'));
+  const a8=tpl.fields.find(x=>x.id==='noiseA8Act');
+  assert.ok(a8);
+  assert.equal(a8.options.some(x=>x.id==='exhaust'),false);
+});
+
+test('重建版第一步：未確認主要噪音來源時先停在主管機關分流',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseDate:'2026-09-13',noiseTime:'14:00'});
+  assert.equal(out.noiseBlocked,'yes');
+  assert.match(out.noiseRouteText,/主要噪音來源|主管機關/);
+  assert.match(out.noiseValidation,/先確認主要噪音來源/);
 });
 
 test('重建版法規事實：第二類22時進夜間、第三類22時30分仍屬晚間',async()=>{
@@ -42,15 +55,63 @@ test('重建版法規事實：例假日卡拉OK中午12至14時納入第8條時�
   assert.equal(flow.actApplicable(act,'2','13:00','no'),false);
 });
 
-test('重建版：第8條排氣管公告行為優先於機動車輛專章分流',async()=>{
+test('主管機關先分流：陸上運輸、民航、軍航不需要先判噪音管制區',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseA8Act:'exhaust',noiseA8Disturbance:'yes'});
-  assert.equal(out.noiseBlocked,'no');
-  assert.match(out.noiseRouteText,/第8條/);
-  assert.match(out.noiseRecord,/排氣管|第8條/);
+  const land=flow.prepare({noiseSpecial:'landTransport'});
+  const civil=flow.prepare({noiseSpecial:'civilAviation'});
+  const military=flow.prepare({noiseSpecial:'militaryAviation'});
+  assert.match(land.noiseGuide,/第14條/);
+  assert.match(civil.noiseGuide,/第15條|第16條/);
+  assert.match(military.noiseGuide,/第17條/);
+  for(const out of [land,civil,military]){
+    assert.equal(out.noiseBlocked,'no');
+    assert.equal(out.noiseZoneResultText,'');
+    assert.doesNotMatch(out.noiseRouteText,/第9條第1項/);
+  }
 });
 
-test('重建版 unknown 契約：第8條妨害安寧未知不得視為未成立',async()=>{
+test('車輛分流 unknown：排氣管第8條是否涉及未知時不得直接略過',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'vehicle',noiseVehicleExhaustA8:'unknown'});
+  assert.equal(out.noiseBlocked,'yes');
+  assert.match(out.noiseRouteText,/排氣管|第8條/);
+  assert.match(out.noiseValidation,/尚待確認|不得直接略過/);
+});
+
+test('車輛分流：未見排氣管第8條行為即走第11至13條專章，不要求管制區',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'vehicle',noiseVehicleExhaustA8:'no'});
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRouteText,/機動車輛/);
+  assert.match(out.noiseGuide,/第11條至第13條/);
+  assert.doesNotMatch(out.noiseRouteText,/第9條第1項/);
+});
+
+test('車輛排氣管第8條：行為存在但妨害安寧未知時保持待確認',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'vehicle',noiseVehicleExhaustA8:'yes',noiseA8Disturbance:'unknown'});
+  assert.equal(out.noiseBlocked,'yes');
+  assert.match(out.noiseValidation,/妨害他人生活環境安寧|尚待確認/);
+});
+
+test('車輛排氣管第8條：行為及妨害安寧均成立時優先走第8條',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'vehicle',noiseVehicleExhaustA8:'yes',noiseA8Disturbance:'yes'});
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRouteText,/第8條.*排氣管|排氣管.*第8條/);
+  assert.match(out.noiseRecord,/排氣管|第8條/);
+  assert.doesNotMatch(out.noiseRouteText,/第9條/);
+});
+
+test('車輛排氣管第8條：妨害安寧明確為否時回到機動車輛專章',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'vehicle',noiseVehicleExhaustA8:'yes',noiseA8Disturbance:'no'});
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRouteText,/機動車輛/);
+  assert.match(out.noiseGuide,/未逕以第8條成立/);
+});
+
+test('重建版 unknown 契約：一般第8條妨害安寧未知不得視為未成立',async()=>{
   const {flow}=await setup();
   const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'instrument',noiseA8Disturbance:'unknown'});
   assert.equal(out.noiseBlocked,'yes');
@@ -66,12 +127,12 @@ test('第8條爆竹：任一例外未知時不得直接成立或排除',async()=
   assert.match(out.noiseValidation,/例外|節慶/);
 });
 
-test('第8條爆竹：專案核准例外成立即不以該禁止行為成立',async()=>{
+test('第8條爆竹：專案核准例外成立後回到一般第6／9條流程',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'fireworks',noiseA8Disturbance:'yes',noiseA8Ex_fireworks_government:'yes',noiseSpecial:'vehicle'});
+  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'fireworks',noiseA8Disturbance:'yes',noiseA8Ex_fireworks_government:'yes',noiseNature:'difficult',noiseA6Disturbance:'no'});
   assert.match(out.noiseA8ExceptionSummary,/例外成立/);
   assert.equal(out.noiseBlocked,'no');
-  assert.match(out.noiseRouteText,/機動車輛/);
+  assert.match(out.noiseRouteText,/第6條要件未成立/);
 });
 
 test('第8條爆竹：全部例外明確為否時可成立第8條路徑',async()=>{
@@ -82,9 +143,9 @@ test('第8條爆竹：全部例外明確為否時可成立第8條路徑',async()
   assert.match(out.noiseA8ExceptionSummary,/未符合/);
 });
 
-test('第8條室外擴音：執行公務例外可直接排除該禁止行為',async()=>{
+test('第8條室外擴音：執行公務例外可排除該禁止行為後續走第6條',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'outdoorSpeaker',noiseA8Disturbance:'yes',noiseA8Ex_outdoorSpeaker_government:'no',noiseA8Ex_outdoorSpeaker_publicDuty:'yes',noiseSpecial:'ordinary',noiseNature:'difficult',noiseA6Disturbance:'no'});
+  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'outdoorSpeaker',noiseA8Disturbance:'yes',noiseA8Ex_outdoorSpeaker_government:'no',noiseA8Ex_outdoorSpeaker_publicDuty:'yes',noiseNature:'difficult',noiseA6Disturbance:'no'});
   assert.match(out.noiseA8ExceptionSummary,/執行公務/);
   assert.match(out.noiseRouteText,/第6條要件未成立/);
 });
@@ -106,10 +167,10 @@ test('第8條卡拉OK：尚有一項例外條件未知時保持待確認',async(
 
 test('第8條營建：核准施工且公告事項六附帶規定全數符合時例外成立',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'construction',noiseA8Disturbance:'yes',noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'yes',noiseA8Ex_construction_approved_a8Notice:'yes',noiseA8Ex_construction_approved_a8Sign:'yes',noiseA8Ex_construction_approved_a8Documents:'yes',noiseSpecial:'vehicle'});
+  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'construction',noiseA8Disturbance:'yes',noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'yes',noiseA8Ex_construction_approved_a8Notice:'yes',noiseA8Ex_construction_approved_a8Sign:'yes',noiseA8Ex_construction_approved_a8Documents:'yes',noiseNature:'difficult',noiseA6Disturbance:'no'});
   assert.match(out.noiseA8ExceptionSummary,/例外成立/);
   assert.equal(out.noiseBlocked,'no');
-  assert.match(out.noiseRouteText,/機動車輛/);
+  assert.match(out.noiseRouteText,/第6條要件未成立/);
 });
 
 test('第8條營建：雖經核准但公告事項六附帶規定有缺失時仍進第8條成立路徑',async()=>{
@@ -120,41 +181,24 @@ test('第8條營建：雖經核准但公告事項六附帶規定有缺失時仍�
   assert.match(out.noiseA8ExceptionSummary,/未符合公告事項六/);
 });
 
-test('第8條吹葉機：目的事業主管機關核准為任一成立即排除之例外',async()=>{
+test('第8條吹葉機：主管機關核准例外成立後不以第8條成立',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'leafBlower',noiseA8Disturbance:'yes',noiseA8Ex_leafBlower_safety:'no',noiseA8Ex_leafBlower_disaster:'no',noiseA8Ex_leafBlower_emergency:'no',noiseA8Ex_leafBlower_approved:'yes',noiseSpecial:'vehicle'});
+  const out=flow.prepare({...base,noiseTime:'23:00',noiseA8Act:'leafBlower',noiseA8Disturbance:'yes',noiseA8Ex_leafBlower_safety:'no',noiseA8Ex_leafBlower_disaster:'no',noiseA8Ex_leafBlower_emergency:'no',noiseA8Ex_leafBlower_approved:'yes',noiseNature:'difficult',noiseA6Disturbance:'no'});
   assert.match(out.noiseA8ExceptionSummary,/主管機關核准/);
-  assert.match(out.noiseRouteText,/機動車輛/);
-});
-
-test('重建版：非第8條之使用中機動車輛走車輛專章',async()=>{
-  const {flow}=await setup();
-  const out=flow.prepare({...base,noiseSpecial:'vehicle'});
-  assert.equal(out.noiseBlocked,'no');
-  assert.match(out.noiseRouteText,/機動車輛/);
-  assert.doesNotMatch(out.noiseRouteText,/第9條第1項/);
-});
-
-test('重建版：陸上運輸、民航、軍航各自離開一般第9條流程',async()=>{
-  const {flow}=await setup();
-  const land=flow.prepare({...base,noiseSpecial:'landTransport'});
-  const civil=flow.prepare({...base,noiseSpecial:'civilAviation'});
-  const military=flow.prepare({...base,noiseSpecial:'militaryAviation'});
-  assert.match(land.noiseGuide,/第14條/);assert.match(civil.noiseGuide,/第15條|第16條/);assert.match(military.noiseGuide,/第17條/);
-  for(const out of [land,civil,military])assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRouteText,/第6條要件未成立/);
 });
 
 test('重建版：第6條不自行補足妨害安寧事實',async()=>{
   const {flow}=await setup();
-  const pending=flow.prepare({...base,noiseSpecial:'ordinary',noiseNature:'difficult',noiseA6Disturbance:'unknown'});
+  const pending=flow.prepare({...base,noiseNature:'difficult',noiseA6Disturbance:'unknown'});
   assert.equal(pending.noiseBlocked,'yes');assert.match(pending.noiseValidation,/尚待確認|暫不作成/);
-  const established=flow.prepare({...base,noiseSpecial:'ordinary',noiseNature:'difficult',noiseA6Disturbance:'yes'});
+  const established=flow.prepare({...base,noiseNature:'difficult',noiseA6Disturbance:'yes'});
   assert.equal(established.noiseBlocked,'no');assert.match(established.noiseGuide,/警察機關/);
 });
 
 test('重建版：第6條妨害安寧明確為否時不硬轉第9條',async()=>{
   const {flow}=await setup();
-  const out=flow.prepare({...base,noiseSpecial:'ordinary',noiseNature:'difficult',noiseA6Disturbance:'no'});
+  const out=flow.prepare({...base,noiseNature:'difficult',noiseA6Disturbance:'no'});
   assert.equal(out.noiseBlocked,'no');assert.match(out.noiseRouteText,/不進第9條/);
 });
 
