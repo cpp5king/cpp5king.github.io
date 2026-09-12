@@ -42,9 +42,8 @@
     {id:'source',label:window.NOISE_TEXTS.main.text009,types:['factory','entertainment','business','speaker','other']},
     {id:'other',label:window.NOISE_TEXTS.templates.text078}
   ];
-  const main={id:'noise-main',categoryId:'noise',caseTypeId:'noise-case',title:window.NOISE_TEXTS.main.text010,version:'3.7.1',moduleVersion:'4.9.0',workflow:'noiseMain',choiceStyle:'cards',
+  const main={id:'noise-main',categoryId:'noise',caseTypeId:'noise-case',title:window.NOISE_TEXTS.main.text010,version:'3.7.1',moduleVersion:'4.9.1',workflow:'noiseMain',choiceStyle:'cards',
     formTitle:window.NOISE_TEXTS.main.text011,instructions:window.NOISE_TEXTS.main.text012,workflowStatus:'mainGuide',
-    relatedTemplates:[{id:'noise-neighbor',label:window.NOISE_TEXTS.main.text013}],
     scope:{excludedActIds:['exhaust']},
     validationMessageField:'mainValidation',
     initialGate:true,
