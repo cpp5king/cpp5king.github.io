@@ -9,19 +9,38 @@
   const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
   const permit=[['valid','有有效許可'],['none','查無有效許可'],['expired','許可已逾有效期間'],['unknown','許可狀態尚待確認']];
   const template={
-    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.2.1',workflow:'waterMain',choiceStyle:'cards',formTitle:T.main.formTitle,instructions:T.main.instructions,
-    initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'本階段為判斷流程，目前不直接產生案件文字。',
+    id:'water-main',categoryId:'water',caseTypeId:'water-inspection',title:T.main.title,version:'4.7',workflow:'waterMain',choiceStyle:'cards',mobileFocusMode:true,formTitle:T.main.formTitle,instructions:T.main.instructions,
+    initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('waterNoDrafts'),previewOnlyMessage:'完成案件查證後即可產生案件文字。',
     fields:[
       computed('waterNoDrafts'),
+      computed('waterRecordDraftText'),computed('waterReplyDraftText'),
       computed('waterShowSubjectConfirmed'),computed('waterShowArticle13Details'),computed('waterShowArticle14'),computed('waterShowMatterType'),computed('waterShowWastewater'),computed('waterShowDischarge'),computed('waterShowDestination'),computed('waterShowSurfaceDetails'),computed('waterShowDitchDetails'),computed('waterShowPermit'),
       computed('waterShowStorageDetails'),computed('waterShowStorageMismatch'),computed('waterShowArticle7'),computed('waterShowSampleDetails'),computed('waterShowLabDetails'),computed('waterShowEffluentResult'),
       computed('waterShowArticle181'),computed('waterShowBypassRoute'),computed('waterShowBypassQuestion'),computed('waterShowBypassEmergency'),computed('waterShowDilutionDetails'),computed('waterShowDilutionMismatch'),computed('waterShowDilutionEmergency'),computed('waterShowTreatmentDetails'),
       computed('waterShowArticle18Noncompliance'),computed('waterShowArticle28'),computed('waterShowArticle28Details'),computed('waterShowArticle28LeakChecks'),computed('waterShowArticle28Prevention'),computed('waterShowArticle28Emergency'),
       computed('waterShowArticle27'),computed('waterShowArticle27Actions'),computed('waterShowArticle32'),computed('waterShowSoilPermit'),computed('waterShowGroundwaterCheck'),computed('waterShowArticle30'),computed('waterShowArticle30Details'),
       computed('waterShowReportingNoncompliance'),computed('waterShowReportedMismatch'),computed('waterShowFalseDetails'),computed('waterShowArticle26Obstruction'),computed('waterShowArticle59Details'),computed('waterShowPolluter'),computed('waterShowAssessment'),computed('waterRuleStatus'),computed('waterArticle14ElementsText'),computed('waterAssessmentText'),computed('waterMissingText'),computed('waterNextChecksText'),
+      computed('waterShowSublawCore'),computed('waterShowSublawRainException'),computed('waterShowSublawRunoff'),computed('waterShowSublawOutsource'),computed('waterShowSublawStorage'),computed('waterShowSublawReuse'),computed('waterShowSublawOutlet'),computed('waterShowSublawOutletMixing'),computed('waterShowSublawMeter'),computed('waterShowSublawReporting'),
+      computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
+      field('waterInspectionDate',T.main.inspectionDate,'date',{format:'iso'}),
       select('waterSubjectType',T.main.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
       select('waterSubjectConfirmed',T.main.subjectConfirmed,tri,{showWhen:when('waterShowSubjectConfirmed')}),
+
+      computed('waterShowIndustry'),computed('waterShowIndustryArticle9'),computed('waterShowIndustryConstruction'),computed('waterShowIndustryLivestock'),computed('waterShowIndustryLivestockFertilizer'),
+      select('waterIndustryType','實際業別／特定水措業別',[['construction','營建工地'],['readyMix','預拌混凝土（第9條所稱水泥業）'],['stoneProcessing','土石加工業'],['stoneExtraction','土石採取業'],['mining','採礦業'],['earthworkDump','土石方堆（棄）置場'],['livestock','畜牧業'],['other','其他事業'],['unknown','尚待確認']],{showWhen:when('waterShowIndustry')}),
+      select('waterIndustryRainProtectionStatus','開挖面／堆置場所之遮雨、擋雨、導雨設施是否符合規定？',[['compliant','符合'],['approvedException','設置困難且已取得主管機關同意例外'],['noncompliant','不符合／未設置'],['unknown','尚待確認']],{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationBasinPresent','是否設有收集處理初期降雨及洗車平台廢水之沉砂池？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationCapacityCompliant','沉砂池總設計容量是否達工地／作業場所總面積×0.025公尺以上？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationFreeboardCompliant','非下雨期間最高液面距池頂高度是否大於池深二分之一？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationImpermeableCompliant','沉砂池是否採不透水材質？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustryMaintenanceRecordsCompliant','擋雨／遮雨／導雨設施及沉砂池是否有定期維護清淤並保存三年紀錄？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterConstructionReductionPlanApprovedBeforeWork','施工前是否已取得逕流廢水污染削減計畫核准？',tri,{showWhen:when('waterShowIndustryConstruction')}),
+      select('waterConstructionImplementedApprovedPlan','現場是否依核准削減計畫及工程圖說實施？',tri,{showWhen:when('waterShowIndustryConstruction')}),
+      select('waterLivestockFertilizerUse','是否採沼液／沼渣作為農地肥分使用？',tri,{showWhen:when('waterShowIndustryLivestock')}),
+      select('waterLivestockFertilizerPlanApproved','是否已取得農業主管機關審查同意之沼液沼渣農地肥分使用計畫？',tri,{showWhen:when('waterShowIndustryLivestockFertilizer')}),
+      select('waterLivestockFertilizerMatchesPlan','實際施灌是否依核准計畫登記事項運作？',tri,{showWhen:when('waterShowIndustryLivestockFertilizer')}),
+      computed('waterIndustryOverviewText','特定業別子法初步檢核',{display:true,displayWhen:when('waterShowIndustry')}),
 
       select('waterArticle13NewOrChangeConfirmed',T.main.article13NewOrChange,yn,{showWhen:when('waterShowSubjectConfirmed')}),
       select('waterArticle13DesignatedSubjectConfirmed',T.main.article13Designated,tri,{showWhen:when('waterShowArticle13Details')}),
@@ -92,6 +111,32 @@
       select('waterFalseReportOrBusinessRecordConfirmed',T.main.falseReportRecord,yn,{showWhen:when('waterShowFalseDetails')}),
       select('waterKnowingFalseEvidenceConfirmed',T.main.knowingFalse,yn,{showWhen:when('waterShowFalseDetails')}),
 
+      select('waterSublawApprovedMeasuresConfirmed',T.main.sublawApprovedMeasures,yn,{showWhen:when('waterShowSublawCore')}),
+      select('waterSublawOperationMatchesApprovedMeasures',T.main.sublawOperationMatches,yn,{showWhen:{field:'waterSublawApprovedMeasuresConfirmed',value:'yes'}}),
+      select('waterSublawWastewaterRainwaterCombined',T.main.sublawRainCombined,yn,{showWhen:when('waterShowSublawCore')}),
+      select('waterSublawRainwaterCombinationApprovedException',T.main.sublawRainException,yn,{showWhen:when('waterShowSublawRainException')}),
+      select('waterSublawRunoffArticle8Applicable',T.main.sublawRunoffApplicable,yn,{showWhen:when('waterShowSublawCore')}),
+      select('waterSublawRunoffCollectedTreatedCompliant',T.main.sublawRunoffCompliant,yn,{showWhen:when('waterShowSublawRunoff')}),
+      select('waterSublawOutsourceStorageCompliant',T.main.sublawOutsourceStorage,yn,{showWhen:when('waterShowSublawOutsource')}),
+      select('waterSublawOutsourceMeterCompliant',T.main.sublawOutsourceMeter,yn,{showWhen:when('waterShowSublawOutsource')}),
+      select('waterSublawStorageMeterCompliant',T.main.sublawStorageMeter,yn,{showWhen:when('waterShowSublawStorage')}),
+      select('waterSublawStorageRecordsCompliant',T.main.sublawStorageRecords,yn,{showWhen:when('waterShowSublawStorage')}),
+      select('waterSublawStorageCapacityCompliant',T.main.sublawStorageCapacity,yn,{showWhen:when('waterShowSublawStorage')}),
+      select('waterSublawReuseStandardOrExceptionCompliant',T.main.sublawReuseStandard,yn,{showWhen:when('waterShowSublawReuse')}),
+      select('waterSublawReuseSamplingPortCompliant',T.main.sublawReuseSampling,yn,{showWhen:when('waterShowSublawReuse')}),
+      select('waterSublawOutletLocationCompliant',T.main.sublawOutletLocation,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletAccessCompliant',T.main.sublawOutletAccess,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletMeterCompliant',T.main.sublawOutletMeter,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletSignCompliant',T.main.sublawOutletSign,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletSamplingCompliant',T.main.sublawOutletSampling,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletIsManhole',T.main.sublawOutletManhole,yn,{showWhen:when('waterShowSublawOutlet')}),
+      select('waterSublawOutletMixingCompliant',T.main.sublawOutletMixing,yn,{showWhen:when('waterShowSublawOutletMixing')}),
+      select('waterSublawMeterApplicable',T.main.sublawMeterApplicable,yn,{showWhen:when('waterShowSublawCore')}),
+      select('waterSublawMeterCalibrationCompliant',T.main.sublawMeterCalibration,yn,{showWhen:when('waterShowSublawMeter')}),
+      select('waterSublawReportingEvidenceMismatch',T.main.sublawReportingEvidenceMismatch,yn,{showWhen:when('waterShowSublawReporting')}),
+      select('waterSublawReportingSiteMismatch',T.main.sublawReportingSiteMismatch,yn,{showWhen:when('waterShowSublawReporting')}),
+      computed('waterSublawOverviewText',T.main.sublawOverview,{display:true,displayWhen:when('waterShowSublawCore')}),
+
       select('waterArticle26InspectionBasisConfirmed',T.main.inspectionBasis,yn,{showWhen:when('waterShowAssessment')}),
       select('waterArticle26ObstructionConfirmed',T.main.obstruction,yn,{showWhen:when('waterShowArticle26Obstruction')}),
 
@@ -125,7 +170,7 @@
       computed('waterArticle59Text',T.main.article59,{display:true,displayWhen:when('waterShowArticle59Details')}),
       computed('waterArticle71Text',T.main.article71,{display:true,displayWhen:when('waterShowPolluter')})
     ],
-    record:['水污染案件判斷流程目前不產生稽查紀錄草稿。'],reply:['水污染案件判斷流程目前不產生民眾回覆草稿。']
+    record:['{{waterRecordDraftText}}'],reply:['{{waterReplyDraftText}}']
   };
   root.INSPECTION_CONFIG.templates.push(template);
 })(window);

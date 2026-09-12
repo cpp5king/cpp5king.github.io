@@ -30,8 +30,29 @@
       if (state.categoryId) nav.append(button('首頁／案件大類', () => navigate(() => session.home()), true));
       if (state.caseTypeId) nav.append(button('重新選擇案件類型', () => navigate(() => session.selectCategory(state.categoryId)), true));
       if (state.templateId && !config.caseTypes.find(item => item.id === state.caseTypeId)?.directTemplateId) nav.append(button('切換紀錄範本', () => navigate(() => session.selectCaseType(state.caseTypeId)), true));
+      if (state.templateId) nav.append(button('匯出案件', () => exportCase(), true));
+      nav.append(button('匯入案件', () => importInput.click(), true));
       return nav;
     }
+    const importInput = document.createElement('input');
+    importInput.type = 'file'; importInput.accept = '.json,application/json'; importInput.hidden = true;
+    if(document.body?.append)document.body.append(importInput);
+    function exportCase(){
+      const state=session.snapshot();
+      if(!state.templateId){window.alert?.('目前沒有可匯出的案件。');return;}
+      const text=root.CaseFile.serialize(state,root.INSPECTION_APP_META);
+      const blob=new Blob([text],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a');link.href=url;link.download=root.CaseFile.filename(state);document.body.append(link);link.click();link.remove();URL.revokeObjectURL(url);
+    }
+    importInput.addEventListener('change',async()=>{
+      const file=importInput.files?.[0]; importInput.value=''; if(!file)return;
+      try{
+        if(hasInput()&&!window.confirm('匯入案件將取代目前輸入及草稿，是否繼續？'))return;
+        const parsed=root.CaseFile.parse(await file.text(),config);
+        session.restore(parsed.state); render();
+      }catch(error){window.alert?.('無法匯入案件：'+error.message);}
+    });
     function render() {
       app.replaceChildren(); const state = session.snapshot(); app.append(navigation(state));
       const category = config.categories.find(item => item.id === state.categoryId);

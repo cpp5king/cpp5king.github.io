@@ -11,6 +11,7 @@
     }
     return {
       snapshot: () => copy(state),
+      restore(nextState) { state = root.CaseFile.validateState(config, copy(nextState)); },
       home() { state = { categoryId: "", caseTypeId: "", templateId: "", inputs: {}, outputs: null, stale: false }; },
       selectCategory(id) {
         if (!config.categories.some(item => item.id === id && item.status === "active")) throw new Error("此案件大類尚未開放。");
@@ -38,7 +39,7 @@
       },
       setInputs(input) {
         const workflow = root.TemplateWorkflows?.[template().workflow];
-        if (workflow?.clearDraft(state.inputs, input)) { state.outputs = null; state.stale = false; }
+        if (workflow?.clearDraft?.(state.inputs, input)) { state.outputs = null; state.stale = false; }
         if (workflow?.resetChange) input = workflow.resetChange(state.inputs, input);
         state.inputs = root.DraftEngine.normalize(template(), input);
         if (state.outputs) state.stale = true;

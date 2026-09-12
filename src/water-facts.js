@@ -104,6 +104,38 @@
   function article13NoPlan(input){
     return noApproval(input,'waterMeasuresPlanApproval');
   }
+
+  function complianceNoncompliance(value){
+    const state=tri(value);
+    if(state==='yes')return 'no';
+    if(state==='no')return 'yes';
+    return 'unknown';
+  }
+  function approvedMeasuresMismatch(input){
+    const known=tri(input.waterSublawApprovedMeasuresConfirmed);
+    if(known!=='yes')return 'unknown';
+    return complianceNoncompliance(input.waterSublawOperationMatchesApprovedMeasures);
+  }
+  function rainWastewaterCombinedViolation(input){
+    const combined=tri(input.waterSublawWastewaterRainwaterCombined);
+    if(combined==='no')return 'no';
+    if(combined==='unknown')return 'unknown';
+    const exception=tri(input.waterSublawRainwaterCombinationApprovedException);
+    if(exception==='yes')return 'no';
+    if(exception==='no')return 'yes';
+    return 'unknown';
+  }
+  function destinationApplicable(input,destination){
+    if(input.waterDestination===destination)return 'yes';
+    if(input.waterDestination&&input.waterDestination!=='unknown')return 'no';
+    return 'unknown';
+  }
+  function outletApplicable(input){
+    const subj=businessOrSewer(input), waste=tri(input.waterWastewaterStatus), discharge=tri(input.waterActualDischarge), surf=surface(input);
+    if(subj==='no'||waste==='no'||discharge==='no'||surf==='no')return 'no';
+    if(subj==='yes'&&waste==='yes'&&discharge==='yes'&&surf==='yes')return 'yes';
+    return 'unknown';
+  }
   function build(input={}){
     const type=matterType(input);
     return {
@@ -192,6 +224,37 @@
       surfaceWaterPollutionEventConfirmed:tri(input.waterSurfaceWaterPollutionEventConfirmed),
       polluterIdentified:tri(input.waterPolluterIdentified),
 
+      sublawSubjectEligible:businessOrSewer(input),
+      sublawApprovedMeasuresKnown:tri(input.waterSublawApprovedMeasuresConfirmed),
+      sublawApprovedMeasuresMismatch:approvedMeasuresMismatch(input),
+      sublawRainWastewaterCombinedViolation:rainWastewaterCombinedViolation(input),
+      sublawRunoffArticle8Applicable:tri(input.waterSublawRunoffArticle8Applicable),
+      sublawRunoffCollectionNoncompliance:complianceNoncompliance(input.waterSublawRunoffCollectedTreatedCompliant),
+      sublawOutsourceApplicable:destinationApplicable(input,'outsourced'),
+      sublawOutsourceStorageNoncompliance:complianceNoncompliance(input.waterSublawOutsourceStorageCompliant),
+      sublawOutsourceMeterNoncompliance:complianceNoncompliance(input.waterSublawOutsourceMeterCompliant),
+      sublawStorageApplicable:destinationApplicable(input,'storage'),
+      sublawStorageMeterNoncompliance:complianceNoncompliance(input.waterSublawStorageMeterCompliant),
+      sublawStorageRecordsNoncompliance:complianceNoncompliance(input.waterSublawStorageRecordsCompliant),
+      sublawStorageCapacityNoncompliance:complianceNoncompliance(input.waterSublawStorageCapacityCompliant),
+      sublawReuseApplicable:destinationApplicable(input,'reuse'),
+      sublawReuseStandardNoncompliance:complianceNoncompliance(input.waterSublawReuseStandardOrExceptionCompliant),
+      sublawReuseSamplingPortNoncompliance:complianceNoncompliance(input.waterSublawReuseSamplingPortCompliant),
+      sublawOutletApplicable:outletApplicable(input),
+      sublawOutletLocationNoncompliance:complianceNoncompliance(input.waterSublawOutletLocationCompliant),
+      sublawOutletAccessNoncompliance:complianceNoncompliance(input.waterSublawOutletAccessCompliant),
+      sublawOutletMeterNoncompliance:complianceNoncompliance(input.waterSublawOutletMeterCompliant),
+      sublawOutletSignNoncompliance:complianceNoncompliance(input.waterSublawOutletSignCompliant),
+      sublawOutletSamplingNoncompliance:complianceNoncompliance(input.waterSublawOutletSamplingCompliant),
+      sublawOutletManholeApplicable:tri(input.waterSublawOutletIsManhole),
+      sublawOutletMixingNoncompliance:complianceNoncompliance(input.waterSublawOutletMixingCompliant),
+      sublawMeterApplicable:tri(input.waterSublawMeterApplicable),
+      sublawMeterCalibrationNoncompliance:complianceNoncompliance(input.waterSublawMeterCalibrationCompliant),
+      sublawReportingApplicable:tri(input.waterArticle22ReportingDutyConfirmed),
+      sublawReportingEvidenceMismatch:tri(input.waterSublawReportingEvidenceMismatch),
+      sublawReportingSiteMismatch:tri(input.waterSublawReportingSiteMismatch),
+
+      industryType:input.waterIndustryType||'',
       subjectType:input.waterSubjectType||'',sourceTypes:sourceTypes(input),sourceType:sourceTypes(input)[0]||'',destination:input.waterDestination||'',surfaceType:input.waterSurfaceType||'',
       drainageFunction:tri(input.waterDrainageFunctionConfirmed),downstreamConfirmed:tri(input.waterDownstreamConfirmed),drainageConnection:tri(input.waterDrainageConnectionConfirmed),
       dischargePermit:input.waterDischargePermit||'',storagePermit:input.waterStoragePermit||'',dilutionPermit:input.waterDilutionPermit||'',soilTreatmentPermit:input.waterSoilTreatmentPermit||'',leakCause:input.waterLeakCause||''

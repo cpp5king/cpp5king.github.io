@@ -1,5 +1,5 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const CACHE_NAME='inspection-assistant-4.2.1-pp-7f3c9a21';
+const CACHE_NAME='inspection-assistant-4.7-pp-7f3c9a21';
 const APP_SHELL=[
   './',
   './index.html',
@@ -54,14 +54,24 @@ const APP_SHELL=[
   './data/rules/water-article32.js',
   './data/rules/water-article59.js',
   './data/rules/water-article71.js',
+  './data/rules/water-sublaw-core.js',
+  './data/rules/water-industry.js',
+  './src/water-law-versions.js',
   './src/water-facts.js',
   './src/water-rule-engine.js',
+  './src/water-industry.js',
+  './src/water-workflow.js',
+  './src/water-dependencies.js',
+  './src/water-assessment.js',
+  './src/water-documents.js',
   './src/water-main.js',
   './src/water-field.js',
   './src/draft-engine.js',
   './src/template-loader.js',
+  './src/case-file.js',
   './src/case-session.js',
   './src/choice-controls.js',
+  './src/ui-profile.js',
   './src/field-renderer.js',
   './src/sentence-app.js',
   './src/pwa.js',

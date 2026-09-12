@@ -4,10 +4,15 @@
   function render(template, onChange) {
     const controls = {};
     const displays = [];
+    const slotRecords = [];
     let previousFacts = {};
+    let mobileShowCompleted = false;
     const container = document.createElement("div");
     container.className = "panel sentence-form";
     if(template.choiceStyle==='cards')container.className+=' card-form';
+    const uiProfile=root.UiProfile?.current?.()||'desktop';
+    container.setAttribute('data-ui-profile',uiProfile);
+    if(template.mobileFocusMode)container.setAttribute('data-mobile-focus','yes');
 
     function el(tag, text, className) {
       const node = document.createElement(tag);
@@ -415,7 +420,39 @@
           ) || !root.DraftEngine.matches(spec.displayWhen,facts);
       });
 
+      slotRecords.push({spec,wrap});
       return wrap;
+    }
+
+    let mobileFocusButton=null;
+    function updateMobileFocus(facts){
+      const profile=root.UiProfile?.current?.()||uiProfile;
+      container.setAttribute('data-ui-profile',profile);
+      if(!template.mobileFocusMode||profile!=='mobile') {
+        slotRecords.forEach(({wrap})=>{
+          wrap.setAttribute('data-ui-hidden','no');
+          wrap.setAttribute('data-ui-current','no');
+          wrap.setAttribute('data-ui-completed','no');
+        });
+        if(mobileFocusButton)mobileFocusButton.hidden=true;
+        return;
+      }
+      const visibleInputs=slotRecords.filter(({spec,wrap})=>!wrap.hidden&&!['computed','fixed'].includes(spec.type));
+      const current=visibleInputs.find(({spec})=>!root.UiProfile.answered(spec,facts));
+      let completed=0;
+      slotRecords.forEach(({spec,wrap})=>{
+        const isInput=!['computed','fixed'].includes(spec.type);
+        const isComplete=isInput&&!wrap.hidden&&root.UiProfile.answered(spec,facts)&&(!current||spec.id!==current.spec.id);
+        const isCurrent=!!current&&spec.id===current.spec.id;
+        if(isComplete)completed++;
+        wrap.setAttribute('data-ui-completed',isComplete?'yes':'no');
+        wrap.setAttribute('data-ui-current',isCurrent?'yes':'no');
+        wrap.setAttribute('data-ui-hidden',isComplete&&!mobileShowCompleted?'yes':'no');
+      });
+      if(mobileFocusButton){
+        mobileFocusButton.hidden=completed===0;
+        mobileFocusButton.textContent=mobileShowCompleted?'隱藏已完成步驟':`查看／修改已完成步驟（${completed}）`;
+      }
     }
 
     // 填寫畫面只顯示欄位。
@@ -433,6 +470,17 @@
       formGrid.append(field(spec));
     }
 
+    if(template.mobileFocusMode){
+      const focusBar=el("div","","mobile-focus-bar");
+      mobileFocusButton=el("button","查看／修改已完成步驟","secondary");
+      mobileFocusButton.type="button";
+      mobileFocusButton.addEventListener("click",()=>{
+        mobileShowCompleted=!mobileShowCompleted;
+        updateMobileFocus(previousFacts);
+      });
+      focusBar.append(mobileFocusButton);
+      container.append(focusBar);
+    }
     container.append(formGrid);
     if (template.workflowStatus) {
       const status = el('p'); status.setAttribute('role', 'status');
@@ -473,6 +521,7 @@
       displays.forEach(update =>
         update(facts)
       );
+      updateMobileFocus(facts);
       previousFacts = facts;
 
       return facts;

@@ -8,17 +8,34 @@
   const yn=[['yes','是'],['no','否'],['unknown','已查證但目前仍無法確認']];
   const tri=[['yes','是，已確認'],['no','否，已確認不是／不符合'],['unknown','已查證但目前仍無法確認']];
   const template={
-    id:'water-field',categoryId:'water',caseTypeId:'water-field-inspection',title:T.title,version:'4.2.1',workflow:'waterField',choiceStyle:'cards',formTitle:T.formTitle,instructions:T.instructions,
-    initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('fieldNoDrafts'),previewOnlyMessage:'現場稽查模式目前不直接產生案件文字。',
+    id:'water-field',categoryId:'water',caseTypeId:'water-field-inspection',title:T.title,version:'4.7',workflow:'waterField',choiceStyle:'cards',mobileFocusMode:true,formTitle:T.formTitle,instructions:T.instructions,
+    initialGate:true,validateOnSubmit:false,draftActionLabel:'產生案件文字',previewOnlyWhen:when('fieldNoDrafts'),previewOnlyMessage:'完成現場查察後即可產生案件文字。',
     handoff:{label:'繼續案件研判',caseTypeId:'water-inspection',templateId:'water-main',when:when('fieldShowAssessment'),confirmMessage:'將把本次現場稽查已填事實帶入「案件研判（完整母法）」繼續補查，是否繼續？'},
     fields:[
       computed('fieldNoDrafts'),
-      computed('fieldShowSubjectConfirmed'),computed('fieldShowOperation'),computed('fieldShowProcess'),computed('fieldShowWaterUse'),computed('fieldShowMatter'),computed('fieldShowWastewater'),computed('fieldShowSources'),computed('fieldShowCollection'),computed('fieldShowTreatment'),computed('fieldShowRoute'),computed('fieldShowDestination'),computed('fieldShowSurface'),computed('fieldShowDitch'),computed('fieldShowDischarge'),computed('fieldShowDumping'),computed('fieldShowDumpingDetails'),computed('fieldShowPermit'),computed('fieldShowIncident'),computed('fieldShowIncidentDetails'),computed('fieldShowLeakPolluted'),computed('fieldShowLeakPrevention'),computed('fieldShowEmergency'),computed('fieldShowSampling'),computed('fieldShowSampleDetails'),computed('fieldShowLab'),computed('fieldShowEffluent'),computed('fieldShowEvidence'),computed('fieldShowComplete'),computed('fieldShowAssessment'),
+      computed('waterRecordDraftText'),computed('waterReplyDraftText'),
+      field('waterInspectionDate',T.inspectionDate,'date',{format:'iso'}),
+      computed('waterLawVersionText',T.lawVersion,{display:true}),
+      computed('fieldShowSubjectConfirmed'),computed('waterShowIndustry'),computed('waterShowIndustryArticle9'),computed('waterShowIndustryConstruction'),computed('waterShowIndustryLivestock'),computed('waterShowIndustryLivestockFertilizer'),computed('fieldShowOperation'),computed('fieldShowProcess'),computed('fieldShowWaterUse'),computed('fieldShowMatter'),computed('fieldShowWastewater'),computed('fieldShowSources'),computed('fieldShowCollection'),computed('fieldShowTreatment'),computed('fieldShowRoute'),computed('fieldShowDestination'),computed('fieldShowSurface'),computed('fieldShowDitch'),computed('fieldShowDischarge'),computed('fieldShowDumping'),computed('fieldShowDumpingDetails'),computed('fieldShowPermit'),computed('fieldShowIncident'),computed('fieldShowIncidentDetails'),computed('fieldShowLeakPolluted'),computed('fieldShowLeakPrevention'),computed('fieldShowEmergency'),computed('fieldShowSampling'),computed('fieldShowSampleDetails'),computed('fieldShowLab'),computed('fieldShowEffluent'),computed('fieldShowEvidence'),computed('fieldShowComplete'),computed('fieldShowAssessment'),
       computed('fieldProgressText',T.progress,{display:true}),
       computed('fieldCurrentGuidanceText',T.guidance,{display:true}),
 
       select('waterSubjectType',T.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
       select('waterSubjectConfirmed',T.subjectConfirmed,tri,{showWhen:when('fieldShowSubjectConfirmed')}),
+
+      select('waterIndustryType','實際業別／特定水措業別',[['construction','營建工地'],['readyMix','預拌混凝土（第9條所稱水泥業）'],['stoneProcessing','土石加工業'],['stoneExtraction','土石採取業'],['mining','採礦業'],['earthworkDump','土石方堆（棄）置場'],['livestock','畜牧業'],['other','其他事業'],['unknown','尚待確認']],{showWhen:when('waterShowIndustry')}),
+      select('waterIndustryRainProtectionStatus','開挖面／堆置場所之遮雨、擋雨、導雨設施是否符合規定？',[['compliant','符合'],['approvedException','設置困難且已取得主管機關同意例外'],['noncompliant','不符合／未設置'],['unknown','尚待確認']],{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationBasinPresent','是否設有收集處理初期降雨及洗車平台廢水之沉砂池？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationCapacityCompliant','沉砂池總設計容量是否達工地／作業場所總面積×0.025公尺以上？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationFreeboardCompliant','非下雨期間最高液面距池頂高度是否大於池深二分之一？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustrySedimentationImpermeableCompliant','沉砂池是否採不透水材質？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterIndustryMaintenanceRecordsCompliant','擋雨／遮雨／導雨設施及沉砂池是否有定期維護清淤並保存三年紀錄？',tri,{showWhen:when('waterShowIndustryArticle9')}),
+      select('waterConstructionReductionPlanApprovedBeforeWork','施工前是否已取得逕流廢水污染削減計畫核准？',tri,{showWhen:when('waterShowIndustryConstruction')}),
+      select('waterConstructionImplementedApprovedPlan','現場是否依核准削減計畫及工程圖說實施？',tri,{showWhen:when('waterShowIndustryConstruction')}),
+      select('waterLivestockFertilizerUse','是否採沼液／沼渣作為農地肥分使用？',tri,{showWhen:when('waterShowIndustryLivestock')}),
+      select('waterLivestockFertilizerPlanApproved','是否已取得農業主管機關審查同意之沼液沼渣農地肥分使用計畫？',tri,{showWhen:when('waterShowIndustryLivestockFertilizer')}),
+      select('waterLivestockFertilizerMatchesPlan','實際施灌是否依核准計畫登記事項運作？',tri,{showWhen:when('waterShowIndustryLivestockFertilizer')}),
+      computed('waterIndustryOverviewText','特定業別子法初步檢核',{display:true,displayWhen:when('waterShowIndustry')}),
       select('fieldOperationStatus',T.operationStatus,[['operating','正在營運／作業'],['temporarilyStopped','暫停作業但有近期操作跡象'],['notOperating','目前未營運'],['unknown','尚待確認']],{showWhen:when('fieldShowOperation')}),
       select('fieldProcessObserved',T.processObserved,yn,{showWhen:when('fieldShowProcess')}),
       select('fieldWaterUseObserved',T.waterUseObserved,yn,{showWhen:when('fieldShowWaterUse')}),
@@ -67,7 +84,7 @@
       computed('fieldFinalConclusionText',T.finalConclusion,{display:true,displayWhen:when('fieldShowAssessment')}),
       computed('fieldRulesOverviewText',T.overview,{display:true,displayWhen:when('fieldShowAssessment')})
     ],
-    record:['水污染現場稽查模式目前不產生稽查紀錄草稿。'],reply:['水污染現場稽查模式目前不產生民眾回覆草稿。']
+    record:['{{waterRecordDraftText}}'],reply:['{{waterReplyDraftText}}']
   };
   root.INSPECTION_CONFIG.templates.push(template);
 })(window);

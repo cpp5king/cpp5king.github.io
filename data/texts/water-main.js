@@ -35,6 +35,19 @@
       facilityFailure:'§59｜是否已確認廢（污）水處理設施發生故障，並主張／需檢核24小時標準例外？',a59Repair:'是否立即修復或啟用備份裝置，並採減產、停產或其他應變？',a59Record:'是否立即記錄故障並以電話或電傳報備，且留存報備人員資料？',a59Recover:'是否24小時內恢復正常，或恢復前持續減少／停止生產服務？',a59Report5:'是否於5日內提出書面報告？',a59Causation:'故障與所違反之放流水標準是否具有直接關係？',a59SixMonths:'是否不屬6個月內相同故障？',
       surfacePollutionEvent:'§71｜是否已確認地面水體發生污染事件？',polluterIdentified:'是否已確認污染行為人？',investigationComplete:'最終檢核｜本次案件需要查證的事項是否已完成？',
 
+      inspectionDate:'稽查日期（用於判定子法施行版本）',lawVersion:'子法版本／施行日判定',
+      sublawSection:'子法核心檢核',
+      sublawApprovedMeasures:'水措管理辦法§4｜是否已取得並確認本案核准水措內容？',sublawOperationMatches:'現場製程、收集、處理、管線、槽體及最終去向是否與核准水措一致？',
+      sublawRainCombined:'水措管理辦法§7｜是否發現廢（污）水與雨水合流收集？',sublawRainException:'如有合流，是否已有主管機關核准之既設技術困難例外及防止直接排放設施？',
+      sublawRunoffApplicable:'水措管理辦法§8｜是否已確認屬第8條所列戶外貯存／堆置物質而應收集處理逕流廢水？',sublawRunoffCompliant:'應收集處理之逕流廢水是否已依規定收集處理？',
+      sublawOutsourceStorage:'水措管理辦法§31｜採委託處理前，是否已依規定設置廢（污）水處理設施或貯留設施？',sublawOutsourceMeter:'委託／受託管線或溝渠進、出流水端水量計測是否符合規定？',
+      sublawStorageMeter:'水措管理辦法§39｜貯留設施水量計測是否符合規定？',sublawStorageRecords:'是否有逐日逐批記錄貯留時間、輸運方式、水量與處理水量，並依規定保存？',sublawStorageCapacity:'水措管理辦法§40｜貯留設施容量是否足以因應緊急應變？',
+      sublawReuseStandard:'水措管理辦法§41｜回收使用水質是否符合要求，或已確認屬法定例外？',sublawReuseSampling:'依法應設回收使用前採樣口者，採樣口是否符合規定？',
+      sublawOutletLocation:'水措管理辦法§53｜放流口位置是否符合規定？',sublawOutletAccess:'採樣道路及一平方公尺以上採樣平台是否符合規定？',sublawOutletMeter:'放流水量計測設施是否符合規定？',sublawOutletSign:'放流口告示牌及座標標示是否符合規定？',sublawOutletSampling:'放流口是否可供直接採樣，且無未核准妨礙採樣設施？',sublawOutletManhole:'放流口是否為陰井？',sublawOutletMixing:'陰井水質是否充分均勻混合？',
+      sublawMeterApplicable:'水措管理辦法§65｜本案是否有依規定設置之累計型水量計測設施需檢核？',sublawMeterCalibration:'水量計校正、維護頻率與紀錄是否符合規定？',
+      sublawReportingEvidenceMismatch:'水措管理辦法§89-1｜申報資料是否已確認與單據、檢測報告、紀錄或照片不一致？',sublawReportingSiteMismatch:'申報資料是否已確認與現場製程、用電、加藥、水量或操作參數不一致？',
+      sublawOverview:'子法核心研判總覽',
+
       overview:'多條文研判總覽',article13:'§13 水措計畫',article14:'§14 排放許可',article7:'§7 放流水標準',article18:'§18 水污染防治措施',article181:'§18-1 異常排放／處理設施',article20:'§20 貯留／稀釋',article22:'§22 申報',article35:'§35 疑似不實申報／虛偽紀錄',article26:'§26 查證／拒檢',article27:'§27 重大危害',article28:'§28 輸送／貯存設備疏漏',article32:'§32 土壤／地下水體',article30:'§30 污染物棄置',article59:'§59 設備故障例外',article71:'§71 污染清除後續',finalConclusion:'全案最終研判',missing:'缺少／不成立要件',next:'下一步查證建議'
     }
   };

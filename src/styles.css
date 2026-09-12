@@ -67,3 +67,19 @@ button:disabled { cursor: default; background: #e4e9e6; color: #617269; border-c
   button { min-height:52px; }
   footer { padding-bottom:max(28px, env(safe-area-inset-bottom)); }
 }
+
+/* 4.7 UI profiles: same Water Core, different presentation only. */
+.mobile-focus-bar { display:none; margin:4px 0 10px; }
+.sentence-form[data-ui-profile="tablet"] { max-width:1100px; }
+.sentence-form[data-ui-profile="tablet"] .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.sentence-form[data-ui-profile="tablet"] .sentence-slot { display:block; width:100%; margin:4px 0; }
+.sentence-form[data-ui-profile="tablet"] .sentence-slot:has(.single-choice),
+.sentence-form[data-ui-profile="tablet"] .sentence-slot:has(.choice-group) { grid-column:1 / -1; }
+@media (max-width:760px) {
+  .sentence-form[data-mobile-focus="yes"] .mobile-focus-bar { display:block; position:sticky; top:0; z-index:5; background:#fff; padding:6px 0; }
+  .sentence-form[data-mobile-focus="yes"] .mobile-focus-bar button { width:100%; min-height:44px; }
+  .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-hidden="yes"] { display:none !important; }
+  .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-current="yes"] { border:2px solid #146552; background:#f3fbf7; box-shadow:0 0 0 3px rgba(20,101,82,.08); }
+  .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-current="yes"] label,
+  .sentence-form[data-mobile-focus="yes"] .sentence-slot[data-ui-current="yes"] legend { font-size:1rem; }
+}

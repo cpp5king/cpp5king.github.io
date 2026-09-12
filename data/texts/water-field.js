@@ -5,6 +5,8 @@
     title:'水污染現場稽查',
     formTitle:'水污染現場稽查模式 V1',
     instructions:'依現場順序一步一步查證。前台先做事實確認與蒐證，法規條文由後台規則引擎同步運算；完成現場查察後再顯示整體研判。',
+    inspectionDate:'案件／稽查日期',
+    lawVersion:'本案子法版本判定',
     subjectType:'STEP 1｜先確認現場對象是誰',
     subjectConfirmed:'是否已依實際作業、業別、規模及列管資料確認屬水污法事業？',
     operationStatus:'STEP 2｜目前現場營運狀態？',
