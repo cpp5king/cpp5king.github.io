@@ -535,14 +535,40 @@
       onChange(write(input));
     }
 
+    function shouldDeferMobileDate(event) {
+      const target = event?.target;
+      if (target?.type !== "date" || !template.mobileFocusMode) return false;
+      const profile = root.UiProfile?.current?.() || uiProfile;
+      return profile === "mobile" && root.document?.activeElement === target;
+    }
+
     container.addEventListener(
       "input",
-      change
+      event => {
+        if (shouldDeferMobileDate(event)) return;
+        change();
+      }
     );
 
     container.addEventListener(
       "change",
-      change
+      event => {
+        if (shouldDeferMobileDate(event)) return;
+        change();
+      }
+    );
+
+    // iOS Safari can write/emit date input/change events while its native picker is
+    // still open. In mobile focus mode, commit the date only after the picker closes
+    // (focus leaves the date control), so merely opening the picker never advances.
+    container.addEventListener(
+      "focusout",
+      event => {
+        const target = event?.target;
+        if (target?.type !== "date" || !template.mobileFocusMode) return;
+        const profile = root.UiProfile?.current?.() || uiProfile;
+        if (profile === "mobile") change();
+      }
     );
 
     function visibleInputRecords(){
