@@ -2,8 +2,8 @@
   'use strict';
   root.INSPECTION_APP_META=Object.freeze({
     name:'稽查助手',
-    version:'4.7.1',
-    label:'稽查助手4.7.1',
+    version:'4.7.2',
+    label:'稽查助手4.7.2',
     ownerTag:'PP',
     productId:'INSPECTION-ASSISTANT',
     provenance:'PP-IA-41-7F3C9A21'
