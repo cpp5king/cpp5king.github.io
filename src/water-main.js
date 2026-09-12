@@ -2,6 +2,22 @@
   'use strict';
   root.TemplateWorkflows=root.TemplateWorkflows||{};
 
+  root.TemplatePatches=root.TemplatePatches||{};
+  root.TemplatePatches.waterMain472=function(config){
+    const template=(config?.templates||[]).find(item=>item.id==='water-main');
+    if(!template)return;
+    template.version='4.7.2';
+    template.assessmentFloatingActions=true;
+    const dateIndex=template.fields.findIndex(item=>item.id==='waterInspectionDate');
+    const hasSummary=template.fields.some(item=>item.id==='waterLiveDecisionText');
+    if(dateIndex>=0&&!hasSummary){
+      template.fields.splice(dateIndex,0,
+        {id:'waterLiveDecisionText',label:'案件研判摘要',type:'computed',missing:'尚待確認',display:true,className:'live-assessment'},
+        {id:'waterLiveMissingText',label:'尚缺關鍵事證',type:'computed',missing:'尚待確認',display:true,className:'live-assessment'}
+      );
+    }
+  };
+
   function normalizeSourceTypes(out){
     if(!Array.isArray(out.waterSourceTypes)&&out.waterSourceType)out.waterSourceTypes=[out.waterSourceType];
     if(Array.isArray(out.waterSourceTypes)){
