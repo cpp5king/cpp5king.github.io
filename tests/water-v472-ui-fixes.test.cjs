@@ -45,3 +45,13 @@ test('4.7.2 母法頁建立專用浮動導覽，不出現現場結束與緊急�
   assert.ok(!labels.includes('結束本次查察'));
   assert.ok(!labels.includes('立即處置／緊急應變'));
 });
+
+test('4.7.2 母法模板補丁在動態模板載入完成後套用',async()=>{
+  const e=await loaded();
+  const t=e.config.templates.find(x=>x.id==='water-main');
+  assert.equal(t.version,'4.7.2');
+  assert.equal(t.assessmentFloatingActions,true);
+  const dateIndex=t.fields.findIndex(x=>x.id==='waterInspectionDate');
+  assert.ok(t.fields.findIndex(x=>x.id==='waterLiveDecisionText')<dateIndex);
+  assert.ok(t.fields.findIndex(x=>x.id==='waterLiveMissingText')<dateIndex);
+});
