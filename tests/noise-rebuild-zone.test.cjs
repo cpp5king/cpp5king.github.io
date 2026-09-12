@@ -161,16 +161,24 @@ test('管制區交界：不得強行簡化成單一類別',async()=>{
   assert.match(out.message,/同時套用兩區標準|單一管制區/);
 });
 
-test('主流程整合：輔助判得第二類後可直接供後續主管機關分流使用',async()=>{
+test('主流程整合：一般噪音源由管制區輔助判得第二類後才進第8／6／9條流程',async()=>{
   const {flow}=await setup();
   const out=flow.prepare({
     ...assist({noiseZoneAssistType:'road6to15',noiseZoneTrafficSource:'no',noiseZoneSourceZone:'2'}),
-    noiseTime:'14:00',noiseHoliday:'no',noiseA8Act:'none',noiseSpecial:'vehicle'
+    noiseTime:'14:00',noiseHoliday:'no',noiseA8Act:'none',noiseSpecial:'ordinary',noiseNature:'difficult',noiseA6Disturbance:'no'
   });
   assert.equal(out.noiseZone,'2');
   assert.match(out.noiseZoneResultText,/第2類/);
   assert.equal(out.noiseBlocked,'no');
-  assert.match(out.noiseRouteText,/機動車輛/);
+  assert.match(out.noiseRouteText,/第6條要件未成立/);
+});
+
+test('主流程整合：特殊來源先分流，不應要求一般噪音管制區資料',async()=>{
+  const {flow}=await setup();
+  const out=flow.prepare({noiseSpecial:'landTransport'});
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseGuide,/第14條/);
+  assert.equal(out.noiseZoneResultText,'');
 });
 
 test('主流程整合：交界案件停在管制區判定，不自行選較寬鬆或較嚴格單一區',async()=>{
