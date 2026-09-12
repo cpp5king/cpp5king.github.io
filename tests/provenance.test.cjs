@@ -19,10 +19,10 @@ test('PP來源指紋分散存在多個核心檔案', () => {
   ]) assert.match(read(file), new RegExp(marker.replaceAll('-','\\-')), file+' 缺少來源指紋');
 });
 
-test('版本與PWA識別同步為4.7且含PP來源身分', () => {
-  assert.match(read('data/app-meta.js'), /version:'4\.7'/);
+test('版本與PWA識別同步為4.7.1且含PP來源身分', () => {
+  assert.match(read('data/app-meta.js'), /version:'4\.7\.1'/);
   assert.match(read('data/app-meta.js'), /ownerTag:'PP'/);
   const manifest = JSON.parse(read('manifest.webmanifest'));
-  assert.equal(manifest.name, '稽查助手4.7');
+  assert.equal(manifest.name, '稽查助手4.7.1');
   assert.equal(manifest.id, './inspection-assistant-pp');
 });
