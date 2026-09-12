@@ -7,7 +7,10 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.8.6';
+  const VERSION='4.8.7';
+  const CHECK_THROTTLE_MS=15000;
+  let checkingUpdate=null;
+  let lastCheckedAt=0;
 
   const readPublishedVersion=async()=>{
     try{
@@ -22,7 +25,7 @@
     if(!version||version===VERSION)return;
     try{
       await root.navigator.serviceWorker?.register?.(`./service-worker.js?v=${encodeURIComponent(version)}`,{updateViaCache:'none'});
-    }catch(_){/* 下一次開啟仍會再次檢查 */}
+    }catch(_){/* 下一次上線或恢復前景仍會再次檢查 */}
     try{
       const target=new URL('./index.html',root.location.href);
       target.searchParams.set('v',version);
@@ -31,17 +34,37 @@
     }catch(_){/* 保留目前可用版本 */}
   };
 
-  // 每次上線時向伺服器確認版本；未來即使瀏覽器仍握有舊 App Shell，
-  // 只要這支更新程式已進入裝置，就會自行切到新版本化網址。
-  if(secure && 'serviceWorker' in root.navigator){
-    root.addEventListener('load',async()=>{
+  const checkForUpdate=async(force=false)=>{
+    if(!secure||!('serviceWorker' in root.navigator))return;
+    if(checkingUpdate)return checkingUpdate;
+    const now=Date.now();
+    if(!force && now-lastCheckedAt<CHECK_THROTTLE_MS)return;
+    lastCheckedAt=now;
+    checkingUpdate=(async()=>{
       try{
         const registration=await root.navigator.serviceWorker.register(`./service-worker.js?v=${VERSION}`,{updateViaCache:'none'});
         if(registration?.update)await registration.update();
       }catch(_){/* 離線時維持既有離線版本 */}
       const published=await readPublishedVersion();
       await moveToPublishedVersion(published);
+    })();
+    try{
+      await checkingUpdate;
+    }finally{
+      checkingUpdate=null;
+    }
+  };
+
+  // Chrome 安裝型 PWA 從背景恢復時不一定重新觸發 load。
+  // 除首次載入外，在 pageshow、重新回到前景及恢復網路時都再確認已發布版本。
+  // 節流狀態只放記憶體，不使用 localStorage / IndexedDB 等持久儲存。
+  if(secure && 'serviceWorker' in root.navigator){
+    root.addEventListener('load',()=>{void checkForUpdate(true);});
+    root.addEventListener('pageshow',()=>{void checkForUpdate();});
+    doc?.addEventListener?.('visibilitychange',()=>{
+      if(doc.visibilityState==='visible')void checkForUpdate();
     });
+    root.addEventListener('online',()=>{void checkForUpdate(true);});
     let refreshing=false;
     root.navigator.serviceWorker.addEventListener?.('controllerchange',()=>{
       if(refreshing)return;
