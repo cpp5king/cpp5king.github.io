@@ -34,6 +34,14 @@
     return input.noiseBand==='full'||input.noiseBand==='both';
   }
 
+  function methodState(input){
+    const hasGuidedFacts=!!(input.noiseGeneralPattern||input.noiseGeneralBg10||input.noiseGeneralSpread);
+    if(!hasGuidedFacts&&methodLabel[input.noiseGeneralMethod]){
+      return {status:'ok',method:input.noiseGeneralMethod,text:`舊案件相容｜${methodLabel[input.noiseGeneralMethod]}`,showBg10:false,showSpread:false,legacy:true};
+    }
+    return deriveGeneralMethod(input);
+  }
+
   function decorate(out,state){
     out.noiseShowGeneralMethod=isGeneralFull(out)?'yes':(out.noiseShowGeneralMethod||'no');
     out.noiseShowGeneralBg10=state?.showBg10?'yes':'no';
@@ -45,7 +53,7 @@
 
   function prepare(input={}){
     if(!isGeneralFull(input))return decorate(innerPrepare(input),null);
-    const state=deriveGeneralMethod(input);
+    const state=methodState(input);
     const forwarded={...input,noiseGeneralMethod:state.status==='ok'?state.method:''};
     const out=decorate(innerPrepare(forwarded),state);
     if(state.status==='ok')return out;
