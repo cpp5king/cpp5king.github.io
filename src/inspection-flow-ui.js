@@ -23,6 +23,28 @@
     for(const id of ids)if(fields.focusField(id))return true;
     return false;
   }
+  function mobileProfile(){
+    return (root.UiProfile?.current?.()||'desktop')==='mobile';
+  }
+  function installMultiSelectHold(template,fields){
+    const container=fields?.element;
+    if(!container||!template.mobileFocusMode)return ()=>false;
+    container.addEventListener('change',event=>{
+      if(!mobileProfile()||event?.target?.type!=='checkbox')return;
+      const slot=event.target.closest?.('.sentence-slot');
+      if(!slot)return;
+      container.querySelectorAll?.('.multi-select-editing').forEach(node=>{
+        if(node!==slot)node.classList?.remove('multi-select-editing');
+      });
+      slot.classList?.add('multi-select-editing');
+    });
+    return ()=>{
+      const editing=container.querySelector?.('.multi-select-editing');
+      if(!editing)return false;
+      editing.classList?.remove('multi-select-editing');
+      return true;
+    };
+  }
 
   function attach({template,fields,workflow,performHandoff,onEnd}){
     const config=template.quickActions;
@@ -36,9 +58,18 @@
     floating.setAttribute('aria-label',config.ariaLabel||'流程快速操作');
     const left=el('div','', 'field-action-rail field-action-left');
     const right=el('div','', 'field-action-rail field-action-right');
+    const releaseMultiSelect=installMultiSelectHold(template,fields);
 
-    const back=button(labels.back,()=>fields.navigateStep(-1),true);
-    const next=button(labels.next,()=>fields.focusCurrent());
+    const back=button(labels.back,()=>{
+      releaseMultiSelect();
+      fields.navigateStep(-1);
+    },true);
+    const next=button(labels.next,()=>{
+      // 複選題在手機上不因勾第一項就視為「已完成」。
+      // 使用者可連續勾選，按「下一步」才離開該複選題。
+      releaseMultiSelect();
+      fields.focusCurrent();
+    });
     left.append(back);
 
     let summary=null,missing=null,handoff=null,end=null,emergency=null;
