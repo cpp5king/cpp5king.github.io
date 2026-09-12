@@ -59,15 +59,58 @@
     const left=el('div','', 'field-action-rail field-action-left');
     const right=el('div','', 'field-action-rail field-action-right');
     const releaseMultiSelect=installMultiSelectHold(template,fields);
+    let latestFacts={};
+    let historyFieldId='';
+
+    function inputRecords(){
+      const container=fields?.element;
+      if(!container?.querySelectorAll)return [];
+      const specs=new Map((template.fields||[]).map(spec=>[spec.id,spec]));
+      return Array.from(container.querySelectorAll('.sentence-slot')).map(slot=>{
+        const id=slot.getAttribute?.('data-field-id')||slot.dataset?.fieldId||'';
+        return {slot,spec:specs.get(id)};
+      }).filter(({slot,spec})=>spec&&!slot.hidden&&!['computed','fixed'].includes(spec.type));
+    }
+    function focusDomRecord(record){
+      if(!record)return false;
+      record.slot.scrollIntoView?.({behavior:'smooth',block:'center'});
+      record.slot.querySelector?.('input,select,textarea,button')?.focus?.();
+      return true;
+    }
+    function showOnlyHistoryTarget(records,target){
+      for(const record of records){
+        const isTarget=record===target;
+        const answered=root.UiProfile?.answered?.(record.spec,latestFacts)??false;
+        record.slot.setAttribute?.('data-ui-current',isTarget?'yes':'no');
+        if(isTarget)record.slot.setAttribute?.('data-ui-hidden','no');
+        else if(answered||record.slot.getAttribute?.('data-ui-current')==='yes')record.slot.setAttribute?.('data-ui-hidden','yes');
+      }
+      return focusDomRecord(target);
+    }
+    function mobileHistoryStep(direction){
+      if(!mobileProfile()||!template.mobileFocusMode)return false;
+      const records=inputRecords();
+      if(!records.length)return false;
+      const unanswered=records.find(record=>!(root.UiProfile?.answered?.(record.spec,latestFacts)??false));
+      let index=historyFieldId?records.findIndex(record=>record.spec.id===historyFieldId):-1;
+      if(index<0)index=unanswered?records.indexOf(unanswered):records.length;
+      const targetIndex=direction<0?index-1:index+1;
+      if(targetIndex<0||targetIndex>=records.length)return false;
+      const target=records[targetIndex];
+      historyFieldId=(root.UiProfile?.answered?.(target.spec,latestFacts)??false)?target.spec.id:'';
+      return showOnlyHistoryTarget(records,target);
+    }
 
     const back=button(labels.back,()=>{
       releaseMultiSelect();
-      fields.navigateStep(-1);
+      if(!mobileHistoryStep(-1))fields.navigateStep(-1);
     },true);
     const next=button(labels.next,()=>{
       // 複選題在手機上不因勾第一項就視為「已完成」。
       // 使用者可連續勾選，按「下一步」才離開該複選題。
       releaseMultiSelect();
+      if(historyFieldId&&mobileHistoryStep(1))return;
+      historyFieldId='';
       fields.focusCurrent();
     });
     left.append(back);
@@ -98,6 +141,9 @@
     floating.append(left,right);
 
     function update(facts={}){
+      latestFacts=facts;
+      // 任一答案變更後，FieldRenderer 會重新計算目前步驟；離開歷史瀏覽模式。
+      historyFieldId='';
       const hasStart=started(config,facts);
       back.disabled=!hasStart;
       next.disabled=!hasStart;
