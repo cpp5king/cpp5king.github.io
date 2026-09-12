@@ -7,13 +7,13 @@ const root=path.join(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 function appMeta(){const context=vm.createContext({window:{}});vm.runInContext(read('data/app-meta.js'),context);return context.window.INSPECTION_APP_META;}
 
-test('4.9.0 PWA 更新器、iOS 前景恢復與導覽逾時保護同步',()=>{
+test('PWA 更新器、iOS 前景恢復與導覽逾時保護同步目前版本',()=>{
   const meta=appMeta();
   const pwa=read('src/pwa.js');
   const sw=read('service-worker.js');
   const html=read('index.html');
   const manifest=JSON.parse(read('manifest.webmanifest'));
-  assert.equal(meta.version,'4.9.0');
+  assert.match(meta.version,/^\d+\.\d+\.\d+$/);
   assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
   assert.match(pwa,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(pwa,/app-meta\.js\?update=/);
