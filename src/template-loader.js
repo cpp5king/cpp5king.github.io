@@ -52,6 +52,9 @@
       try { await readFile(entry.file); }
       catch (error) { throw new Error("模板 " + entry.file + " 載入失敗：" + error.message); }
     }
+    for (const patch of Object.values(root.TemplatePatches || {})) {
+      if (typeof patch === "function") patch(config);
+    }
     return validateLoaded(config);
   }
   root.TemplateLoader = { load, validateCatalog, validateLoaded };
