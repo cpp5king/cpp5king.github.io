@@ -76,11 +76,7 @@
       const raw=String(input.noiseZoneBoundaryPair||'');
       const zones=raw.split('-').filter(validZone);
       if(zones.length!==2||zones[0]===zones[1])return result('pending',{message:'請確認交界處涉及的兩類噪音管制區。'});
-      return result('boundary',{
-        zones,
-        note:`測量地點（音源）位於第${zones[0]}類與第${zones[1]}類交界；依公告第八點，音量不得超過其中任何一區之噪音管制標準值，後續應同時套用兩區各自時段及標準。`,
-        basis:'announcement-8'
-      });
+      return result('boundary',{zones,note:`測量地點（音源）位於第${zones[0]}類與第${zones[1]}類交界；公告第八點要求音量不得超過其中任何一區標準，不能只選單一管制區。`,message:'本案屬二個噪音管制區交界，應同時套用兩區標準；目前單一管制區流程暫不自動簡化。',basis:'announcement-8'});
     }
 
     return result('pending',{message:'無法辨識管制區判定情境。'});
