@@ -7,15 +7,16 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
+  const VERSION='4.8.4';
 
-  // 4.8.1：即使已從主畫面（standalone）啟動，也要持續註冊／檢查 service worker，
-  // 避免 iOS PWA 長時間停留在舊版 app shell，造成 index / JS 模組版本混用。
+  // Safari / iOS 容易長時間保留舊 service worker。使用版本化 SW URL + updateViaCache:none
+  // 強制更新檢查；新版接手後僅自動重新整理一次。
   if(secure && 'serviceWorker' in root.navigator){
     root.addEventListener('load',async()=>{
       try{
-        const registration=await root.navigator.serviceWorker.register('./service-worker.js');
+        const registration=await root.navigator.serviceWorker.register(`./service-worker.js?v=${VERSION}`,{updateViaCache:'none'});
         if(registration?.update)await registration.update();
-      }catch(_){/* 離線或瀏覽器不支援時維持既有離線版本 */}
+      }catch(_){/* 離線時維持既有離線版本 */}
     });
     let refreshing=false;
     root.navigator.serviceWorker.addEventListener?.('controllerchange',()=>{
