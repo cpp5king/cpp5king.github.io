@@ -83,10 +83,10 @@ test('4.9.0 舊 3.7.1 案件輸入自動遷移，不破壞既有第8／9條結�
   assert.equal(measure.items[0].standard,67);
 });
 
-test('4.9.0 模組版本標記與穩定核心版本並存',async()=>{
+test('4.9 routing 核心版本與 4.9.1 模組標記並存',async()=>{
   const {template,config}=await setup();
   assert.equal(template.version,'3.7.1');
-  assert.equal(template.moduleVersion,'4.9.0');
+  assert.equal(template.moduleVersion,'4.9.1');
   for(const id of ['noise-case','noise-neighbor'])assert.equal(config.templates.find(t=>t.id===id).version,'3.7.1');
 });
 

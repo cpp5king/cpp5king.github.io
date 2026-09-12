@@ -7,13 +7,13 @@ const root=path.join(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 function appMeta(){const context=vm.createContext({window:{}});vm.runInContext(read('data/app-meta.js'),context);return context.window.INSPECTION_APP_META;}
 
-test('4.9.0 PWA 更新器、iOS 前景恢復與導覽逾時保護同步',()=>{
+test('4.9.1 PWA 更新器、iOS 前景恢復與導覽逾時保護同步',()=>{
   const meta=appMeta();
   const pwa=read('src/pwa.js');
   const sw=read('service-worker.js');
   const html=read('index.html');
   const manifest=JSON.parse(read('manifest.webmanifest'));
-  assert.equal(meta.version,'4.9.0');
+  assert.equal(meta.version,'4.9.1');
   assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
   assert.match(pwa,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(pwa,/app-meta\.js\?update=/);
@@ -35,8 +35,10 @@ test('4.9.0 PWA 更新器、iOS 前景恢復與導覽逾時保護同步',()=>{
   assert.match(sw,/Promise\.race/);
   assert.match(sw,/event\.request\.mode==='navigate'/);
   assert.match(sw,/index\.html'\+V/);
+  assert.match(sw,/src\/noise-v491\.js/);
   assert.equal(manifest.start_url,'./index.html?v='+meta.version);
   assert.equal(manifest.id,'./inspection-assistant-pp');
+  assert.match(html,new RegExp('src/noise-v491\\.js\\?v='+meta.version.replaceAll('.','\\.')));
   assert.match(html,new RegExp('src/pwa\\.js\\?v='+meta.version.replaceAll('.','\\.')));
   assert.match(html,/application-provenance" content="PP-IA-41-7F3C9A21/);
 });

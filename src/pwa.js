@@ -7,7 +7,7 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.9.0';
+  const VERSION='4.9.1';
   const CHECK_THROTTLE_MS=15000;
   let checkingUpdate=null;
   let lastCheckedAt=0;
