@@ -39,6 +39,7 @@
       parts.push(`追查最終去向為${dest}${input.waterActualDischarge?`，實際向外排放：${label('yesno',input.waterActualDischarge)}`:''}。`);
     }
     if(input.waterDischargePermit)parts.push(`排放許可狀態：${{valid:'有有效排放許可／簡易排放許可文件',none:'查無有效排放許可',expired:'許可已逾有效期間',unknown:'許可狀態尚待確認'}[input.waterDischargePermit]||input.waterDischargePermit}。`);
+    const permitLine=root.WaterPermitCheck?.documentLine?.(input); if(permitLine)parts.push(permitLine);
     if(input.waterArticle28Scenario==='yes')parts.push(`現場另有設備疏漏／事故態樣，原因為${{tankFailure:'槽體破裂／失效',pipeFailure:'管線破裂／失效',overflow:'設備或槽體溢流',levelFailure:'液位控制故障',otherEquipmentFailure:'其他設備故障／疏漏',humanDischarge:'人為開閥／私管／主動抽排',unknown:'原因尚待確認'}[input.waterLeakCause]||'尚待確認'}。`);
     if(input.waterSampleTaken)parts.push(`採樣情形：${input.waterSampleTaken==='yes'?'已採樣':input.waterSampleTaken==='no'?'本次未採樣':'是否採樣尚待確認'}${input.waterLabResultAvailable==='yes'&&input.waterEffluentExceeded?`；檢測結果是否超標：${label('yesno',input.waterEffluentExceeded)}`:''}。`);
     return parts.join('');
