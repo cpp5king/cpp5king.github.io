@@ -193,7 +193,7 @@
     const exText=exception.status==='requirementsFailed'?`；${exception.summary}`:(exception.status==='notExempt'?`；${exception.summary}`:'');
     const body=`現場於新北市第${input.noiseZone}類噪音管制區、${input.noiseTime}查見「${act.label}」，落於公告管制範圍，且已確認足以妨害他人生活環境安寧${exText}，依噪音管制法第8條及新北市現行公告辦理。`;
     const d=routeDraft('第8條公告禁止行為',body);
-    return {done:true,out:finish(out,{route:'第8條公告禁止行為成立路徑',guide:'本案依第8條公告禁止行為處理，不以第9條量測作為成立要件。',record:d.record,reply:d.reply,blocked:false,outcome:'article8.established'})};
+    return {done:true,out:finish(out,{route:'第8條公告禁止行為成立｜直接告發',guide:'第8條公告禁止行為已成立；如公告例外不成立／不符合，即直接告發並令其立即停止改善，不再進入第9條量測。',record:d.record,reply:d.reply,blocked:false,outcome:'article8.established'})};
   }
 
   function prepare(rawInput={}){
@@ -286,10 +286,8 @@ ${meta.basis}`,validation:'此噪音源類型沒有可套用的低頻標準，�
     if(lowAvailable)standardLines.push(`低頻 Leq,LF ${std.low} dB(A)`);
     out.noiseStandardText=`第${input.noiseZone}類／${periodLabel}：${standardLines.join('；')}`;
 
-    if(!text(input.noiseSubject))return finish(out,{route:`${a8Note}
-${meta.basis}`,validation:'請填入稽查對象代稱。'});
-    if(!text(input.noiseSource))return finish(out,{route:`${a8Note}
-${meta.basis}`,validation:'請填入主要噪音源／設備說明。'});
+    // 稽查對象與主要噪音源可於完成量測後再補填；不得作為進入量測流程的前置門檻。
+    // 正式稽查紀錄／民眾回覆仍由後段核定文字層確認必要文字是否已補齊。
     if(!useFull&&!useLow){
       out.noiseMeasurementPointText='請直接輸入全頻或低頻量測值；系統將依實際輸入自動判斷本次量測項目。';
       out.noiseResultText='尚無量測資料，尚未進行符合／超標研判。';
