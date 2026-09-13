@@ -1,6 +1,6 @@
 (function (root) {
   "use strict";
-  const types = ['text', 'textarea', 'date', 'hour', 'time', 'number', 'select', 'choiceGroup', 'checklist', 'fixed', 'computed'];
+  const types = ['text', 'textarea', 'date', 'hour', 'time', 'number', 'select', 'checkbox', 'choiceGroup', 'checklist', 'fixed', 'computed'];
   const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
   function matches(condition, input) {
     if (!condition) return true;
@@ -29,6 +29,7 @@
       if (field.type === 'hour' && typeof field.suffix !== 'string') throw new Error('小時欄位缺少輸出字尾。');
       if (field.type === 'date' && !['roc', 'iso', 'month-day'].includes(field.format)) throw new Error('日期格式須為 roc、iso 或 month-day。');
       if (field.type === 'number' && field.min !== undefined && !Number.isFinite(field.min)) throw new Error('數字欄位下限無效。');
+      if (field.type === 'checkbox' && (typeof field.checkedValue !== 'string' || !field.checkedValue)) throw new Error('勾選欄位缺少有效勾選值。');
       if (['select', 'choiceGroup'].includes(field.type)) {
         if (!Array.isArray(field.options) || !field.options.length) throw new Error('選擇欄位缺少選項。');
         const ids = new Set();
@@ -85,7 +86,9 @@
       if (!matches(field.showWhen, result)) { result[field.id] = field.type === 'checklist' ? [] : ''; continue; }
       if (field.type === 'fixed') { result[field.id] = ''; continue; }
       const raw = String(input[field.id] ?? '');
-      if (field.type === 'checklist') {
+      if (field.type === 'checkbox') {
+        result[field.id] = raw === field.checkedValue ? field.checkedValue : '';
+      } else if (field.type === 'checklist') {
         const selected = Array.isArray(input[field.id]) ? input[field.id] : [];
         result[field.id] = field.items.filter(item => selected.includes(item.id) && matches(item.when, result)).map(item => item.id);
         for (const item of field.items) if (item.customKey && result[field.id].includes(item.id)) result[item.customKey] = String(input[item.customKey] ?? '');
