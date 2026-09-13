@@ -35,10 +35,12 @@
     return ['factory','entertainment','business','otherFacility'].includes(input.noiseA9Type);
   }
 
+  const specialAssessmentEnabled=value=>value==='periodic'||(Array.isArray(value)&&value.includes('periodic'));
+
   function methodState(input){
     const legacy=deriveLegacy(input);
     if(legacy)return legacy;
-    if(input.noiseGeneralSpecialAssessment==='periodic')return derivePeriodic(input);
+    if(specialAssessmentEnabled(input.noiseGeneralSpecialAssessment))return derivePeriodic(input);
     return {status:'ok',method:'leq',text:methodLabel.leq,showBg10:false,showSpread:false,defaulted:true};
   }
 
@@ -68,7 +70,7 @@
   function resetChange(before={},after={}){
     const next=innerReset(before,after);
     const clear=keys=>keys.forEach(k=>{next[k]='';});
-    if(before.noiseGeneralSpecialAssessment!==after.noiseGeneralSpecialAssessment)clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText','noiseValueFull','noiseBgFullMode','noiseBgFull']);
+    if(specialAssessmentEnabled(before.noiseGeneralSpecialAssessment)!==specialAssessmentEnabled(after.noiseGeneralSpecialAssessment))clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText','noiseValueFull','noiseBgFullMode','noiseBgFull']);
     if(before.noiseGeneralPattern!==after.noiseGeneralPattern)clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText','noiseValueFull','noiseBgFullMode','noiseBgFull']);
     if(before.noiseGeneralBg10!==after.noiseGeneralBg10)clear(['noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText','noiseValueFull','noiseBgFullMode','noiseBgFull']);
     if(before.noiseGeneralSpread!==after.noiseGeneralSpread)clear(['noiseGeneralMethod','noiseGeneralMethodText','noiseValueFull','noiseBgFullMode','noiseBgFull']);
@@ -88,10 +90,11 @@
     if(index<0)return;
     const missing=t.fields[index].missing||'（尚未確認）';
     const select=(id,label,options,displayWhen)=>({id,label,type:'select',missing,allowCustom:false,options:options.map(([value,text])=>({id:value,value:text,label:text})),displayWhen});
+    const checklist=(id,label,items,displayWhen)=>({id,label,type:'checklist',missing,items,separator:'、',emptyValue:'',displayWhen});
     const computed=(id,label,display=false,displayWhen=null)=>({id,label,type:'computed',missing,display,...(displayWhen?{displayWhen}:{})});
     const show={field:'noiseShowGeneralMethod',value:'yes'};
     const replacement=[
-      select('noiseGeneralSpecialAssessment','特殊評定（一般2分鐘 Leq 案件可略過）',[['periodic','遇明顯週期／間歇性發聲，改用特殊評定']],show),
+      checklist('noiseGeneralSpecialAssessment','特殊評定',[{id:'periodic',label:'使用特殊評定'}],show),
       select('noiseGeneralBg10','特殊評定｜音源量測值與背景音量是否相差10 dB以上',[['yes','是｜相差10 dB以上'],['no','否｜未達10 dB']],{field:'noiseShowGeneralBg10',value:'yes'}),
       select('noiseGeneralSpread','特殊評定｜連續最大音量值之差',[['lte5','不超過5 dB'],['gt5','超過5 dB']],{field:'noiseShowGeneralSpread',value:'yes'}),
       computed('noiseGeneralMethod','系統導出之全頻評定方法'),
@@ -100,6 +103,6 @@
     t.fields.splice(index,1,...replacement);
     const speakerFlag=t.fields.findIndex(f=>f.id==='noiseShowSpeakerMode');
     if(speakerFlag>=0)t.fields.splice(speakerFlag,0,computed('noiseShowGeneralBg10','generalBg10'),computed('noiseShowGeneralSpread','generalSpread'));
-    t.version='4.9-rebuild-16';t.moduleVersion='4.9-rebuild-16';t.__methodGuidancePatched=true;
+    t.version='4.9-rebuild-17';t.moduleVersion='4.9-rebuild-17';t.__methodGuidancePatched=true;
   };
 })(typeof window==='undefined'?globalThis:window);
