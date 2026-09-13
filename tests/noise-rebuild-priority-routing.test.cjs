@@ -41,7 +41,8 @@ test('4.9.2 主管機關優先：不具持續性或不易量測即結束環保�
   assert.equal(out.noiseShowA9,'no');
   assert.match(out.noiseQuickDecisionText,/一般第9條量測流程停止/);
   assert.match(out.noiseRecord,/不具持續性或不易量測/);
-  assert.doesNotMatch(out.noiseRecord,/已達妨害安寧|妨害安寧成立/);
+  assert.match(out.noiseRecord,/不另行判斷是否已達妨害安寧程度/);
+  assert.doesNotMatch(out.noiseRecord,/妨害安寧成立/);
 });
 
 test('4.9.2 具持續性且可量測後才做特殊來源快速分流',()=>{
