@@ -136,6 +136,7 @@
         area.addEventListener('input', () => { session.editOutput(kind, area.value); message.textContent = ''; });
         section.append(label, area, copy, message); outputs.append(section);
       }
+      let flowUi=null;
       const actions = el('div', '', 'actions');
       actions.setAttribute('data-draft-actions','yes');
       if(template.initialGate)actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,root.DraftEngine.normalize(template,{}));
@@ -150,8 +151,14 @@
           session.setInputs(fields.read()); const generated = session.generate();
           drafts.record.value = generated.record; drafts.reply.value = generated.reply;
           outputs.querySelectorAll('[role="status"]').forEach(node => { node.textContent = ''; });
-          outputs.hidden = false; status.textContent = '已依選項產生兩份紀錄，請核對後複製使用。'; drafts.record.focus();
-        } catch (error) { status.textContent = '無法產生紀錄：' + error.message; }
+          outputs.hidden = false; status.textContent = '已依選項產生兩份紀錄，請核對後複製使用。';
+          const shownInMobileResult=flowUi?.showResults?.()===true;
+          if(!shownInMobileResult)drafts.record.focus();
+        } catch (error) {
+          const message='無法產生紀錄：' + error.message;
+          status.textContent = message;
+          flowUi?.showError?.(message);
+        }
       });
       draftAction.setAttribute('data-draft-action','yes');
       actions.append(draftAction);
@@ -201,8 +208,8 @@
           status.textContent=template.quickActions.endStatusMessage||'已結束本次現場查察；可查看研判或產生案件文字。';
           updateQuickActions(normalized);
         };
-        const quick=root.InspectionFlowUI?.attach({template,fields,workflow,performHandoff,onEnd:endEarly});
-        if(quick?.element){form.append(quick.element);updateQuickActions=quick.update;updateQuickActions(session.snapshot().inputs);}
+        flowUi=root.InspectionFlowUI?.attach({template,fields,workflow,performHandoff,onEnd:endEarly,outputs,status});
+        if(flowUi?.element){form.append(flowUi.element);updateQuickActions=flowUi.update;updateQuickActions(session.snapshot().inputs);}
       }
 
 

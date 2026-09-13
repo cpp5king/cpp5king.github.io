@@ -22,7 +22,6 @@
     return {status:'pending',showBg10:true,showSpread:true,validation:'最大音量差資料無法辨識，請重新確認。'};
   }
 
-  // 保留舊案件相容：舊資料若已記錄週期／間歇判斷，仍依原規則解析；新案件一般不再詢問此題。
   function deriveLegacy(input={}){
     const pattern=input.noiseGeneralPattern;
     if(pattern==='other')return {status:'ok',method:'leq',text:methodLabel.leq,showBg10:false,showSpread:false,legacy:true};
@@ -40,12 +39,11 @@
     const legacy=deriveLegacy(input);
     if(legacy)return legacy;
     if(input.noiseGeneralSpecialAssessment==='periodic')return derivePeriodic(input);
-    // 第一線一般案件預設採2分鐘 Leq，不把週期／間歇性當成固定必答題。
     return {status:'ok',method:'leq',text:methodLabel.leq,showBg10:false,showSpread:false,defaulted:true};
   }
 
   function decorate(out,state){
-    const active=isGeneralCase(out)&&String(out.noiseValueFull??'').trim()!=='';
+    const active=isGeneralCase(out)&&out.noiseMeasureDecision==='yes';
     out.noiseShowGeneralMethod=active?'yes':'no';
     out.noiseShowGeneralBg10=active&&state?.showBg10?'yes':'no';
     out.noiseShowGeneralSpread=active&&state?.showSpread?'yes':'no';

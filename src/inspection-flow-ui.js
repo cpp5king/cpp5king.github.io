@@ -46,9 +46,9 @@
     };
   }
 
-  function attach({template,fields,workflow,performHandoff,onEnd}){
+  function attach({template,fields,workflow,performHandoff,onEnd,outputs,status}){
     if(template.mobileWizard&&mobileProfile()&&root.MobileWizardUI?.attach){
-      return root.MobileWizardUI.attach({template,fields});
+      return root.MobileWizardUI.attach({template,fields,outputs,status});
     }
     const config=template.quickActions;
     if(!config)return {element:null,update:()=>{}};
