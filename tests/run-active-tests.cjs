@@ -28,8 +28,9 @@ function isLegacyNoiseTest(name) {
 const archivedNoiseTests = allTests.filter(isLegacyNoiseTest);
 const activeTests = allTests.filter(name => !isLegacyNoiseTest(name));
 
-// 這些是已被後續正式流程取代的「舊順序」單一測試案例；檔案其餘回歸仍照常執行。
-// 4.9.16 最新流程由 noise-rebuild-4916-*.test.cjs 覆蓋；舊案例只留歷史參考。
+// 這些是已被後續正式流程取代的「舊順序／舊狀態重置」單一測試案例；檔案其餘回歸仍照常執行。
+// 4.9.16 最新流程由 noise-rebuild-4916-*.test.cjs 覆蓋；4.9.17～4.9.22 再由 release-4922-*.test.cjs
+// 覆蓋背景音重測保留、歷次背景紀錄及量測後補填對象／音源等現行契約，舊案例只留歷史參考。
 const supersededCases = [
   '重建版第一步：未確認主要噪音來源時先停在主管機關分流',
   '第8條爆竹：專案核准例外成立後回到一般第6／9條流程',
@@ -45,7 +46,10 @@ const supersededCases = [
   '車輛排氣管第8條：行為存在但妨害安寧未知時保持待確認',
   '車輛排氣管第8條：行為及妨害安寧均成立時優先走第8條',
   '車輛排氣管第8條：妨害安寧明確為否時回到機動車輛專章',
-  '重建版：第6條妨害安寧明確為否時不硬轉第9條'
+  '重建版：第6條妨害安寧明確為否時不硬轉第9條',
+  '小於3dB選再次量測會保留案件與量測決定但清除測點和量測資料',
+  '小於3dB選結束量測產生不作符合超標判定的既有結束文字',
+  '改變主要噪音源會清除量測決定及其下游，避免沿用舊狀態'
 ];
 const existingSkipped = [
   '3.6首頁文字集中且入口載入背景模組',
