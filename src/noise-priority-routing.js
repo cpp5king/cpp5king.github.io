@@ -167,7 +167,7 @@
     remove('noiseA6Disturbance');
     const firstInput=fields.findIndex(f=>!['computed','fixed'].includes(f.type));
     const insertAt=firstInput<0?fields.length:firstInput;
-    const generalFlag={id:'noiseShowGeneralSetup',label:'general-setup',type:'computed',missing:'',display:false};
+    const generalFlag={id:'noiseShowGeneralSetup',label:'general-setup',type:'computed',missing:'（系統判斷）',display:false};
     const summary={id:'noiseQuickDecisionText',label:'簡易判斷',type:'computed',missing:'（尚未確認）',display:true,className:'live-assessment'};
     if(date){date.label='第一步｜稽查日期';delete date.displayWhen;}
     if(time){time.label='第一步｜稽查時間';delete time.displayWhen;}
