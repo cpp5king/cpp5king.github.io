@@ -114,7 +114,7 @@ button.danger:hover { background:#7f241c; }
 .mobile-wizard-header,
 .mobile-wizard-nav { display:none; }
 @media (max-width:760px) {
-  .sentence-form[data-mobile-wizard="yes"] { padding-top:0; }
+  .sentence-form[data-mobile-wizard="yes"] { padding-top:0; min-height:calc(100dvh - 16px); }
   .sentence-form[data-mobile-wizard="yes"] .sentence-slot[data-wizard-hidden="yes"] { display:none !important; }
   .mobile-wizard-header {
     display:block;
