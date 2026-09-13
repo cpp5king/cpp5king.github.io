@@ -23,7 +23,7 @@ eq('full point visible before names',o.noiseShowFullPoint,'yes');
 // 3: measurement can be entered and assessed while names still blank. Use clearly compliant value.
 o=NoiseMain.prepare(base({noiseMeasureDecision:'yes',noiseFullPoint:'complainant',noiseValueFull:'40',noiseGeneralSpecialAssessment:'no',noiseGeneralMethod:'leq',noiseOperation:'作業中'}));
 ok('measurement result calculated before names',String(o.noiseResultText||'').length>0,o.noiseResultText);
-ok('after assessment asks to backfill subject, not erase result',/補填稽查對象代稱/.test(o.noiseValidation||''),o.noiseValidation);
+ok('after assessment asks to backfill subject, not erase result',/補填稽查對象[／\/]場所/.test(o.noiseValidation||''),o.noiseValidation);
 
 // 4: backfilling source must preserve measurement data through resetChange.
 const before=base({noiseMeasureDecision:'yes',noiseFullPoint:'authority',noiseWind:'1.5',noiseValueFull:'62',noiseValueLow:'35',noiseBgFullMode:'measured',noiseBgFull:'55',noiseBackgroundHistory:'[{"round":1}]',noiseDifferenceRetryState:'yes',noiseSubject:'工程A',noiseSource:''});

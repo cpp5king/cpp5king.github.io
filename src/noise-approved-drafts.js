@@ -176,12 +176,14 @@
     }
     return parts.join('；');
   }
+  const sourceRequired=input=>input.noiseA9Type!=='speaker';
+  const sourceText=input=>text(input.noiseSource)||(input.noiseA9Type==='speaker'?'擴音設施':root.NOISE_TEXTS.common.missing);
   function commonValues(input){
     const calc=resultAndStandard(input),point=measurementPoint(input),periodLabel={day:'日間',evening:'晚間',night:'夜間'}[calc.p]||root.NOISE_TEXTS.common.missing;
     const background=backgroundText(input,calc);
     return {
       date:rocDate(input.noiseDate),time:inspectionTime(input.noiseTime),subject:text(input.noiseSubject)||root.NOISE_TEXTS.common.missing,
-      operation:text(input.noiseOperation)||root.NOISE_TEXTS.common.missing,noiseSource:text(input.noiseSource)||root.NOISE_TEXTS.common.missing,
+      operation:text(input.noiseOperation)||root.NOISE_TEXTS.common.missing,noiseSource:sourceText(input),
       legalBasis:calc.meta?.legalBasis||root.NOISE_TEXTS.common.missing,sourceType:calc.meta?.label||root.NOISE_TEXTS.common.missing,
       zone:text(input.noiseZone)||root.NOISE_TEXTS.common.missing,period:periodLabel,measurementPoint:point.record,measurementPointPublic:point.reply,
       resultText:calc.resultText||root.NOISE_TEXTS.common.missing,standardText:calc.standardText||root.NOISE_TEXTS.common.missing,
@@ -194,7 +196,7 @@
     const subject=text(input.noiseA8Subject);
     if(!subject){
       out.noiseBlocked='yes';out.noiseRecord='';out.noiseReply='';
-      out.noiseValidation='請填寫第8條稽查對象代稱。';
+      out.noiseValidation='請填寫第8條稽查對象／場所。';
       out.noiseGuide='第8條禁止行為已由現場選擇確認；填寫稽查對象後即可套用既有核定文字。';
       return out;
     }
@@ -209,9 +211,9 @@
   function applyArticle9(input,out,map){
     // 量測可以先完成，但正式文字產生前仍須由稽查員補齊實際對象與音源；系統不得自行猜測。
     if(!text(input.noiseSubject)){
-      out.noiseBlocked='yes';out.noiseRecord='';out.noiseReply='';out.noiseValidation='量測已完成，請補填稽查對象代稱。';out.noiseGuide='已保留本次量測資料；補填稽查對象後即可產生正式文字。';return out;
+      out.noiseBlocked='yes';out.noiseRecord='';out.noiseReply='';out.noiseValidation='量測已完成，請補填稽查對象／場所。';out.noiseGuide='已保留本次量測資料；補填稽查對象後即可產生正式文字。';return out;
     }
-    if(!text(input.noiseSource)){
+    if(sourceRequired(input)&&!text(input.noiseSource)){
       out.noiseBlocked='yes';out.noiseRecord='';out.noiseReply='';out.noiseValidation='量測已完成，請補填主要噪音源／設備說明。';out.noiseGuide='已保留本次量測資料；補填主要噪音源／設備說明後即可產生正式文字。';return out;
     }
     if(!text(input.noiseOperation)){
@@ -224,8 +226,8 @@
     return out;
   }
   function applyWeather(input,out,map){
-    if(!text(input.noiseSubject)){out.noiseBlocked='yes';out.noiseValidation='請填入稽查對象代稱。';return out;}
-    if(!text(input.noiseSource)){out.noiseBlocked='yes';out.noiseValidation='請填入主要噪音源／設備說明。';return out;}
+    if(!text(input.noiseSubject)){out.noiseBlocked='yes';out.noiseValidation='請填入稽查對象／場所。';return out;}
+    if(sourceRequired(input)&&!text(input.noiseSource)){out.noiseBlocked='yes';out.noiseValidation='請填入主要噪音源／設備說明。';return out;}
     if(!text(input.noiseOperation)){out.noiseBlocked='yes';out.noiseValidation='請填寫現場作業情形。';return out;}
     const values=commonValues(input);
     out.noiseRecord=render(map.record,values);
@@ -265,8 +267,8 @@
     const subject=text(input.noiseSubject),source=text(input.noiseSource),reason=input.noiseNoMeasureReason,detail=text(input.noiseNoMeasureDetail);
     out.noiseOutcomeId='';out.noiseRecord='';out.noiseReply='';out.noiseBlocked='yes';
     out.noiseResultText='本次選擇不進行噪音量測，不作符合／超標判定。';
-    if(!subject){out.noiseValidation='請填入稽查對象代稱。';out.noiseGuide='已選擇不進行量測；請先完成稽查對象。';return out;}
-    if(!source){out.noiseValidation='請填入主要噪音源／設備說明。';out.noiseGuide='主要噪音源／設備說明完成後，再確認是否進行量測。';return out;}
+    if(!subject){out.noiseValidation='請填入稽查對象／場所。';out.noiseGuide='已選擇不進行量測；請先完成稽查對象。';return out;}
+    if(sourceRequired(input)&&!source){out.noiseValidation='請填入主要噪音源／設備說明。';out.noiseGuide='主要噪音源／設備說明完成後，再確認是否進行量測。';return out;}
     if(!reason){out.noiseValidation='請選擇本次不進行量測的原因。';out.noiseGuide='本案不進行量測；請記錄現場實際原因，系統不自行推定。';return out;}
     const values=commonValues({...input,noiseOperation:detail});
     if(reason==='sourceOff'){
@@ -285,12 +287,19 @@
       out.noiseBlocked='no';out.noiseValidation='';out.noiseGuide='本次現場未發現擴音設備，不進行量測；已套用既有核定文字。';return out;
     }
     if(reason==='rain'){
-      if(!detail){out.noiseValidation='請補充現場作業情形／天雨狀況。';out.noiseGuide='天雨路濕不宜量測時，請補充當時現場作業情形。';return out;}
       const map=root.NOISE_RESULT_TEXT_MAP?.['article9.weather.rain'];
+      const renderRain=path=>{
+        if(detail)return render(path,values);
+        const template=getPath(path);
+        if(typeof template!=='string')throw new Error('找不到核定文字模板：'+path);
+        // 天雨路濕本身已足以說明不量測原因；未補充現場作業情形時不得自行推定。
+        const withoutOperation=template.replace('，稽查時{{operation}}，','，');
+        return root.NoiseText.render(withoutOperation,values);
+      };
       out.noiseOutcomeId='article9.weather.rain';
-      out.noiseRecord=render(map.record,values);
-      out.noiseReply=map.replyWrap?root.NOISE_TEXTS.common.replyPrefix+render(map.reply,values)+root.NOISE_TEXTS.common.replyEnding:render(map.reply,values);
-      out.noiseBlocked='no';out.noiseValidation='';out.noiseGuide='本次因天雨路濕不宜量測，不作符合／超標判定。';return out;
+      out.noiseRecord=renderRain(map.record);
+      out.noiseReply=map.replyWrap?root.NOISE_TEXTS.common.replyPrefix+renderRain(map.reply)+root.NOISE_TEXTS.common.replyEnding:renderRain(map.reply);
+      out.noiseBlocked='no';out.noiseValidation='';out.noiseGuide=detail?'本次因天雨路濕不宜量測，不作符合／超標判定。':'本次因天雨路濕不宜量測，不作符合／超標判定；未填現場作業情形時不自行推定。';return out;
     }
     if(reason==='doorLocked'){
       const map=root.NOISE_RESULT_TEXT_MAP?.['article9.sourceOff'];
@@ -317,7 +326,7 @@
       if(!['yes','no'].includes(input.noiseMeasureDecision)){
         out.noiseBlocked='yes';out.noiseRecord='';out.noiseReply='';out.noiseOutcomeId='';
         out.noiseValidation='請確認本次是否進行噪音量測。';
-        out.noiseGuide='可先進行量測；稽查對象代稱與主要噪音源／設備說明可於量測完成後補填。';
+        out.noiseGuide=input.noiseA9Type==='speaker'?'可先進行量測；稽查對象／場所可於量測完成後補填。':'可先進行量測；稽查對象／場所與主要噪音源／設備說明可於量測完成後補填。';
         return out;
       }
       if(input.noiseMeasureDecision==='no')return applyNoMeasure(input,out);
@@ -399,6 +408,7 @@
       const preserve=['noiseFacility','noiseSubject','noiseSource','noiseMeasureDecision','noiseNoMeasureReason','noiseNoMeasureDetail',...measurementKeys,'noiseBackgroundHistory','noiseDifferenceRetryState'];
       for(const key of preserve)next[key]=comparable[key]??'';
       // 「未發現擴音設備」只屬擴音設施案件；切換成其他類型時只清除此不相容原因。
+      if(comparable.noiseA9Type==='speaker')clear(['noiseSource']);
       if(comparable.noiseA9Type!=='speaker'&&next.noiseNoMeasureReason==='noSpeaker')clear(['noiseNoMeasureReason','noiseNoMeasureDetail']);
     }
     // 稽查員常於量測完成後才確認工程／場所名稱及主要設備；後補或修正音源描述屬描述性事實，不重置既有量測／不量測紀錄。
@@ -455,7 +465,7 @@
     const a8Summary=fields.findIndex(f=>f.id==='noiseA8ExceptionSummary');
     const a8Insert=a8Summary>=0?a8Summary+1:fields.findIndex(f=>f.id==='noiseA9Type');
     fields.splice(a8Insert,0,
-      field('noiseA8Subject','第8條｜稽查對象代稱',{field:'noiseShowA8DraftFacts',value:'yes'})
+      field('noiseA8Subject','第8條｜稽查對象／場所',{field:'noiseShowA8DraftFacts',value:'yes'})
     );
 
     const sourceIndex=fields.findIndex(f=>f.id==='noiseSource');

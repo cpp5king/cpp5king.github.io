@@ -27,10 +27,10 @@
     return (step.prefixes||[]).some(prefix=>id.startsWith(prefix));
   }
 
-  function attach({template,fields}){
+  function attach({template,fields,outputs,status:pageStatus}){
     const config=template?.mobileWizard;
     const container=fields?.element;
-    if(!config||!container)return {element:null,update:()=>{}};
+    if(!config||!container)return {element:null,update:()=>{},showResults:()=>false,showError:()=>false};
 
     const specs=new Map((template.fields||[]).map(spec=>[spec.id,spec]));
     const header=el('section','', 'mobile-wizard-header');
@@ -62,7 +62,10 @@
     helpIcon.setAttribute('aria-hidden','true');
     const helpText=el('span','', 'mobile-wizard-help-text');
     help.append(helpIcon,helpText);
-    content.append(help);
+    const errorBox=el('aside','', 'mobile-wizard-error');
+    errorBox.setAttribute('role','alert');
+    errorBox.hidden=true;
+    content.append(help,errorBox);
     const status=el('aside','', 'mobile-wizard-status');
     status.setAttribute('aria-label','目前研判摘要');
 
@@ -72,6 +75,21 @@
     if(container.prepend)container.prepend(header);
     else container.insertBefore?.(header,container.firstChild||null);
     container.append(content);
+
+    const resultContent=el('section','', 'mobile-wizard-result');
+    resultContent.setAttribute('aria-label','完成結果');
+    resultContent.hidden=true;
+    const resultIntro=el('aside','', 'mobile-wizard-result-intro');
+    const resultCheck=el('span','✓','mobile-wizard-result-check');
+    resultCheck.setAttribute('aria-hidden','true');
+    const resultIntroText=el('div','', 'mobile-wizard-result-intro-text');
+    resultIntroText.append(
+      el('strong','紀錄已產生'),
+      el('p','請核對內容後複製使用；如需調整案件事實，可返回修改。')
+    );
+    resultIntro.append(resultCheck,resultIntroText);
+    resultContent.append(resultIntro);
+    container.append(resultContent);
 
     const nav=el('nav','', 'mobile-wizard-nav');
     nav.setAttribute('aria-label','步驟導覽');
@@ -86,6 +104,9 @@
     let latestFacts={};
     let currentStepId='';
     let initialRevealQueued=false;
+    let resultMode=false;
+    let outputsHome=null;
+    let outputsNextSibling=null;
 
     function slotRecords(){
       if(!container.querySelectorAll)return [];
@@ -161,20 +182,63 @@
       if(!track.replaceChildren){track.textContent='';segments.forEach(segment=>track.append(segment));}
     }
 
+    function rememberOutputsHome(){
+      if(outputsHome||!outputs?.parentNode)return;
+      outputsHome=outputs.parentNode;
+      outputsNextSibling=outputs.nextSibling||null;
+    }
+
+    function restoreOutputsHome(){
+      if(!outputsHome||!outputs||outputs.parentNode!==resultContent)return;
+      if(outputsNextSibling&&outputsNextSibling.parentNode===outputsHome)outputsHome.insertBefore(outputs,outputsNextSibling);
+      else outputsHome.append(outputs);
+    }
+
     function render(){
       const records=slotRecords();
       if(!mobileProfile()){
+        resultMode=false;
+        restoreOutputsHome();
         container.removeAttribute?.('data-mobile-wizard');
         header.hidden=true;
+        content.hidden=false;
+        resultContent.hidden=true;
         content.removeAttribute?.('data-mobile-active');
         nav.hidden=true;
+        next.hidden=false;
+        back.textContent='‹  上一步';
+        nav.removeAttribute?.('data-result');
         for(const {slot} of records)slot.removeAttribute?.('data-wizard-hidden');
         return;
       }
       container.setAttribute('data-mobile-wizard','yes');
-      content.setAttribute('data-mobile-active','yes');
       header.hidden=false;
       nav.hidden=false;
+
+      const configuredSteps=config.steps||[];
+      const total=Math.max(configuredSteps.length,1);
+      if(resultMode){
+        content.hidden=true;
+        content.removeAttribute?.('data-mobile-active');
+        resultContent.hidden=false;
+        progress.textContent='完成';
+        title.textContent=config.resultTitle||'紀錄已產生';
+        stepIcon.textContent='✓';
+        stepIcon.setAttribute('data-step-id','complete');
+        renderTrack(total,total);
+        back.disabled=false;
+        back.textContent='‹  返回修改';
+        next.hidden=true;
+        nav.setAttribute('data-result','yes');
+        return;
+      }
+
+      content.hidden=false;
+      content.setAttribute('data-mobile-active','yes');
+      resultContent.hidden=true;
+      next.hidden=false;
+      back.textContent='‹  上一步';
+      nav.removeAttribute?.('data-result');
       const steps=activeSteps();
       const current=reconcile(steps);
       const index=current?steps.findIndex(step=>step.id===current.id):-1;
@@ -185,8 +249,6 @@
         record.slot.setAttribute?.('data-wizard-current',show?'yes':'no');
       }
 
-      const configuredSteps=config.steps||[];
-      const total=Math.max(configuredSteps.length,1);
       const configuredIndex=current?configuredSteps.findIndex(step=>step.id===current.id):-1;
       const shownIndex=configuredIndex>=0?configuredIndex+1:(index>=0?Math.min(index+1,total):0);
       progress.textContent=`步驟 ${shownIndex} / ${total}`;
@@ -211,6 +273,12 @@
       catch(_){content.scrollTop=0;}
     }
 
+    function resetResultScroll(){
+      if(!mobileProfile())return;
+      try{resultContent.scrollTo?.({top:0,left:0,behavior:'auto'});}
+      catch(_){resultContent.scrollTop=0;}
+    }
+
     function move(direction){
       const steps=activeSteps();
       const current=reconcile(steps);
@@ -222,7 +290,39 @@
       resetContentScroll();
     }
 
-    back.addEventListener('click',()=>move(-1));
+    function showResults(){
+      if(!mobileProfile()||!outputs||outputs.hidden)return false;
+      rememberOutputsHome();
+      if(outputs.parentNode!==resultContent)resultContent.append(outputs);
+      errorBox.hidden=true;
+      errorBox.textContent='';
+      if(pageStatus)pageStatus.textContent='已依選項產生兩份紀錄，請核對後複製使用。';
+      resultMode=true;
+      render();
+      resetResultScroll();
+      try{title.tabIndex=-1;title.focus?.({preventScroll:true});}catch(_){title.focus?.();}
+      return true;
+    }
+
+    function showError(message){
+      if(!mobileProfile())return false;
+      resultMode=false;
+      errorBox.textContent=String(message||'');
+      errorBox.hidden=!errorBox.textContent;
+      render();
+      resetContentScroll();
+      return true;
+    }
+
+    back.addEventListener('click',()=>{
+      if(resultMode){
+        resultMode=false;
+        render();
+        resetContentScroll();
+        return;
+      }
+      move(-1);
+    });
     next.addEventListener('click',()=>{
       const steps=activeSteps();
       const current=reconcile(steps);
@@ -237,6 +337,10 @@
 
     function update(facts={}){
       latestFacts=facts||{};
+      if(!resultMode){
+        errorBox.hidden=true;
+        errorBox.textContent='';
+      }
       render();
       if(mobileProfile()&&!initialRevealQueued){
         initialRevealQueued=true;
@@ -246,7 +350,7 @@
       }
     }
 
-    return {element:nav,update,render,getCurrentStep:()=>currentStepId};
+    return {element:nav,update,render,showResults,showError,getCurrentStep:()=>currentStepId,isResultMode:()=>resultMode};
   }
 
   root.MobileWizardUI={attach};
