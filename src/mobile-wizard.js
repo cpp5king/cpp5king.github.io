@@ -35,24 +35,48 @@
     const specs=new Map((template.fields||[]).map(spec=>[spec.id,spec]));
     const header=el('section','', 'mobile-wizard-header');
     header.setAttribute('aria-label',config.ariaLabel||'手機逐步流程');
+
+    const brandRow=el('div','', 'mobile-wizard-brand-row');
+    const brand=el('div','', 'mobile-wizard-brand');
+    const brandMark=el('span','', 'mobile-wizard-brand-mark');
+    brandMark.setAttribute('aria-hidden','true');
+    brand.append(brandMark,el('strong',config.brandLabel||'稽查助手'));
+    brandRow.append(brand,el('small',config.brandSlogan||'專業稽查・守護安寧','mobile-wizard-slogan'));
+
     const progressRow=el('div','', 'mobile-wizard-progress-row');
     const progress=el('strong','步驟 1 / 1','mobile-wizard-progress');
-    const title=el('span','', 'mobile-wizard-title');
-    progressRow.append(progress,title);
     const track=el('div','', 'mobile-wizard-track');
-    const fill=el('span','', 'mobile-wizard-fill');
-    track.append(fill);
-    const status=el('div','', 'mobile-wizard-status');
-    header.append(progressRow,track,status);
+    progressRow.append(progress,track);
 
+    const heading=el('div','', 'mobile-wizard-heading');
+    const stepIcon=el('span','1','mobile-wizard-step-icon');
+    stepIcon.setAttribute('aria-hidden','true');
+    const title=el('h2','', 'mobile-wizard-title');
+    heading.append(stepIcon,title);
+    header.append(brandRow,progressRow,heading);
+
+    const content=el('section','', 'mobile-wizard-content');
+    content.setAttribute('aria-live','polite');
+    const help=el('aside','', 'mobile-wizard-help');
+    const helpIcon=el('span','i','mobile-wizard-help-icon');
+    helpIcon.setAttribute('aria-hidden','true');
+    const helpText=el('span','', 'mobile-wizard-help-text');
+    help.append(helpIcon,helpText);
+    content.append(help);
+    const status=el('aside','', 'mobile-wizard-status');
+    status.setAttribute('aria-label','目前研判摘要');
+
+    const originalNodes=Array.from(container.children||[]);
+    for(const node of originalNodes)content.append(node);
+    content.append(status);
     if(container.prepend)container.prepend(header);
-    else if(container.insertBefore)container.insertBefore(header,container.firstChild||null);
-    else container.append(header);
+    else container.insertBefore?.(header,container.firstChild||null);
+    container.append(content);
 
     const nav=el('nav','', 'mobile-wizard-nav');
     nav.setAttribute('aria-label','步驟導覽');
-    const back=button('← 上一步',true);
-    const next=button('下一步 →');
+    const back=button('‹  上一步',true);
+    const next=button('下一步  ›');
     nav.append(back,next);
 
     const form=container.closest?.('form');
@@ -126,16 +150,29 @@
       status.hidden=!blocks.length;
     }
 
+    function renderTrack(total,shownIndex){
+      const segments=[];
+      for(let i=1;i<=total;i++){
+        const segment=el('span','', 'mobile-wizard-segment');
+        segment.setAttribute('data-state',i<=shownIndex?'active':'pending');
+        segments.push(segment);
+      }
+      track.replaceChildren?.(...segments);
+      if(!track.replaceChildren){track.textContent='';segments.forEach(segment=>track.append(segment));}
+    }
+
     function render(){
       const records=slotRecords();
       if(!mobileProfile()){
         container.removeAttribute?.('data-mobile-wizard');
         header.hidden=true;
+        content.removeAttribute?.('data-mobile-active');
         nav.hidden=true;
         for(const {slot} of records)slot.removeAttribute?.('data-wizard-hidden');
         return;
       }
       container.setAttribute('data-mobile-wizard','yes');
+      content.setAttribute('data-mobile-active','yes');
       header.hidden=false;
       nav.hidden=false;
       const steps=activeSteps();
@@ -148,27 +185,27 @@
         record.slot.setAttribute?.('data-wizard-current',show?'yes':'no');
       }
 
-      const total=Math.max(steps.length,1);
-      const shownIndex=index>=0?index+1:0;
+      const configuredSteps=config.steps||[];
+      const total=Math.max(configuredSteps.length,1);
+      const configuredIndex=current?configuredSteps.findIndex(step=>step.id===current.id):-1;
+      const shownIndex=configuredIndex>=0?configuredIndex+1:(index>=0?Math.min(index+1,total):0);
       progress.textContent=`步驟 ${shownIndex} / ${total}`;
       title.textContent=current?.title||'目前沒有可填寫步驟';
-      fill.setAttribute('style',`width:${shownIndex?Math.round(shownIndex/total*100):0}%`);
+      const helpValue=String(current?.help||'').trim();
+      helpText.textContent=helpValue;
+      help.hidden=!helpValue;
+      stepIcon.textContent=String(shownIndex||'–');
+      stepIcon.setAttribute('data-step-id',current?.id||'');
+      renderTrack(total,shownIndex);
       back.disabled=index<=0;
       next.disabled=index<0||index>=steps.length-1;
       renderStatus();
     }
 
-    function wizardStartY(){
-      const rect=container.getBoundingClientRect?.();
-      const scrollY=Number(root.scrollY||root.pageYOffset||0);
-      return rect?Math.max(0,Math.round(scrollY+rect.top)):0;
-    }
-
-    function alignWizardStart(){
+    function resetContentScroll(){
       if(!mobileProfile())return;
-      const top=wizardStartY();
-      try{root.scrollTo?.({top,left:0,behavior:'auto'});}
-      catch(_){root.scrollTo?.(0,top);}
+      try{content.scrollTo?.({top:0,left:0,behavior:'auto'});}
+      catch(_){content.scrollTop=0;}
     }
 
     function move(direction){
@@ -179,7 +216,7 @@
       if(nextIndex<0||nextIndex>=steps.length)return;
       currentStepId=steps[nextIndex].id;
       render();
-      alignWizardStart();
+      resetContentScroll();
     }
 
     back.addEventListener('click',()=>move(-1));
@@ -190,7 +227,7 @@
       render();
       if(mobileProfile()&&!initialRevealQueued){
         initialRevealQueued=true;
-        const reveal=()=>alignWizardStart();
+        const reveal=()=>resetContentScroll();
         if(typeof root.requestAnimationFrame==='function')root.requestAnimationFrame(reveal);
         else root.setTimeout?.(reveal,0);
       }

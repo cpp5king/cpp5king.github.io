@@ -290,14 +290,16 @@
                     }])
               ];
 
-        const allOptions = template.choiceStyle==='cards'?options:[
+        const mobileDropdown=uiProfile==='mobile' && (spec.mobileControl==='select'||(template.mobileWizard?.dropdownFields||[]).includes(spec.id));
+        const useCards=template.choiceStyle==='cards' && !mobileDropdown;
+        const allOptions = useCards?options:[
           {
             id: "",
             label: "請選擇／尚待確認"
           },
           ...options
         ];
-        const cards=template.choiceStyle==='cards'?root.ChoiceControls.single({id:spec.id,label:spec.label,options:allOptions,onChange:change}):null;
+        const cards=useCards?root.ChoiceControls.single({id:spec.id,label:spec.label,options:allOptions,onChange:change}):null;
         const control=cards?cards.element:el('select');control.id=spec.id;controls[spec.id]=control;
         if(!cards)for (const option of allOptions) {
           const node = el(
