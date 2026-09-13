@@ -13,11 +13,26 @@
       dateField.label='稽查日期';
       template.fields.splice(dateIndex+1,0,{
         id:'waterInspectionTime',
-        label:'稽查時間',
+        label:'稽查時間（24小時制）',
         type:'time',
         missing:dateField.missing||'尚待確認',
-        timePicker:{empty:'請選擇',hour:'時',minute:'分'}
+        timePicker:{empty:'—',hour:'時',minute:'分'}
       });
+
+      // 與噪音模組一致：新案件僅在 UI 預填裝置當下日期／時間，仍可由稽查員自行修改。
+      // 不改變水污規則引擎；案件後續判斷仍只讀取欄位內的實際值。
+      const previousInitialValues=template.initialValues;
+      template.initialValues=()=>{
+        const previous=typeof previousInitialValues==='function'
+          ? previousInitialValues()
+          : {...(previousInitialValues||{})};
+        const now=new Date(),pad=value=>String(value).padStart(2,'0');
+        return {
+          ...previous,
+          waterInspectionDate:previous.waterInspectionDate||`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`,
+          waterInspectionTime:previous.waterInspectionTime||`${pad(now.getHours())}:${pad(now.getMinutes())}`
+        };
+      };
     }
   };
 
