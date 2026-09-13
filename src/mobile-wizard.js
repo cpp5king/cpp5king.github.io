@@ -93,11 +93,6 @@
       return steps;
     }
 
-    function recordsForStep(step){
-      if(step?.__records)return step.__records;
-      return slotRecords().filter(record=>matchesStep(step||{},record.id));
-    }
-
     function stepOrder(id){
       if(id==='__mobile_wizard_other__')return Number.MAX_SAFE_INTEGER;
       const index=(config.steps||[]).findIndex(step=>step.id===id);
@@ -163,14 +158,17 @@
       renderStatus();
     }
 
-    function focusCurrentStep(){
-      const steps=activeSteps();
-      const current=steps.find(step=>step.id===currentStepId);
-      if(!current)return;
-      const target=recordsForStep(current).find(record=>!record.slot.hidden&&isInteractive(record.spec));
-      if(!target)return;
-      target.slot.scrollIntoView?.({behavior:'smooth',block:'start'});
-      target.slot.querySelector?.('input,select,textarea,button')?.focus?.();
+    function wizardStartY(){
+      const rect=container.getBoundingClientRect?.();
+      const scrollY=Number(root.scrollY||root.pageYOffset||0);
+      return rect?Math.max(0,Math.round(scrollY+rect.top)):0;
+    }
+
+    function alignWizardStart(){
+      if(!mobileProfile())return;
+      const top=wizardStartY();
+      try{root.scrollTo?.({top,left:0,behavior:'auto'});}
+      catch(_){root.scrollTo?.(0,top);}
     }
 
     function move(direction){
@@ -181,7 +179,7 @@
       if(nextIndex<0||nextIndex>=steps.length)return;
       currentStepId=steps[nextIndex].id;
       render();
-      focusCurrentStep();
+      alignWizardStart();
     }
 
     back.addEventListener('click',()=>move(-1));
@@ -192,7 +190,7 @@
       render();
       if(mobileProfile()&&!initialRevealQueued){
         initialRevealQueued=true;
-        const reveal=()=>header.scrollIntoView?.({behavior:'auto',block:'start'});
+        const reveal=()=>alignWizardStart();
         if(typeof root.requestAnimationFrame==='function')root.requestAnimationFrame(reveal);
         else root.setTimeout?.(reveal,0);
       }
