@@ -6,6 +6,7 @@ const ordinary={
   noiseSpecial:'ordinary',noiseDate:'2026-09-13',noiseTime:'15:00',
   noiseZoneMode:'direct',noiseZone:'2',noiseHoliday:'no'
 };
+const timed={noiseDate:'2026-09-13',noiseTime:'15:00'};
 
 test('4.9.3 噪音表單：最上方簡易判斷後先輸入稽查日期與時間',async()=>{
   const {config}=await loaded();
@@ -13,7 +14,7 @@ test('4.9.3 噪音表單：最上方簡易判斷後先輸入稽查日期與時�
   assert.equal(t.floatingFieldActions,true);
   assert.equal(t.mobileFocusMode,true);
   assert.equal(t.quickActions.summaryField,'noiseQuickDecisionText');
-  assert.deepEqual(t.quickActions.startFields,['noiseDate','noiseTime']);
+  assert.deepEqual(Array.from(t.quickActions.startFields),['noiseDate','noiseTime']);
   const ids=t.fields.map(f=>f.id);
   assert.ok(ids.indexOf('noiseQuickDecisionText')<ids.indexOf('noiseDate'));
   assert.ok(ids.indexOf('noiseDate')<ids.indexOf('noiseTime'));
@@ -39,10 +40,43 @@ test('4.9.3 第一關：未輸入稽查日期時間時不先要求來源、管�
 
 test('4.9.3 日期時間完成後才要求主要噪音來源／主管機關分流',()=>{
   const {root}=runtime();
-  const out=plain(root.NoiseMain.prepare({noiseDate:'2026-09-13',noiseTime:'22:30'}));
+  const out=plain(root.NoiseMain.prepare(timed));
   assert.match(out.noiseRouteText,/主要噪音來源.*主管機關分流/);
   assert.match(out.noiseValidation,/主要噪音來源/);
   assert.match(out.noiseQuickDecisionText,/已取得稽查日期與時間/);
+});
+
+test('4.9.3 特殊運輸與航空來源仍在日期時間後直接走專章，不要求一般管制區',()=>{
+  const {root}=runtime();
+  const cases=[
+    ['landTransport',/第14條/],
+    ['civilAviation',/第15條|第16條/],
+    ['militaryAviation',/第17條/]
+  ];
+  for(const [noiseSpecial,law] of cases){
+    const out=plain(root.NoiseMain.prepare({...timed,noiseSpecial}));
+    assert.equal(out.noiseBlocked,'no');
+    assert.match(out.noiseGuide,law);
+    assert.equal(out.noiseZoneResultText,'');
+    assert.equal(out.noiseShowA9,'no');
+  }
+});
+
+test('4.9.3 車輛路徑仍保留排氣管第8條前置檢查',()=>{
+  const {root}=runtime();
+  const unknown=plain(root.NoiseMain.prepare({...timed,noiseSpecial:'vehicle',noiseVehicleExhaustA8:'unknown'}));
+  assert.equal(unknown.noiseBlocked,'yes');
+  assert.match(unknown.noiseValidation,/尚待確認|不得直接略過/);
+
+  const normal=plain(root.NoiseMain.prepare({...timed,noiseSpecial:'vehicle',noiseVehicleExhaustA8:'no'}));
+  assert.equal(normal.noiseBlocked,'no');
+  assert.match(normal.noiseGuide,/第11條至第13條/);
+  assert.equal(normal.noiseShowA9,'no');
+
+  const a8=plain(root.NoiseMain.prepare({...timed,noiseSpecial:'vehicle',noiseVehicleExhaustA8:'yes',noiseA8Disturbance:'yes'}));
+  assert.equal(a8.noiseBlocked,'no');
+  assert.match(a8.noiseRouteText,/第8條.*排氣管|排氣管.*第8條/);
+  assert.equal(a8.noiseShowA9,'no');
 });
 
 test('4.9.3 一般案件先判管制區與第8條，再詢問是否具持續性可量測',()=>{
@@ -91,6 +125,19 @@ test('4.9.3 不易量測且無管委會：轉警察機關，不進第9條量測'
   assert.match(out.noiseRouteText,/無管委會.*警察機關/);
   assert.match(out.noiseRouteText,/不進第9條/);
   assert.equal(out.noiseShowA9,'no');
+});
+
+test('4.9.3 交界案件也先做第8條，再依無管委會轉警察，不簡化單一管制區',()=>{
+  const {root}=runtime();
+  const out=plain(root.NoiseMain.prepare({
+    noiseDate:'2026-09-13',noiseTime:'14:00',noiseSpecial:'ordinary',noiseHoliday:'no',
+    noiseZoneMode:'assist',noiseZoneAssistType:'boundary',noiseZoneBoundaryPair:'2-3',
+    noiseA8Act:'none',noiseNature:'difficult',noiseCommunityCommittee:'no'
+  }));
+  assert.equal(out.noiseBlocked,'no');
+  assert.equal(out.noiseShowA9,'no');
+  assert.match(out.noiseRouteText,/無管委會.*警察機關/);
+  assert.match(out.noiseZoneResultText,/交界|任何一區/);
 });
 
 test('4.9.3 具持續性且可量測：第8條未成立後才進第9條',()=>{
