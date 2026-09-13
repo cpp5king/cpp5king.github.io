@@ -20,7 +20,7 @@ test('同層兩模板點選直接進表單，往返不殘留輸入與草稿', as
     assert.ok(nodes(app).filter(n => n.tagName === 'TEXTAREA').every(n => n.value === ''));
     assert.equal(inputs.some(n => n.id === 'samplingDate'), title !== '餐飲異味');
     const subject = inputs.find(n => n.id === 'subject'); subject.value = '測試場所'; subject.dispatch('input');
-    click('填入兩份草稿');
+    click('完成／產生紀錄');
     assert.match(nodes(app).find(n => n.id === 'record').value, /測試場所/);
     click('重新選擇案件類型');
   }
