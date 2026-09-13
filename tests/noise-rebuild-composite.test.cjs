@@ -59,7 +59,7 @@ test('複合音量：2、3、4、5、6以上音源分別降低3、4、6、7、8 
     }));
     assert.equal(out.noiseBlocked,'no');
     assert.match(out.noiseCompositeText,new RegExp(`降低${drop} dB`));
-    assert.match(out.noiseStandardText,new RegExp(`全頻評定值 ${standard} dB`));
+    assert.match(out.noiseStandardText,new RegExp(`全頻 ${standard} dB`));
   }
 });
 

@@ -35,10 +35,10 @@
   for(const act of A8().acts||[])if(act.hasExceptions||act.exceptionChecks?.length)blankFlags[exFlag(act.id)]='no';
 
   function base(input){
-    return {...input,...blankFlags,noiseBlocked:'yes',noiseValidation:'',noiseRecord:'',noiseReply:'',noiseRouteText:'',noiseStandardText:'',noiseMeasurementPointText:'',noiseResultText:'',noiseGuide:'',noiseA8ExceptionSummary:'',noiseZoneResultText:''};
+    return {...input,...blankFlags,noiseBlocked:'yes',noiseValidation:'',noiseRecord:'',noiseReply:'',noiseRouteText:'',noiseStandardText:'',noiseMeasurementPointText:'',noiseResultText:'',noiseGuide:'',noiseA8ExceptionSummary:'',noiseZoneResultText:'',noiseOutcomeId:''};
   }
-  function finish(out,{route='',guide='',validation='',record='',reply='',blocked=true}={}){
-    out.noiseRouteText=route;out.noiseGuide=guide||route;out.noiseValidation=validation;out.noiseRecord=record;out.noiseReply=reply;out.noiseBlocked=yes(blocked);return out;
+  function finish(out,{route='',guide='',validation='',record='',reply='',blocked=true,outcome=''}={}){
+    out.noiseRouteText=route;out.noiseGuide=guide||route;out.noiseValidation=validation;out.noiseRecord=record;out.noiseReply=reply;out.noiseBlocked=yes(blocked);out.noiseOutcomeId=outcome||out.noiseOutcomeId||'';return out;
   }
   function routeDraft(title,body){return {record:`${title}：${body}`,reply:`有關噪音陳情案，${body}`};}
 
@@ -147,7 +147,7 @@
       if(input.noiseSpeakerOutdoor==='yes')lines.push('本次擴音設施測點位於室外。');
       if(input.noiseSpeakerOutdoor==='no')lines.push('本次擴音設施測點位於室內。');
     }else if(band==='full'||band==='both'){
-      if(input.noiseFullPoint==='complainant')lines.push('全頻：於陳情人指定之居住生活地點量測。');
+      if(input.noiseFullPoint==='complainant')lines.push('全頻：於陳情人指定之室內居住生活地點量測。');
       else if(input.noiseFullPoint==='authority')lines.push('全頻：陳情人不指定時，由主管機關指定周界外測點，並距最近建築物牆面線1公尺以上。');
       else lines.push('全頻：尚未確認測點。');
     }
@@ -165,16 +165,14 @@
       return {show:input.noiseSpeakerOutdoor==='yes',error:''};
     }
     if(input.noiseFullPoint==='authority')return {show:true,error:''};
-    if(input.noiseFullPoint!=='complainant')return {show:false,error:'請確認全頻測量地點。'};
-    if(!['yes','no'].includes(input.noiseFullIndoor))return {show:false,error:'請確認全頻測點是否位於室內。'};
-    return {show:input.noiseFullIndoor==='no',error:''};
+    if(input.noiseFullPoint==='complainant')return {show:false,error:''};
+    return {show:false,error:'請確認全頻測量地點。'};
   }
   function weatherValidation(input,show){
     if(!show)return '';
-    if(!['yes','no'].includes(input.noiseRain))return '室外量測請確認是否下雨。';
-    if(input.noiseRain==='yes')return '室外量測時有雨，不符合噪音管制標準之氣象條件。';
+    // 天雨路濕已在「是否進行量測 → 不量測原因」處理；進入實際量測後只確認風速。
     const wind=num(input.noiseWind);if(wind===null)return '室外量測請輸入風速。';
-    if(wind>5)return '室外量測風速大於5 m/s，不符合噪音管制標準之氣象條件。';
+    if(wind>5)return '未符合噪音管制標準量測時氣象條件之規定，無法量測具代表性之數據。';
     return '';
   }
 
@@ -195,7 +193,7 @@
     const exText=exception.status==='requirementsFailed'?`；${exception.summary}`:(exception.status==='notExempt'?`；${exception.summary}`:'');
     const body=`現場於新北市第${input.noiseZone}類噪音管制區、${input.noiseTime}查見「${act.label}」，落於公告管制範圍，且已確認足以妨害他人生活環境安寧${exText}，依噪音管制法第8條及新北市現行公告辦理。`;
     const d=routeDraft('第8條公告禁止行為',body);
-    return {done:true,out:finish(out,{route:'第8條公告禁止行為成立路徑',guide:'本案依第8條公告禁止行為處理，不以第9條量測作為成立要件。',record:d.record,reply:d.reply,blocked:false})};
+    return {done:true,out:finish(out,{route:'第8條公告禁止行為成立路徑',guide:'本案依第8條公告禁止行為處理，不以第9條量測作為成立要件。',record:d.record,reply:d.reply,blocked:false,outcome:'article8.established'})};
   }
 
   function prepare(rawInput={}){
@@ -217,7 +215,7 @@
         if(disturbance==='yes'){
           const body='現場查見使用中機動車輛涉及任意變更經噪音檢（查）驗合格排氣管，或使用未經噪音審驗／檢驗合格排氣管行駛道路之公告禁止行為，且已確認足以妨害他人生活環境安寧；該行為為新北市各類噪音管制區全時段禁止事項，依噪音管制法第8條及新北市現行公告辦理。';
           const d=routeDraft('第8條車輛排氣管公告禁止行為',body);
-          return finish(out,{route:'第8條車輛排氣管公告禁止行為成立路徑',guide:'本案先依第8條公告禁止行為處理，不以一般場所第9條量測流程判定。',record:d.record,reply:d.reply,blocked:false});
+          return finish(out,{route:'第8條車輛排氣管公告禁止行為成立路徑',guide:'本案先依第8條公告禁止行為處理，不以一般場所第9條量測流程判定。',record:d.record,reply:d.reply,blocked:false,outcome:'article8.vehicleExhaust'});
         }
         return specialCase(out,'vehicle','已確認排氣管公告行為尚不足認妨害他人生活環境安寧，未逕以第8條成立。');
       }
@@ -259,32 +257,58 @@
     }
 
     out.noiseShowMeasure='yes';
-    if(!['full','low','both'].includes(input.noiseBand))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請選擇量測頻帶。'});
-    if(meta.kind==='speaker'&&input.noiseBand!=='full')return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'擴音設施現行標準僅採20 Hz～20 kHz全頻評定，請選擇「全頻」。'});
-    const p=period(input.noiseZone,input.noiseTime),std=standards(meta,input.noiseZone,p);if(!p||!std)return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'無法依管制區與時段解析噪音標準。'});
+    const p=period(input.noiseZone,input.noiseTime),std=standards(meta,input.noiseZone,p);if(!p||!std)return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'無法依管制區與時段解析噪音標準。'});
     const periodLabel={day:'日間',evening:'晚間',night:'夜間'}[p];
-    const useFull=input.noiseBand==='full'||input.noiseBand==='both',useLow=input.noiseBand==='low'||input.noiseBand==='both';
-    out.noiseShowFull=yes(useFull);out.noiseShowLow=yes(useLow);out.noiseShowFullPoint=yes(useFull&&meta.kind!=='speaker');out.noiseShowSpeakerLocation=yes(useFull&&meta.kind==='speaker');
+    const hasValue=value=>text(String(value??''))!=='';
+    const fullValues=meta.kind==='construction'?[input.noiseValueLeq,input.noiseValueLmax]:[input.noiseValueFull];
+    const useFull=fullValues.some(hasValue),useLow=hasValue(input.noiseValueLow);
+    const fullAvailable=std.full!==undefined||std.lmax!==undefined;
+    const lowAvailable=std.low!==undefined&&meta.kind!=='speaker';
+    const band=useFull&&useLow?'both':useFull?'full':useLow?'low':'';
+
+    // 不再要求先選量測頻帶；直接顯示可輸入之量測值，系統依實際輸入判斷本次量測項目。
+    out.noiseShowFull=yes(useFull);out.noiseShowLow=yes(lowAvailable);out.noiseShowFullPoint=yes(useFull&&meta.kind!=='speaker');out.noiseShowSpeakerLocation=yes(useFull&&meta.kind==='speaker');
     out.noiseShowGeneralMethod=yes(useFull&&meta.kind==='general');out.noiseShowSpeakerMode=yes(useFull&&meta.kind==='speaker');
-    out.noiseShowFullAssessment=yes(useFull&&['general','speaker'].includes(meta.kind));out.noiseShowConstructionFull=yes(useFull&&meta.kind==='construction');out.noiseShowConstructionLmax=yes(useFull&&meta.kind==='construction'&&std.lmax!==undefined);
-    if(useFull&&meta.kind==='general'&&!generalMethodLabel(input.noiseGeneralMethod))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請依聲音發聲特性選擇全頻評定方法。'});
-    if(useFull&&meta.kind==='speaker'&&!speakerMethodLabel(input.noiseSpeakerMode))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請確認擴音設施為移動性或固定／停止移動。'});
-    if(useLow&&std.low===undefined)return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'此噪音源類型沒有可套用的低頻標準，請重新選擇量測頻帶。'});
+    out.noiseShowFullAssessment=yes(fullAvailable&&['general','speaker'].includes(meta.kind));out.noiseShowConstructionFull=yes(fullAvailable&&meta.kind==='construction');out.noiseShowConstructionLmax=yes(fullAvailable&&meta.kind==='construction'&&std.lmax!==undefined);
+    if(useFull&&meta.kind==='general'&&!generalMethodLabel(input.noiseGeneralMethod))return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'請確認全頻評定方式。'});
+    if(useFull&&meta.kind==='speaker'&&!speakerMethodLabel(input.noiseSpeakerMode))return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'請確認擴音設施為移動性或固定／停止移動。'});
+    if(useLow&&!lowAvailable)return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'此噪音源類型沒有可套用的低頻標準，請移除低頻量測值或重新確認來源類型。'});
 
     const standardLines=[];
-    if(useFull&&meta.kind==='construction'){
+    if(meta.kind==='construction'){
       if(std.full!==undefined)standardLines.push(`全頻 Leq ${std.full} dB(A)`);
       if(std.lmax!==undefined)standardLines.push(`Lmax ${std.lmax} dB(A)`);
-    }else if(useFull&&std.full!==undefined)standardLines.push(`全頻評定值 ${std.full} dB(A)`);
-    if(useLow&&std.low!==undefined)standardLines.push(`低頻 Leq,LF ${std.low} dB(A)`);
+    }else if(std.full!==undefined)standardLines.push(`全頻 ${std.full} dB(A)`);
+    if(lowAvailable)standardLines.push(`低頻 Leq,LF ${std.low} dB(A)`);
     out.noiseStandardText=`第${input.noiseZone}類／${periodLabel}：${standardLines.join('；')}`;
 
-    const weather=weatherState(input,meta,input.noiseBand);out.noiseShowWeather=yes(weather.show);
-    out.noiseMeasurementPointText=measurementPoint(input,meta,input.noiseBand);
-    if(weather.error)return finish(out,{route:`${a8Note}\n${meta.basis}`,guide:weather.error,validation:weather.error});
-    const weatherError=weatherValidation(input,weather.show);if(weatherError)return finish(out,{route:`${a8Note}\n${meta.basis}`,guide:weatherError,validation:weatherError});
-    if(!text(input.noiseSubject))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請填入稽查對象代稱。'});
-    if(!text(input.noiseSource))return finish(out,{route:`${a8Note}\n${meta.basis}`,validation:'請填入主要噪音源／設備說明。'});
+    if(!text(input.noiseSubject))return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'請填入稽查對象代稱。'});
+    if(!text(input.noiseSource))return finish(out,{route:`${a8Note}
+${meta.basis}`,validation:'請填入主要噪音源／設備說明。'});
+    if(!useFull&&!useLow){
+      out.noiseMeasurementPointText='請直接輸入全頻或低頻量測值；系統將依實際輸入自動判斷本次量測項目。';
+      out.noiseResultText='尚無量測資料，尚未進行符合／超標研判。';
+      return finish(out,{route:`${a8Note}
+${meta.basis}`,guide:'尚無量測數值；輸入全頻或低頻數值後，系統會自動展開對應測點、氣象與背景音處理。',validation:'尚無量測資料，請輸入全頻或低頻量測值。'});
+    }
+
+    const weather=weatherState(input,meta,band);out.noiseShowWeather=yes(weather.show);
+    out.noiseMeasurementPointText=measurementPoint(input,meta,band);
+    if(weather.error)return finish(out,{route:`${a8Note}
+${meta.basis}`,guide:weather.error,validation:weather.error});
+    const weatherError=weatherValidation(input,weather.show);if(weatherError){
+      const windInvalid=num(input.noiseWind)!==null&&num(input.noiseWind)>5;
+      out.noiseResultText=windInvalid
+        ?'未符合噪音管制標準量測時氣象條件之規定，無法量測具代表性之數據。'
+        :'室外量測尚待輸入風速，暫不進行符合／超標研判。';
+      return finish(out,{route:`${a8Note}
+${meta.basis}`,guide:weatherError,validation:weatherError,outcome:windInvalid?'article9.weather.wind':''});
+    }
 
     const results=[];let fullPrimary=null,fullLmax=null,lowResult=null;
     if(useFull&&meta.kind==='general'){fullPrimary=assessMetric(generalMethodLabel(input.noiseGeneralMethod),num(input.noiseValueFull),std.full,input.noiseBgFullMode,num(input.noiseBgFull));results.push(fullPrimary);}
@@ -304,7 +328,7 @@
     const body=`現場稽查對象「${text(input.noiseSubject)}」，主要噪音源為「${text(input.noiseSource)}」，屬${meta.label}${facility}；適用第${input.noiseZone}類噪音管制區${periodLabel}標準。${out.noiseResultText.replace(/\n/g,' ')}${exceeded?'量測結果有項目超過噪音管制標準，依噪音管制法第24條辦理限期改善。':'量測結果未超過本次適用噪音管制標準。'}`;
     const reply=exceeded?'本案經量測有項目超過噪音管制標準，將依噪音管制法第24條辦理限期改善。':'本案經依適用噪音管制標準量測，結果未超過標準。';
     out.noiseRouteText=`${a8Note}\n${meta.basis}`;
-    return finish(out,{route:out.noiseRouteText,guide:exceeded?'第9條量測超標：進入第24條限期改善程序。':'第9條量測未超標。',record:body,reply,blocked:false});
+    return finish(out,{route:out.noiseRouteText,guide:exceeded?'第9條量測超標：進入第24條限期改善程序。':'第9條量測未超標。',record:body,reply,blocked:false,outcome:exceeded?'article9.exceeded':'article9.compliant'});
   }
 
   function resetChange(before={},after={}){
@@ -312,7 +336,7 @@
     const exceptionKeys=a8ExceptionKeys();
     const zoneAssistFields=['noiseZoneAssistType','noiseZoneLandClass','noiseZoneTrafficSource','noiseZoneSourceZone','noiseZoneSideA','noiseZoneSideB','noiseZonePointSide','noiseZoneMajorPosition','noiseZoneOriginalFourth','noiseZoneAdjacentFirst','noiseZoneUnderlying','noiseZoneBoundaryPair'];
     const zoneFields=['noiseZoneMode','noiseZone',...zoneAssistFields,'noiseHoliday','noiseA8Act'];
-    const measurements=['noiseFacility','noiseBand','noiseSubject','noiseSource','noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow'];
+    const measurements=['noiseFacility','noiseSubject','noiseSource','noiseOperation','noiseGeneralSpecialAssessment','noiseFullPoint','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow'];
     if(before.noiseSpecial!==after.noiseSpecial)clear(['noiseVehicleExhaustA8','noiseA8Disturbance',...zoneFields,...exceptionKeys,'noiseNature','noiseA6Disturbance','noiseA9Type',...measurements]);
     if(before.noiseVehicleExhaustA8!==after.noiseVehicleExhaustA8)clear(['noiseA8Disturbance']);
     if(before.noiseZoneMode!==after.noiseZoneMode){clear(zoneAssistFields);if(after.noiseZoneMode==='assist')next.noiseZone='';}
@@ -326,9 +350,8 @@
     }
     if(before.noiseNature!==after.noiseNature)clear(['noiseA6Disturbance','noiseA9Type',...measurements]);
     if(before.noiseA9Type!==after.noiseA9Type)clear(measurements);
-    if(before.noiseBand!==after.noiseBand)clear(['noiseFullPoint','noiseFullIndoor','noiseSpeakerOutdoor','noiseRain','noiseWind','noiseGeneralMethod','noiseSpeakerMode','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     if(before.noiseGeneralMethod!==after.noiseGeneralMethod||before.noiseSpeakerMode!==after.noiseSpeakerMode)clear(['noiseValueFull','noiseBgFullMode','noiseBgFull']);
-    if(before.noiseFullPoint!==after.noiseFullPoint||before.noiseFullIndoor!==after.noiseFullIndoor||before.noiseSpeakerOutdoor!==after.noiseSpeakerOutdoor)clear(['noiseRain','noiseWind','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax']);
+    if(before.noiseFullPoint!==after.noiseFullPoint||before.noiseSpeakerOutdoor!==after.noiseSpeakerOutdoor)clear(['noiseRain','noiseWind','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax']);
     return next;
   }
 

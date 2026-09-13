@@ -313,6 +313,20 @@
 
         if (spec.type === "select") {
           displays.push(facts => {
+            if(cards){
+              const liveOptions=[
+                ...spec.options,
+                ...(spec.allowCustom === false
+                  ? []
+                  : [{
+                      id: "custom",
+                      label:
+                        spec.customLabel ||
+                        "其他，自行填寫"
+                    }])
+              ];
+              cards.setOptions(liveOptions);
+            }
             for (const node of control.options) {
               const option = spec.options.find(
                 item =>
@@ -599,7 +613,10 @@
       return focusRecord(slotRecords.find(({spec,wrap})=>spec.id===id&&!wrap.hidden));
     }
 
-    write({});
+    const initialValues=typeof template.initialValues==='function'
+      ? template.initialValues()
+      : (template.initialValues||{});
+    write(initialValues);
 
     return {
       element: container,

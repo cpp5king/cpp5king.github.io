@@ -8,8 +8,16 @@ const allTests = fs.readdirSync(testDir)
   .sort();
 
 // 噪音模組已重建。舊版 3.x～4.9 測試保留作歷史參考，但不再作為新版相容契約。
-// 新版噪音正式規格一律以 noise-rebuild*.test.cjs 為準。
+// 4.9.16 又完成「可量測性前置、第8條動態候選、第9條量測／不量測分流」等正式流程重排；
+// 因此下列 4.9.4 時期的 rebuild 契約也已被 4.9.16 專用契約取代，不再當成 active spec。
+const supersededNoiseSpecFiles = new Set([
+  'noise-rebuild.test.cjs',
+  'noise-rebuild-method-guidance.test.cjs',
+  'noise-rebuild-priority-routing.test.cjs'
+]);
+
 function isLegacyNoiseTest(name) {
+  if (supersededNoiseSpecFiles.has(name)) return true;
   if (/^noise-rebuild(?:-.+)?\.test\.cjs$/.test(name)) return false;
   return name === 'article8.test.cjs'
     || /^article9(?:-.+)?\.test\.cjs$/.test(name)
@@ -21,7 +29,7 @@ const archivedNoiseTests = allTests.filter(isLegacyNoiseTest);
 const activeTests = allTests.filter(name => !isLegacyNoiseTest(name));
 
 // 這些是已被後續正式流程取代的「舊順序」單一測試案例；檔案其餘回歸仍照常執行。
-// 對應的新契約由 noise-rebuild-priority-routing.test.cjs 覆蓋，並保留第8條、特殊來源、車輛與交界的實際回歸。
+// 4.9.16 最新流程由 noise-rebuild-4916-*.test.cjs 覆蓋；舊案例只留歷史參考。
 const supersededCases = [
   '重建版第一步：未確認主要噪音來源時先停在主管機關分流',
   '第8條爆竹：專案核准例外成立後回到一般第6／9條流程',
@@ -57,6 +65,7 @@ const skipPattern = `^(?:${[...existingSkipped,...supersededCases].map(escapeReg
 console.log(`[tests] active files: ${activeTests.length}`);
 console.log(`[tests] archived legacy noise files: ${archivedNoiseTests.length}`);
 console.log(`[tests] active noise spec: ${activeTests.filter(name => name.startsWith('noise-rebuild')).join(', ')}`);
+console.log(`[tests] superseded noise spec files: ${Array.from(supersededNoiseSpecFiles).join(', ')}`);
 console.log(`[tests] superseded single-case contracts: ${supersededCases.length}`);
 
 const args = [
