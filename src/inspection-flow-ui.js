@@ -47,6 +47,9 @@
   }
 
   function attach({template,fields,workflow,performHandoff,onEnd}){
+    if(template.mobileWizard&&mobileProfile()&&root.MobileWizardUI?.attach){
+      return root.MobileWizardUI.attach({template,fields});
+    }
     const config=template.quickActions;
     if(!config)return {element:null,update:()=>{}};
     const labels={
