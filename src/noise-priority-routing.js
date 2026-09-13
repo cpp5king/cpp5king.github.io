@@ -53,6 +53,10 @@
     out.noiseQuickDecisionText=quickSummary(input,out,candidates);
     return out;
   }
+  function hasLegacyOrdinaryProgress(input){
+    if(input.noiseSpecial!=='ordinary'||input.noiseNature)return false;
+    return !!(input.noiseA8Act||input.noiseA8Disturbance||input.noiseA9Type||input.noiseBand||input.noiseGeneralMethod||input.noiseSpeakerMode||input.noiseFacility);
+  }
 
   function prepare(rawInput={}){
     const input={...rawInput};
@@ -63,16 +67,20 @@
       return decorate(input,out,null);
     }
 
+    // 4.9.1 以前的一般案件可能沒有新第一題，但已有第8／9條下游事實。
+    // 只對這種已明確走到下游的舊案件視為原先「可量測」流程，避免匯入舊案件時被卡回第一題。
+    if(hasLegacyOrdinaryProgress(input))input.noiseNature='measurable';
+
     if(!validNature(input.noiseNature)||input.noiseNature==='unknown'){
       const out=baseline(input);
-      setOutcome(out,{route:'第一步｜一般噪音源是否具持續性且可量測',guide:'先確認是否屬環保局可進一步進行一般噪音量測之案件。',validation:'請先確認一般噪音源是否具持續性且可量測。'});
+      setOutcome(out,{route:'第一步｜一般噪音源是否具持續性且可量測（主管機關初篩）',guide:'先確認是否屬環保局可進一步進行一般噪音量測之案件。',validation:'請先確認一般噪音源是否具持續性且可量測。'});
       return decorate(input,out,null);
     }
 
     if(input.noiseNature==='difficult'){
       const out=baseline(input);
       const body='本案依現場事實屬不具持續性或不易量測之聲音，環保局一般第9條噪音量測流程不續行；依噪音管制法第6條，屬警察機關依有關法規處理之分流方向。本工具於此不另行判斷是否已達妨害安寧程度。';
-      setOutcome(out,{route:'第6條／警察機關處理方向',guide:body,blocked:false,record:`主管機關初步分流：${body}`,reply:'有關噪音陳情案，依目前查得聲音型態屬不具持續性或不易量測，依噪音管制法第6條規定，由警察機關依有關法規處理。'});
+      setOutcome(out,{route:'第6條／警察機關處理方向／本次不進第9條量測',guide:body,blocked:false,record:`主管機關初步分流：${body}`,reply:'有關噪音陳情案，依目前查得聲音型態屬不具持續性或不易量測，依噪音管制法第6條規定，由警察機關依有關法規處理。'});
       return decorate(input,out,null);
     }
 
