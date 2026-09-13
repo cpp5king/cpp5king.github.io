@@ -120,6 +120,7 @@
   text118: "使用機具",
   text119: "作業內容",
   article8Record: "本局於{{date}}{{article8TimeText}}派員前往所陳地點，現場查為{{subject}}，現場{{factText}}，查該址位處本府公告之第{{article8Zone}}類噪音管制區，於管制區內公告禁止時段從事{{prohibitedAct}}之行為，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
+  article8RecordCurrent: "本局於{{date}}{{article8TimeText}}派員前往所陳地點，現場查為{{subject}}，查該址位處本府公告之第{{article8Zone}}類噪音管制區，於管制區內公告禁止時段從事{{prohibitedAct}}，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。",
   text121: "第9條第一階段：依音源類型、管制區與稽查時間顯示適用標準；本階段不輸入實測值、不判定超標。",
   text122: "第9條本階段僅顯示適用標準，不產生稽查公文。",
   text123: "音源／場所類型",
