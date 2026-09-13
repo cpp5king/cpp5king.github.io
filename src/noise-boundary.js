@@ -97,7 +97,8 @@
     const runs=zones.map(zone=>runZone(input,zone));
     const base={...runs[0],noiseZone:'',noiseBoundaryZones:zones.join('-'),noiseZoneResultText:state.note||''};
 
-    const a8Established=runs.map(r=>/第8條公告禁止行為成立路徑/.test(text(r.noiseRouteText)));
+    // 第8條成立路徑文字曾由「成立路徑」簡化為「成立」；交界判斷不得因此失去雙區身分。
+    const a8Established=runs.map(r=>/第8條公告禁止行為成立/.test(text(r.noiseRouteText)));
     if(a8Established.every(Boolean))return mergeA8(base,runs,zones,state);
     if(a8Established.some(Boolean)){
       base.noiseBlocked='yes';
