@@ -109,3 +109,45 @@ button.danger:hover { background:#7f241c; }
   .field-action-rail { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .field-action-rail button { font-size:.8rem; }
 }
+
+/* 4.9.25 mobile Wizard: presentation only; desktop/tablet keep the full form. */
+.mobile-wizard-header,
+.mobile-wizard-nav { display:none; }
+@media (max-width:760px) {
+  .sentence-form[data-mobile-wizard="yes"] { padding-top:0; }
+  .sentence-form[data-mobile-wizard="yes"] .sentence-slot[data-wizard-hidden="yes"] { display:none !important; }
+  .mobile-wizard-header {
+    display:block;
+    position:sticky;
+    top:0;
+    z-index:20;
+    margin:0 -14px 14px;
+    padding:12px 14px 10px;
+    background:rgba(255,255,255,.97);
+    border-bottom:1px solid #d5e1dd;
+    box-shadow:0 4px 12px rgba(24,58,54,.08);
+  }
+  .mobile-wizard-progress-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .mobile-wizard-progress { white-space:nowrap; color:#146552; }
+  .mobile-wizard-title { text-align:right; font-weight:800; line-height:1.35; }
+  .mobile-wizard-track { height:7px; margin-top:8px; overflow:hidden; border-radius:999px; background:#dfe9e5; }
+  .mobile-wizard-fill { display:block; height:100%; background:#146552; transition:width .18s ease; }
+  .mobile-wizard-status { margin-top:10px; padding:9px 10px; border-radius:8px; background:#eef8f4; font-size:.88rem; line-height:1.45; }
+  .mobile-wizard-status-line { margin:3px 0; white-space:pre-line; }
+  .mobile-wizard-nav {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:50;
+    padding:8px max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    background:rgba(255,255,255,.98);
+    border-top:1px solid #b8c9c2;
+    box-shadow:0 -4px 18px rgba(24,58,54,.12);
+  }
+  .mobile-wizard-nav button { width:100%; min-height:52px; }
+  form.mobile-wizard-enabled { padding-bottom:88px !important; }
+}
