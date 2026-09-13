@@ -160,7 +160,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible { border-color:v
   body:has(.sentence-form[data-mobile-wizard="yes"]) #app > nav.actions,
   body:has(.sentence-form[data-mobile-wizard="yes"]) #app > p,
   body:has(.sentence-form[data-mobile-wizard="yes"]) form.mobile-wizard-enabled > h2,
-  body:has(.sentence-form[data-mobile-wizard="yes"]) form.mobile-wizard-enabled > p:first-of-type {
+  body:has(.sentence-form[data-mobile-wizard="yes"]) form.mobile-wizard-enabled > p:first-of-type,
+  body:has(.sentence-form[data-mobile-wizard="yes"]) form.mobile-wizard-enabled > [data-draft-actions="yes"] {
     display:none !important;
   }
   body:has(.sentence-form[data-mobile-wizard="yes"]) main {

@@ -1,7 +1,7 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.9.27';
-const CACHE_REVISION='release-4.9.27';
-const CACHE_NAME='inspection-assistant-4.9.27-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='4.9.28';
+const CACHE_REVISION='release-4.9.28';
+const CACHE_NAME='inspection-assistant-4.9.28-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[

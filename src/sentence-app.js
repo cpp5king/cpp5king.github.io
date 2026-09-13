@@ -88,7 +88,7 @@
       const heading = app.querySelector('h2'); if (heading) { heading.tabIndex = -1; heading.focus(); }
     }
     function renderForm(template) {
-      const draftActionLabel = template.draftActionLabel || '填入兩份草稿';
+      const draftActionLabel = template.draftActionLabel || '完成／產生紀錄';
       const form = el('form'); form.autocomplete = 'off';
       if(template.quickActions||template.floatingFieldActions)form.className='field-floating-enabled';
       form.addEventListener('submit', event => event.preventDefault());
@@ -111,7 +111,7 @@
           drafts.record.value = ''; drafts.reply.value = '';
           status.textContent = '';
         }
-        if (session.snapshot().stale) status.textContent = `輸入已變更，下方仍為上次草稿；請重新${draftActionLabel}。`;
+        if (session.snapshot().stale) status.textContent = '輸入已變更，下方仍為上次紀錄；請重新產生紀錄。';
         updateQuickActions(facts);
       });
       form.append(fields.element);
@@ -137,21 +137,24 @@
         section.append(label, area, copy, message); outputs.append(section);
       }
       const actions = el('div', '', 'actions');
+      actions.setAttribute('data-draft-actions','yes');
       if(template.initialGate)actions.hidden=!template.validateOnSubmit&&!!template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,root.DraftEngine.normalize(template,{}));
       if (template.demo && template.demoLabel) actions.append(button(template.demoLabel, () => {
         session.setInputs(fields.write(template.demo));
-        status.textContent = session.snapshot().outputs ? `已套用範例選項；下方仍為上次草稿，請重新${draftActionLabel}。` : `已套用範例選項，請按「${draftActionLabel}」。`;
+        status.textContent = session.snapshot().outputs ? '已套用範例選項；下方仍為上次紀錄，請重新產生紀錄。' : `已套用範例選項，請按「${draftActionLabel}」。`;
       }, true));
-      actions.append(button(draftActionLabel, () => {
+      const draftAction=button(draftActionLabel, () => {
         if(!template.validateOnSubmit&&template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,fields.read()))return;
-        if (session.snapshot().outputs && !window.confirm('重新填入將覆蓋下方兩份草稿及手動修改，是否繼續？')) return;
+        if (session.snapshot().outputs && !window.confirm('重新產生將覆蓋下方兩份紀錄及手動修改，是否繼續？')) return;
         try {
           session.setInputs(fields.read()); const generated = session.generate();
           drafts.record.value = generated.record; drafts.reply.value = generated.reply;
           outputs.querySelectorAll('[role="status"]').forEach(node => { node.textContent = ''; });
-          outputs.hidden = false; status.textContent = '已依選項填回兩份草稿，請核對後複製使用。'; drafts.record.focus();
-        } catch (error) { status.textContent = '無法填入草稿：' + error.message; }
-      }));
+          outputs.hidden = false; status.textContent = '已依選項產生兩份紀錄，請核對後複製使用。'; drafts.record.focus();
+        } catch (error) { status.textContent = '無法產生紀錄：' + error.message; }
+      });
+      draftAction.setAttribute('data-draft-action','yes');
+      actions.append(draftAction);
       const retry=button(template.retryLabel||'重新量測',()=>{
         const workflow=root.TemplateWorkflows?.[template.workflow];
         if(!workflow?.restart)return;

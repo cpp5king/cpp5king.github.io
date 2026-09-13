@@ -197,8 +197,11 @@
       stepIcon.textContent=String(shownIndex||'–');
       stepIcon.setAttribute('data-step-id',current?.id||'');
       renderTrack(total,shownIndex);
+      const isLast=index>=0&&index===steps.length-1;
       back.disabled=index<=0;
-      next.disabled=index<0||index>=steps.length-1;
+      next.disabled=index<0;
+      next.textContent=isLast?(config.completeLabel||'完成／產生紀錄'):'下一步  ›';
+      next.setAttribute('data-complete',isLast?'yes':'no');
       renderStatus();
     }
 
@@ -220,7 +223,17 @@
     }
 
     back.addEventListener('click',()=>move(-1));
-    next.addEventListener('click',()=>move(1));
+    next.addEventListener('click',()=>{
+      const steps=activeSteps();
+      const current=reconcile(steps);
+      const index=current?steps.findIndex(step=>step.id===current.id):-1;
+      if(index>=0&&index===steps.length-1){
+        const draftAction=form?.querySelector?.('[data-draft-action="yes"]');
+        draftAction?.click?.();
+        return;
+      }
+      move(1);
+    });
 
     function update(facts={}){
       latestFacts=facts||{};
