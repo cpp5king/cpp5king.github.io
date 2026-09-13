@@ -41,6 +41,7 @@ test('4.9.2 主管機關優先：不具持續性或不易量測即結束環保�
   assert.equal(out.noiseShowA9,'no');
   assert.match(out.noiseQuickDecisionText,/一般第9條量測流程停止/);
   assert.match(out.noiseRecord,/不具持續性或不易量測/);
+  assert.doesNotMatch(out.noiseRecord,/已達妨害安寧|妨害安寧成立/);
 });
 
 test('4.9.2 具持續性且可量測後才做特殊來源快速分流',()=>{
@@ -86,6 +87,32 @@ test('4.9.2 夜間實際行為命中公告時走第8條；明確無符合行為�
   const a9=plain(root.NoiseMain.prepare({...common,noiseTime:'22:30',noiseA8Act:'none'}));
   assert.equal(a9.noiseShowA9,'yes');
   assert.match(a9.noiseQuickDecisionText,/已轉第9條/);
+});
+
+test('4.9.2 第8條例外仍完整保留；例外成立後依第一關可量測事實回到第9條',()=>{
+  const {root}=runtime();
+  const base={...common,noiseTime:'23:00',noiseA8Disturbance:'yes'};
+  const cases=[
+    {...base,noiseA8Act:'fireworks',noiseA8Ex_fireworks_government:'yes'},
+    {...base,noiseA8Act:'outdoorSpeaker',noiseA8Ex_outdoorSpeaker_government:'no',noiseA8Ex_outdoorSpeaker_publicDuty:'yes'},
+    {...base,noiseA8Act:'construction',noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'yes',noiseA8Ex_construction_approved_a8Notice:'yes',noiseA8Ex_construction_approved_a8Sign:'yes',noiseA8Ex_construction_approved_a8Documents:'yes'},
+    {...base,noiseA8Act:'leafBlower',noiseA8Ex_leafBlower_safety:'no',noiseA8Ex_leafBlower_disaster:'no',noiseA8Ex_leafBlower_emergency:'no',noiseA8Ex_leafBlower_approved:'yes'}
+  ];
+  for(const input of cases){
+    const out=plain(root.NoiseMain.prepare(input));
+    assert.match(out.noiseA8ExceptionSummary,/例外成立/);
+    assert.equal(out.noiseShowA9,'yes');
+    assert.equal(out.noiseBlocked,'yes');
+    assert.match(out.noiseValidation,/第9條噪音源類型/);
+  }
+});
+
+test('4.9.2 舊一般案件已有第8／9條下游事實時可相容，不要求補填新第一題',()=>{
+  const {root}=runtime();
+  const oldCase={noiseSpecial:'ordinary',noiseDate:'2026-09-13',noiseTime:'23:00',noiseZone:'2',noiseHoliday:'no',noiseA8Act:'instrument',noiseA8Disturbance:'yes'};
+  const out=plain(root.NoiseMain.prepare(oldCase));
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRouteText,/第8條公告禁止行為成立/);
 });
 
 test('4.9.2 reset：第一題變更清掉全部下游；特殊來源變更不得反向清掉第一題',()=>{
