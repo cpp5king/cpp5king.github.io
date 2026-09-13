@@ -460,10 +460,11 @@
         const isInput=!['computed','fixed'].includes(spec.type);
         const isComplete=isInput&&!wrap.hidden&&root.UiProfile.answered(spec,facts)&&(!current||spec.id!==current.spec.id);
         const isCurrent=!!current&&spec.id===current.spec.id;
-        if(isComplete)completed++;
+        const keepVisible=spec.mobileKeepVisible===true;
+        if(isComplete&&!keepVisible)completed++;
         wrap.setAttribute('data-ui-completed',isComplete?'yes':'no');
         wrap.setAttribute('data-ui-current',isCurrent?'yes':'no');
-        wrap.setAttribute('data-ui-hidden',isComplete&&!mobileShowCompleted?'yes':'no');
+        wrap.setAttribute('data-ui-hidden',isComplete&&!mobileShowCompleted&&!keepVisible?'yes':'no');
       });
       if(mobileFocusButton){
         mobileFocusButton.hidden=completed===0;
