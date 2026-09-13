@@ -77,8 +77,7 @@ test('交界第8條：同一公告行為在兩區適用性不同時保持待確�
   const out=flow.prepare(boundary({
     noiseTime:'23:00',
     noiseA8Act:'instrument',
-    noiseNature:'difficult',
-    noiseA6Disturbance:'no'
+    noiseNature:'measurable'
   }));
   assert.equal(out.noiseBlocked,'yes');
   assert.match(out.noiseRouteText,/第8條交界適用性待確認/);
@@ -99,16 +98,16 @@ test('交界第8條：兩區均落入同一禁止行為時可成立且紀錄標�
   assert.match(out.noiseRecord,/第2類與第3類噪音管制區交界/);
 });
 
-test('交界第6條：第8條兩區均不適用後仍可進不易量測路徑',async()=>{
+test('交界案件若第一關為不具持續性或不易量測，不再判交界與第8／9條',async()=>{
   const {flow}=await setup();
   const out=flow.prepare(boundary({
     noiseTime:'14:00',
     noiseA8Act:'none',
-    noiseNature:'difficult',
-    noiseA6Disturbance:'no'
+    noiseNature:'difficult'
   }));
   assert.equal(out.noiseBlocked,'no');
-  assert.equal(out.noiseZone,'');
-  assert.equal(out.noiseBoundaryZones,'2-3');
-  assert.match(out.noiseRouteText,/第6條要件未成立/);
+  assert.equal(out.noiseShowA8,'no');
+  assert.equal(out.noiseShowA9,'no');
+  assert.match(out.noiseRouteText,/第6條.*警察機關/);
+  assert.match(out.noiseQuickDecisionText,/第9條量測流程停止/);
 });
