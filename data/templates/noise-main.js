@@ -72,7 +72,7 @@
       select('noiseNature','第四步｜一般噪音源是否具持續性且可量測？',[['difficult','不具持續性或不易量測'],['measurable','具持續性，可依噪音量測程序確認']],{displayWhen:when('noiseShowAfterA8')}),
       select('noiseA6Disturbance','該不具持續性／不易量測聲音是否足以妨害他人生活安寧？',ynu,{displayWhen:when('noiseShowA6Disturbance')}),
       select('noiseA9Type','第五步｜第9條噪音源類型',[
-        ['factory','工廠（場）'],['entertainment','娛樂場所'],['business','營業場所'],['construction','營建工程'],['speaker','擴音設施'],['otherFacility','新北市公告之其他設施'],['renovation','非屬前述場所範圍之裝修工程'],['outside','不屬目前第9條列管場所／工程／設施']
+        ['factory','工廠（場）'],['entertainment','娛樂場所'],['business','營業場所'],['construction','營建工程'],['speaker','擴音設施'],['otherFacility','新北市公告之其他設施']
       ],{displayWhen:when('noiseShowA9')}),
       select('noiseFacility','公告設施種類',facilities,{displayWhen:when('noiseShowOtherFacility')}),
       select('noiseCompositeDifferentActors','複合音量｜是否由非同一行為人、法人或非法人之設施共同產生',ynu,{displayWhen:{field:'noiseA9Type',value:'otherFacility'}}),
@@ -80,14 +80,12 @@
       select('noiseCompositeSourceCount','複合音量｜非屬同一主體之音源數',[['two','2個'],['three','3個'],['four','4個'],['five','5個'],['sixPlus','6個以上']],{displayWhen:{field:'noiseCompositeOverallExceeded',value:'yes'}}),
       computed('noiseCompositeText','複合音量標準修正',true,{field:'noiseA9Type',value:'otherFacility'}),
       field('noiseSubject','稽查對象代稱','text',{displayWhen:when('noiseShowMeasure')}),field('noiseSource','主要噪音源／設備說明','text',{displayWhen:when('noiseShowMeasure')}),
-      select('noiseBand','量測頻帶',[['full','全頻 20Hz～20kHz'],['low','低頻 20Hz～200Hz'],['both','全頻＋低頻']],{displayWhen:when('noiseShowMeasure')}),
       select('noiseGeneralMethod','全頻評定方法',[['leq','非週期／非間歇性：Leq，連續取樣至少2分鐘'],['lmaxMean','週期／間歇且最大音量差≤5 dB：連續10次最大值平均'],['l5','週期／間歇且最大音量差>5 dB：至少20個最大值計算L5']],{displayWhen:when('noiseShowGeneralMethod')}),
       select('noiseSpeakerMode','擴音設施型態',[['fixed','固定式或停止移動：以Leq評定，連續取樣至少2分鐘'],['moving','移動性擴音設施：以通過時Lmax評定']],{displayWhen:when('noiseShowSpeakerMode')}),
-      select('noiseFullPoint','全頻測點',[['complainant','陳情人指定之居住生活地點'],['authority','陳情人不指定，由主管機關指定周界外測點']],{displayWhen:when('noiseShowFullPoint')}),
-      select('noiseFullIndoor','全頻測點是否位於室內',yn,{displayWhen:{field:'noiseFullPoint',value:'complainant'}}),
+      select('noiseFullPoint','全頻測點',[['complainant','陳情人指定之居住生活地點（室內）'],['authority','陳情人不指定，由主管機關指定周界外測點（室外）']],{displayWhen:when('noiseShowFullPoint')}),
       select('noiseSpeakerOutdoor','擴音設施實際量測點是否位於室外',yn,{displayWhen:when('noiseShowSpeakerLocation')}),
-      select('noiseRain','室外量測時是否下雨',yn,{displayWhen:when('noiseShowWeather')}),field('noiseWind','室外量測風速（m/s）','text',{inputMode:'decimal',displayWhen:when('noiseShowWeather')}),
-      field('noiseValueFull','全頻評定值（Leq／Lmax平均／L5／移動擴音Lmax）dB(A)','text',{inputMode:'decimal',displayWhen:when('noiseShowFullAssessment')}),
+      field('noiseWind','室外量測風速（m/s）','text',{inputMode:'decimal',displayWhen:when('noiseShowWeather')}),
+      field('noiseValueFull','全頻量測值 dB(A)（一般案件輸入2分鐘 Leq；特殊評定依系統提示）','text',{inputMode:'decimal',displayWhen:when('noiseShowFullAssessment')}),
       field('noiseValueLeq','營建／公告工程全頻 Leq dB(A)','text',{inputMode:'decimal',displayWhen:when('noiseShowConstructionFull')}),
       field('noiseValueLmax','營建／公告工程全頻 Lmax dB(A)','text',{inputMode:'decimal',displayWhen:when('noiseShowConstructionLmax')}),
       field('noiseValueLow','低頻 Leq,LF dB(A)','text',{inputMode:'decimal',displayWhen:when('noiseShowLow')}),
