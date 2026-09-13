@@ -15,7 +15,7 @@
       'noiseZoneMode','noiseZone','noiseZoneAssistType','noiseZoneLandClass','noiseZoneSourceZone',
       'noiseZoneSideA','noiseZoneSideB','noiseZonePointSide','noiseZoneMajorPosition','noiseZoneUnderlying','noiseZoneBoundaryPair',
       'noiseA8Act','noiseA9Type','noiseFacility','noiseCompositeSourceCount',
-      'noiseNoMeasureReason','noiseGeneralSpecialAssessment','noiseGeneralSpread','noiseSpeakerMode','noiseFullPoint',
+      'noiseNoMeasureReason','noiseGeneralSpread','noiseSpeakerMode','noiseFullPoint',
       'noiseBgFullMode','noiseBgLmaxMode','noiseBgLowMode','noiseDifferenceAction'
     ]);
     for(const field of template.fields||[]){
