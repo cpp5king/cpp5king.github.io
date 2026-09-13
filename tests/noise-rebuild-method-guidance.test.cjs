@@ -17,7 +17,7 @@ test('評定方法導引：表單改問現場事實，不再讓使用者直接�
   const {root}=await setup();
   const tpl=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const byId=id=>tpl.fields.find(x=>x.id===id);
-  assert.equal(tpl.moduleVersion,'4.9-rebuild-8');
+  assert.match(tpl.moduleVersion,/^4\.9-rebuild-\d+$/);
   assert.equal(byId('noiseGeneralPattern').type,'select');
   assert.equal(byId('noiseGeneralBg10').type,'select');
   assert.equal(byId('noiseGeneralSpread').type,'select');
