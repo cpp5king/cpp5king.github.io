@@ -59,5 +59,5 @@ test('4.9.33 舊 handoff 只作相容能力，不再由首頁暴露舊入口',as
   assert.equal(fieldTemplate.handoff.caseTypeId,'water-inspection');
   assert.equal(fieldTemplate.handoff.templateId,'water-main');
   const visible=config.caseTypes.filter(x=>x.categoryId==='water'&&!x.hidden);
-  assert.deepEqual(visible.map(x=>x.id),['water-v2-inspection']);
+  assert.equal(visible.map(x=>x.id).join(','),'water-v2-inspection');
 });
