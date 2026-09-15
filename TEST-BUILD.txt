@@ -1,4 +1,4 @@
-稽查助手 4.9.34 TEST
+稽查助手 4.9.33 TEST
 Branch: test/4.9.33-water-v2-legal
 Purpose: 水污 V2 structured session + workflow + legal Batch A prototype；修正法規研判尚缺項目的人話化與 Flow 去重。
 DO NOT RELEASE AS FORMAL BUILD
