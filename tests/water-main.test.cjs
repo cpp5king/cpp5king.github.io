@@ -42,7 +42,7 @@ test('4.9.33 舊完整母法模板留在相容層，不再作首頁主入口',as
   assert.ok(type);assert.equal(type.hidden,true);assert.equal(type.directTemplateId,'water-main');
   assert.ok(template);assert.equal(template.id,'water-main');
   const visible=env.config.caseTypes.filter(x=>x.categoryId==='water'&&!x.hidden);
-  assert.deepEqual(visible.map(x=>x.id),['water-v2-inspection']);
+  assert.equal(visible.map(x=>x.id).join(','),'water-v2-inspection');
 });
 
 test('4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀態控制',async()=>{
