@@ -5,66 +5,30 @@
   const clone=value=>JSON.parse(JSON.stringify(value));
   const now=()=>new Date().toISOString();
   const activeFact=f=>f&&f.status!=='superseded'&&f.status!=='retracted';
-  const id=(prefix,list)=>prefix+String((list||[]).length+1).padStart(3,'0');
-  const labels={
-    W00:'案件總覽',W01:'確認排水及水體',W02:'事實保全',W03:'來源狀態',W04:'循線查源',W05:'場所與對象',W06:'管制身分',W07:'列管四區查核',W08:'異常事項',W09:'快篩',W10:'採樣',W11:'事實整理'
-  };
+  const nextId=(prefix,list)=>prefix+String((list||[]).length+1).padStart(3,'0');
+  const labels={W00:'案件總覽',W01:'確認排水及水體',W02:'事實保全',W03:'來源狀態',W04:'循線查源',W05:'場所與對象',W06:'管制身分',W07:'列管四區查核',W08:'異常事項',W09:'快篩',W10:'採樣',W11:'事實整理'};
   const workflowLabels={initial_observation:'初步現場確認',fact_preservation:'現場事實保全',source_tracing:'查源／追水',subject_confirmation:'確認場所／稽查對象',regulated_status:'確認水污管制身分',regulated_inspection:'列管事業現場查核',fact_review:'案件事實整理',completed:'本次現場稽查完成'};
   const ruleStatusLabels={not_applicable:'目前不適用',facts_insufficient:'資料不足',possible_application:'可能適用',elements_substantially_met:'主要要件大致具備',exception_possible:'存在例外待確認',potential_violation:'可能不符合',no_issue_found:'目前未見不符',human_review_required:'建議人工確認',applicable_pending_test:'待正式檢驗'};
+  const activityOptions=[['food_manufacturing','食品製造'],['fermentation','發酵業'],['slaughter','屠宰業'],['incense_manufacturing','製香'],['printing','印刷'],['dyeing','染色／有色廢水製程'],['chemical_preparation','化學品調製'],['tank_cleaning','桶槽清洗'],['construction','營建工程'],['stone_processing','土石加工'],['livestock','畜牧'],['other','其他']];
 
   function parseState(session){
     const raw=session.snapshot().inputs?.waterV2StateJson;
-    if(raw){
-      try{return root.WaterV2Session.normalize(JSON.parse(raw));}catch(_){/* 建立新案件 */}
-    }
-    const s=root.WaterV2Session.empty();
-    s.ui={workspace:'W00'};
-    s.session.startedAt=now();
-    session.setInputs({waterV2StateJson:JSON.stringify(s)});
-    return s;
+    if(raw){try{return root.WaterV2Session.normalize(JSON.parse(raw));}catch(_){/* 建立新案件 */}}
+    const s=root.WaterV2Session.empty();s.ui={workspace:'W00'};s.session.startedAt=now();session.setInputs({waterV2StateJson:JSON.stringify(s)});return s;
   }
-  function persist(ctx,state,rerender=true){
-    state.ui=state.ui||{workspace:'W00'};
-    state.provenance=PROVENANCE;
-    ctx.session.setInputs({waterV2StateJson:JSON.stringify(state)});
-    if(rerender)ctx.render();
-  }
-  function fact(state,key){
-    for(let i=(state.facts||[]).length-1;i>=0;i--){const f=state.facts[i];if(f.key===key&&activeFact(f))return f;}
-    return null;
-  }
+  function persist(ctx,state,rerender=true){state.ui=state.ui||{workspace:'W00'};state.provenance=PROVENANCE;ctx.session.setInputs({waterV2StateJson:JSON.stringify(state)});if(rerender)ctx.render();}
+  function fact(state,key){for(let i=(state.facts||[]).length-1;i>=0;i--){const f=state.facts[i];if(f.key===key&&activeFact(f))return f;}return null;}
   function value(state,key){return fact(state,key)?.value;}
   function setFact(state,key,next,opts={}){
     if(next===undefined||next===null||next==='')return;
-    const current=fact(state,key);
-    if(current&&JSON.stringify(current.value)===JSON.stringify(next))return current;
-    if(current)current.status='superseded';
+    const current=fact(state,key);if(current&&JSON.stringify(current.value)===JSON.stringify(next))return current;if(current)current.status='superseded';
     return root.WaterV2Session.addFact(state,key,next,{category:opts.category||'observation',temporalMode:opts.temporalMode||'static',description:opts.description||'',locationRef:opts.locationRef||null,source:{type:'inspector_input',ref:opts.ref||null},supersedes:current?.id||null,correctionReason:current?'user_update':null});
   }
-  function ensureAction(state,type,label){
-    let action=(state.actions||[]).find(a=>a.type===type&&a.status!=='cancelled');
-    if(!action){action={id:id('A',state.actions),type,label,purpose:type,status:'not_started',reason:null,pointRefs:[],incidentRefs:[],startedAt:null,completedAt:null};state.actions.push(action);}
-    return action;
-  }
-  function setAction(state,type,status,reason,label){
-    const action=ensureAction(state,type,label||type);action.status=status;action.reason=reason||null;
-    if(status==='in_progress'&&!action.startedAt)action.startedAt=now();
-    if(['completed','blocked','cancelled'].includes(status))action.completedAt=now();
-    return action;
-  }
-  function addPoint(state,type,label,description=''){
-    const point={id:id('P',state.points),type:type||'other',label:label||`位置 ${state.points.length+1}`,description,status:'active',createdAt:now()};state.points.push(point);return point;
-  }
-  function addFlow(state,from,to,status='confirmed'){
-    if(!from||!to||from===to)return null;
-    const existing=state.flows.find(f=>f.from===from&&f.to===to&&f.status!=='retracted');if(existing)return existing;
-    const flow={id:id('FL',state.flows),from,to,status,basis:[],createdAt:now()};state.flows.push(flow);return flow;
-  }
-  function ensureIncident(state,type,title,priority='general',primaryAction='review_incident'){
-    let inc=state.incidents.find(x=>x.type===type&&x.status!=='closed_due_to_correction');
-    if(!inc){inc={id:id('INC',state.incidents),type,title,status:'investigating',handlingStatus:'open',priority,primaryAction,triggerFactRef:null,pointRefs:[],factRefs:[],actionRefs:[],unknownRefs:[],notes:'',createdAt:now()};state.incidents.push(inc);}
-    return inc;
-  }
+  function ensureAction(state,type,label){let a=(state.actions||[]).find(x=>x.type===type&&x.status!=='cancelled');if(!a){a={id:nextId('A',state.actions),type,label,purpose:type,status:'not_started',reason:null,pointRefs:[],incidentRefs:[],startedAt:null,completedAt:null};state.actions.push(a);}return a;}
+  function setAction(state,type,status,reason,label){const a=ensureAction(state,type,label||type);a.status=status;a.reason=reason||null;if(status==='in_progress'&&!a.startedAt)a.startedAt=now();if(['completed','blocked','cancelled'].includes(status))a.completedAt=now();return a;}
+  function addPoint(state,type,label,description=''){const p={id:nextId('P',state.points),type:type||'other',label:label||`位置 ${state.points.length+1}`,description,status:'active',createdAt:now()};state.points.push(p);return p;}
+  function addFlow(state,from,to,status='confirmed',kind='actual'){if(!from||!to||from===to)return null;const existing=state.flows.find(f=>f.from===from&&f.to===to&&(f.kind||'actual')===kind&&f.status!=='retracted');if(existing)return existing;const f={id:nextId('FL',state.flows),from,to,status,kind,basis:[],bypassesAuthorized:false,createdAt:now()};state.flows.push(f);return f;}
+  function ensureIncident(state,type,title,priority='general',primaryAction='review_incident'){let inc=state.incidents.find(x=>x.type===type&&x.status!=='closed_due_to_correction');if(!inc){inc={id:nextId('INC',state.incidents),type,title,status:'investigating',handlingStatus:'open',priority,primaryAction,triggerFactRef:null,pointRefs:[],factRefs:[],actionRefs:[],unknownRefs:[],notes:'',createdAt:now()};state.incidents.push(inc);}return inc;}
   function syncIncidents(state){
     if(value(state,'water.wastewater.additional_pipe_present')==='yes')ensureIncident(state,'unknown_pipe','不明／額外排水管線','immediate','inspect_unknown_pipe');
     if(value(state,'water.wastewater.route_difference')==='yes'||value(state,'water.wastewater.branch_present')==='yes')ensureIncident(state,'wastewater_route_abnormality','廢污水流向差異／不明支線','high','trace_wastewater_flow');
@@ -72,14 +36,9 @@
     if(value(state,'water.process.operation_difference')==='yes'||value(state,'water.process.unexpected_process_present')==='yes')ensureIncident(state,'process_difference','製程／操作差異','general','verify_process');
     if(value(state,'water.overflow.present')==='yes')ensureIncident(state,'overflow','溢流事件','immediate','inspect_overflow');
     if(value(state,'water.leak.present')==='yes')ensureIncident(state,'leak','洩漏事件','immediate','inspect_leak');
-    if(['yes','difference_found'].includes(value(state,'water.permit.review_status'))||['yes'].some(x=>[value(state,'water.permit.pipe_difference'),value(state,'water.permit.route_difference'),value(state,'water.permit.discharge_location_difference'),value(state,'water.permit.treatment_difference'),value(state,'water.permit.process_difference')].includes(x)))ensureIncident(state,'permit_difference','許可／水措差異','general','verify_permit_difference');
+    if(value(state,'water.permit.review_status')==='difference_found'||['water.permit.pipe_difference','water.permit.route_difference','water.permit.discharge_location_difference','water.permit.treatment_difference','water.permit.process_difference'].some(k=>value(state,k)==='yes'))ensureIncident(state,'permit_difference','許可／水措差異','general','verify_permit_difference');
   }
-  function analyze(state){
-    syncIncidents(state);
-    const workflow=root.WaterV2Workflow.apply(state);
-    const pack=root.WaterLegalAdapter.analyze({waterV2UseSession:true,waterV2Session:clone(state)});
-    return {workflow,legal:pack.legal,factual:pack.factSummaryText,legalText:pack.legalSummaryText};
-  }
+  function analyze(state){syncIncidents(state);const workflow=root.WaterV2Workflow.apply(state);const pack=root.WaterLegalAdapter.analyze({waterV2UseSession:true,waterV2Session:clone(state)});return {workflow,legal:pack.legal,factual:pack.factSummaryText,legalText:pack.legalSummaryText};}
 
   function E(tag,text,cls){const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n;}
   function btn(text,fn,secondary=false){const b=E('button',text,secondary?'secondary':'');b.type='button';b.addEventListener('click',fn);return b;}
@@ -87,61 +46,48 @@
   function note(text,kind=''){return E('p',text,'water-v2-note '+kind);}
   function fieldLabel(text){return E('label',text,'water-v2-field-label');}
   function selectControl(options,current,onChange){const s=E('select');const empty=E('option','請選擇／尚待確認');empty.value='';s.append(empty);for(const [v,l] of options){const o=E('option',l);o.value=v;s.append(o);}s.value=current??'';s.addEventListener('change',()=>onChange(s.value));return s;}
-  function inputControl(type,value,placeholder,onChange){const i=E(type==='textarea'?'textarea':'input');if(type==='textarea')i.rows=3;else i.type=type;i.value=value??'';if(placeholder)i.placeholder=placeholder;i.addEventListener('change',()=>onChange(i.value));return i;}
+  function inputControl(type,current,placeholder,onChange){const n=E(type==='textarea'?'textarea':'input');if(type==='textarea')n.rows=3;else n.type=type;n.value=current??'';if(placeholder)n.placeholder=placeholder;n.addEventListener('change',()=>onChange(n.value));return n;}
   function row(label,control,hint=''){const d=E('div',null,'water-v2-field');d.append(fieldLabel(label),control);if(hint)d.append(note(hint));return d;}
   function factSelect(ctx,state,key,label,options,opts={}){return row(label,selectControl(options,value(state,key),v=>{if(v)setFact(state,key,v,opts);persist(ctx,state);}),opts.hint||'');}
   function statusChip(text,kind=''){return E('span',text,'water-v2-chip '+kind);}
-  function pointName(state,idValue){return state.points.find(p=>p.id===idValue)?.label||idValue||'未指定';}
+  function pointName(state,pointId){return state.points.find(p=>p.id===pointId)?.label||pointId||'未指定';}
   function navTo(ctx,state,workspace){state.ui=state.ui||{};state.ui.workspace=workspace;persist(ctx,state);}
 
-  function renderNav(ctx,state){
-    const nav=E('div',null,'water-v2-workspaces');
-    for(const key of Object.keys(labels)){
-      const b=btn(`${key} ${labels[key]}`,()=>navTo(ctx,state,key),key!==state.ui.workspace);b.classList.add('water-v2-workspace-button');if(key===state.ui.workspace)b.setAttribute('aria-current','page');nav.append(b);
-    }
-    return nav;
-  }
+  function renderNav(ctx,state){const nav=E('div',null,'water-v2-workspaces');for(const key of Object.keys(labels)){const b=btn(`${key} ${labels[key]}`,()=>navTo(ctx,state,key),key!==state.ui.workspace);b.classList.add('water-v2-workspace-button');if(key===state.ui.workspace)b.setAttribute('aria-current','page');nav.append(b);}return nav;}
   function renderDashboard(ctx,state,a){
-    const wrap=E('div',null,'water-v2-dashboard');
-    const hero=panel('現在狀態','water-v2-hero');
-    hero.append(statusChip(workflowLabels[a.workflow.state]||a.workflow.state,'primary'));
-    hero.append(note(a.workflow.primaryRecommendation?.label||'等待下一步事實'));
-    const counts=E('div',null,'water-v2-metrics');
-    counts.append(statusChip(`事實 ${state.facts.filter(activeFact).length}`),statusChip(`待查 ${state.unknowns.filter(u=>u.status==='pending').length}`),statusChip(`異常事項 ${state.incidents.filter(i=>i.handlingStatus!=='complete').length}`),statusChip(`法規項目 ${(a.legal?.results||[]).filter(r=>!['not_applicable','no_issue_found'].includes(r.status)).length}`));
-    hero.append(counts);wrap.append(hero);
-    const next=panel('主要建議');next.append(note(a.workflow.primaryRecommendation?.label||'尚無'));const req=a.legal?.primaryFactRequest;if(req){const text=req.request?.key||req.request?.object||'待確認事實';next.append(note(`法規研判尚缺：${text}`,'warning'));}wrap.append(next);
-    const pending=panel('待查事項 / Incidents');const open=state.incidents.filter(i=>i.handlingStatus!=='complete'&&i.status!=='closed_due_to_correction');if(!open.length)pending.append(note('目前沒有未處理的異常事項。'));else for(const inc of open.slice(0,8)){const line=E('div',null,'water-v2-list-row');line.append(statusChip(inc.priority==='immediate'?'立即':inc.priority==='high'?'優先':'一般',inc.priority==='immediate'?'danger':'warning'),E('strong',inc.title),btn('處理',()=>navTo(ctx,state,'W08'),true));pending.append(line);}wrap.append(pending);
-    const tools=panel('現場工具');const actions=E('div',null,'actions');actions.append(btn('循線查源',()=>navTo(ctx,state,'W04'),true),btn('快篩',()=>navTo(ctx,state,'W09'),true),btn('正式採樣',()=>navTo(ctx,state,'W10'),true),btn('事實整理／法規研判',()=>navTo(ctx,state,'W11')));tools.append(actions);wrap.append(tools);
-    return wrap;
+    const wrap=E('div',null,'water-v2-dashboard'),hero=panel('現在狀態','water-v2-hero');hero.append(statusChip(workflowLabels[a.workflow.state]||a.workflow.state,'primary'),note(a.workflow.primaryRecommendation?.label||'等待下一步事實'));
+    const counts=E('div',null,'water-v2-metrics');counts.append(statusChip(`事實 ${state.facts.filter(activeFact).length}`),statusChip(`待查 ${state.unknowns.filter(u=>u.status==='pending').length}`),statusChip(`異常事項 ${state.incidents.filter(i=>i.handlingStatus!=='complete').length}`),statusChip(`法規項目 ${(a.legal?.results||[]).filter(r=>!['not_applicable','no_issue_found'].includes(r.status)).length}`));hero.append(counts);wrap.append(hero);
+    const next=panel('主要建議');next.append(note(a.workflow.primaryRecommendation?.label||'尚無'));const req=a.legal?.primaryFactRequest;if(req)next.append(note(`法規研判尚缺：${req.request?.key||req.request?.object||'待確認事實'}`,'warning'));wrap.append(next);
+    const pending=panel('待查事項 / Incidents'),open=state.incidents.filter(i=>i.handlingStatus!=='complete'&&i.status!=='closed_due_to_correction');if(!open.length)pending.append(note('目前沒有未處理的異常事項。'));else for(const inc of open.slice(0,8)){const line=E('div',null,'water-v2-list-row');line.append(statusChip(inc.priority==='immediate'?'立即':inc.priority==='high'?'優先':'一般',inc.priority==='immediate'?'danger':'warning'),E('strong',inc.title),btn('處理',()=>navTo(ctx,state,'W08'),true));pending.append(line);}wrap.append(pending);
+    const tools=panel('現場工具'),actions=E('div',null,'actions');actions.append(btn('確認現況',()=>navTo(ctx,state,'W01'),true),btn('循線查源',()=>navTo(ctx,state,'W04'),true),btn('快篩',()=>navTo(ctx,state,'W09'),true),btn('正式採樣',()=>navTo(ctx,state,'W10'),true),btn('事實整理／法規研判',()=>navTo(ctx,state,'W11')));tools.append(actions);wrap.append(tools);return wrap;
   }
+
   function renderW01(ctx,state){
     const p=panel('W01｜確認排水及水體情形');p.append(note('先記錄本次到場實際看到的排水、水體與異常特徵；未勾選的項目不會自動記成「否」。'));
     p.append(row('本次整體狀態',selectControl([['observed','有排水／水體情形需續查'],['no_obvious_abnormality','本次未發現明顯排水或水體異常'],['unable_to_determine','本次無法確認']],value(state,'water.observation.overall_status'),v=>{if(v)setFact(state,'water.observation.overall_status',v);persist(ctx,state);}),'「未發現明顯異常」只代表本次觀察，不代表合法。'));
-    const conditions=[['water.observation.active_discharge','持續／正在排水'],['water.observation.water_present','有水／積水'],['water.observation.discharge_trace_present','有排水痕跡'],['water.observation.color_abnormal','顏色異常'],['water.observation.turbidity_abnormal','混濁異常'],['water.observation.foam_present','泡沫'],['water.observation.odor_present','異味']];
-    const box=E('div',null,'water-v2-check-grid');for(const [key,label] of conditions){const lab=E('label',null,'check-choice');const c=E('input');c.type='checkbox';c.checked=value(state,key)==='yes';c.addEventListener('change',()=>{setFact(state,key,c.checked?'yes':'unknown',{temporalMode:key.includes('active_discharge')?'stateful':'static'});persist(ctx,state);});lab.append(c,document.createTextNode(label));box.append(lab);}p.append(fieldLabel('本次確認到的情形'),box);
+    const conditions=[['water.observation.active_discharge','持續／正在排水'],['water.observation.water_present','有水／積水'],['water.observation.discharge_trace_present','有排水痕跡'],['water.observation.color_abnormal','顏色異常'],['water.observation.turbidity_abnormal','混濁異常'],['water.observation.foam_present','泡沫'],['water.observation.odor_present','異味']],box=E('div',null,'water-v2-check-grid');
+    for(const [key,label] of conditions){const lab=E('label',null,'check-choice'),c=E('input');c.type='checkbox';c.checked=value(state,key)==='yes';c.addEventListener('change',()=>{setFact(state,key,c.checked?'yes':'unknown',{temporalMode:key.includes('active_discharge')?'stateful':'static'});if(key==='water.observation.active_discharge'&&c.checked)setFact(state,'water.discharge.occurred','yes',{temporalMode:'event'});persist(ctx,state);});lab.append(c,document.createTextNode(label));box.append(lab);}p.append(fieldLabel('本次確認到的情形'),box);
+    p.append(factSelect(ctx,state,'water.discharge.occurred','是否確認有實際排放／排出行為',[['yes','已確認有排放'],['no','已確認未發生排放'],['unknown','已查但無法確認']],{temporalMode:'event'}));
     p.append(factSelect(ctx,state,'water.discharge.state','排水狀態',[['continuous','持續'],['intermittent','間歇'],['stopped_during_inspection','稽查中停止'],['not_observed','本次未見排水'],['unknown','已查但無法確認']],{temporalMode:'stateful'}));
+    p.append(factSelect(ctx,state,'water.liquid.classification','目前可確認的水體／水流性質',[['wastewater','事業廢水'],['sewage','污水'],['runoff','逕流廢水／雨水逕流'],['other_water','其他水'],['unknown','尚無法確認']]));
     const initial=state.points[0];p.append(row('觀察位置／點位',inputControl('text',initial?.label||'','例如：陳情地點側溝、D01旁溝渠',v=>{if(!v)return;if(initial)initial.label=v;else addPoint(state,'other',v);persist(ctx,state);})));
     return p;
   }
   function renderW02(ctx,state){
     const p=panel('W02｜時效性事實保全');p.append(note('這是 Action 群組，不要求每項都完成；做不到時留下 blocked 原因即可。'));
-    const defs=[['preserve_current_condition','固定目前排水／異常狀態'],['capture_evidence','拍攝照片／影片'],['verify_flow_direction','確認水流方向'],['perform_screening','必要時進行快篩'],['perform_sampling','必要時正式採樣']];
-    for(const [type,label] of defs){const a=ensureAction(state,type,label);const card=E('div',null,'water-v2-action-card');card.append(E('strong',label),statusChip(a.status));const ac=E('div',null,'actions');ac.append(btn('已完成',()=>{setAction(state,type,'completed',null,label);persist(ctx,state);}),btn('無法執行',()=>{const reason=window.prompt?.('請輸入無法執行原因（例如地下管線、私人區域、安全因素）')||'other';setAction(state,type,'blocked',reason,label);persist(ctx,state);},true));card.append(ac);if(a.reason)card.append(note(`原因：${a.reason}`));p.append(card);}
-    return p;
+    for(const [type,label] of [['preserve_current_condition','固定目前排水／異常狀態'],['capture_evidence','拍攝照片／影片'],['verify_flow_direction','確認水流方向'],['perform_screening','必要時進行快篩'],['perform_sampling','必要時正式採樣']]){const a=ensureAction(state,type,label),card=E('div',null,'water-v2-action-card');card.append(E('strong',label),statusChip(a.status));const ac=E('div',null,'actions');ac.append(btn('已完成',()=>{setAction(state,type,'completed',null,label);persist(ctx,state);}),btn('無法執行',()=>{const reason=window.prompt?.('請輸入無法執行原因（例如地下管線、私人區域、安全因素）')||'other';setAction(state,type,'blocked',reason,label);persist(ctx,state);},true));card.append(ac);if(a.reason)card.append(note(`原因：${a.reason}`));p.append(card);}return p;
   }
-  function renderW03(ctx,state){
-    const p=panel('W03｜來源狀態');p.append(note('「尚未確認」不是「沒有來源」。真的找不到時，留下本次查源事實即可。'));
-    p.append(factSelect(ctx,state,'water.source.identified','目前來源狀態',[['yes','已確認來源'],['unknown','尚未確認來源']]));
-    p.append(row('來源描述',inputControl('text',value(state,'water.source.description')||'','例如：某場所後側排水管、道路側溝上游',v=>{if(v)setFact(state,'water.source.description',v);persist(ctx,state);})));
-    return p;
-  }
+  function renderW03(ctx,state){const p=panel('W03｜來源狀態');p.append(note('「尚未確認」不是「沒有來源」。真的找不到時，留下本次查源事實即可。'));p.append(factSelect(ctx,state,'water.source.identified','目前來源狀態',[['yes','已確認來源'],['unknown','尚未確認來源']]));p.append(row('來源描述',inputControl('text',value(state,'water.source.description')||'','例如：某場所後側排水管、道路側溝上游',v=>{if(v)setFact(state,'water.source.description',v);persist(ctx,state);})));return p;}
   function renderW04(ctx,state){
-    const p=panel('W04｜循線查源 / 水流工作區');p.append(note('系統記錄「實際水流方向」。即使稽查員往上游追，也請用水真正流動的方向建立 Flow。'));
-    const list=E('div',null,'water-v2-flow-list');if(!state.points.length)list.append(note('尚未建立點位。'));for(const point of state.points){list.append(E('div',`${point.id}｜${point.label}（${point.type}）`,'water-v2-list-row'));}for(const flow of state.flows){list.append(E('div',`${pointName(state,flow.from)} → ${pointName(state,flow.to)}｜${flow.status}`,'water-v2-list-row'));}p.append(list);
-    const form=E('div',null,'water-v2-inline-form');const type=selectControl([['drain','側溝／排水路'],['pipe','管線'],['manhole','人孔'],['outlet','排放口'],['water_body','水體'],['facility','設施'],['storage','貯槽'],['other','其他']],'other',()=>{});const name=inputControl('text','','新增點位名稱',()=>{});const add=btn('新增點位',()=>{if(name.value.trim())addPoint(state,type.value,name.value.trim());persist(ctx,state);});form.append(type,name,add);p.append(form);
-    if(state.points.length>=2){const ff=E('div',null,'water-v2-inline-form');const from=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),to=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),st=selectControl([['confirmed','已確認'],['possible','可能'],['unknown','無法確認'],['disputed','有爭議']],'confirmed',()=>{});ff.append(from,to,st,btn('新增水流',()=>{addFlow(state,from.value,to.value,st.value||'confirmed');persist(ctx,state);}));p.append(ff);}
+    const p=panel('W04｜循線查源 / 水流工作區');p.append(note('系統記錄「水真正流動的方向」。核准流程與現場實際流程分開建立，才能做後續比對。'));
+    const list=E('div',null,'water-v2-flow-list');if(!state.points.length)list.append(note('尚未建立點位。'));for(const point of state.points)list.append(E('div',`${point.id}｜${point.label}（${point.type}）`,'water-v2-list-row'));for(const flow of state.flows)list.append(E('div',`${flow.kind==='authorized'?'核准':'實際'}｜${pointName(state,flow.from)} → ${pointName(state,flow.to)}｜${flow.status}`,'water-v2-list-row'));p.append(list);
+    const form=E('div',null,'water-v2-inline-form'),type=selectControl([['drain','側溝／排水路'],['pipe','管線'],['manhole','人孔'],['outlet','排放口'],['water_body','水體'],['facility','處理／收集設施'],['storage','貯槽'],['other','其他']],'other',()=>{}),name=inputControl('text','','新增點位名稱',()=>{});form.append(type,name,btn('新增點位',()=>{if(name.value.trim())addPoint(state,type.value,name.value.trim());persist(ctx,state);}));p.append(form);
+    if(state.points.length>=2){const ff=E('div',null,'water-v2-inline-form'),kind=selectControl([['actual','現場實際水流'],['authorized','核准／登記流程']],'actual',()=>{}),from=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),to=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),st=selectControl([['confirmed','已確認'],['possible','可能'],['unknown','無法確認'],['disputed','有爭議']],'confirmed',()=>{});ff.append(kind,from,to,st,btn('新增水流',()=>{addFlow(state,from.value,to.value,st.value||'confirmed',kind.value||'actual');persist(ctx,state);}));p.append(ff);}
+    p.append(factSelect(ctx,state,'water.discharge.destination_type','目前確認的最終去向',[['surface_water_body','地面水體'],['soil','土壤'],['groundwater','地下水體／注入地下'],['sewer_system','污水下水道'],['storage','貯留'],['recycle','回收使用'],['entrusted_treatment','委託處理'],['unknown','尚無法確認']]));
     p.append(factSelect(ctx,state,'water.source.trace_status','本次追查結果',[['source_found','找到來源'],['multiple_candidates','多個候選來源'],['branch_found','發現分流／支線'],['flow_interrupted','水流中斷'],['trace_blocked','追查受阻'],['searched_unresolved','已追查仍無法確認']]));
     if(value(state,'water.source.trace_status')==='trace_blocked')p.append(factSelect(ctx,state,'water.source.trace_block_reason','受阻原因',[['underground_pipeline','地下管線'],['building_entry','進入建物'],['private_area','私人區域'],['flow_stopped','水流停止'],['safety','安全因素'],['other','其他']]));
+    const hasActual=state.flows.some(f=>(f.kind||'actual')==='actual'&&f.status==='confirmed'),hasAuthorized=state.flows.some(f=>f.kind==='authorized'&&f.status==='confirmed');if(hasActual&&hasAuthorized)p.append(factSelect(ctx,state,'water.flow.bypass_direct_relation','是否已直接確認實際水流繞過核准收集／處理流程',[['yes','已確認繞過'],['no','已確認未繞過'],['unknown','仍無法確認']]),{hint:'發現額外管線本身不足以回答這題。'});
+    if(value(state,'water.discharge.destination_type')==='soil'){p.append(factSelect(ctx,state,'water.soil.contact_mode','排放於土壤的行為型態',[['intentional_discharge','主動導排／排放於土壤'],['approved_soil_treatment','依核准土壤處理運作'],['accidental_leak','設備意外洩漏接觸土壤'],['overflow','溢流接觸土壤'],['unknown','尚無法確認']]));p.append(factSelect(ctx,state,'water.soil_treatment.permit_status','土壤處理許可狀態',[['valid','有效'],['not_found','查無足以確認資料'],['not_obtained','已確認未取得'],['expired','已逾期'],['unknown','尚待確認']],{category:'record'}));}
     return p;
   }
   function renderW05(ctx,state){
@@ -154,58 +100,51 @@
     const p=panel('W06｜確認水污管制身分');p.append(note('查無足以確認資料 ≠ 確認不是列管事業。查詢結果只證明管制身分，不會反過來證明污染來源。'));
     p.append(factSelect(ctx,state,'water.regulated.query_result','查詢結果',[['not_checked','尚未查詢'],['confirmed_regulated','已確認列管'],['confirmed_not_regulated','已確認非列管'],['possible_match','可能符合但身分待核'],['insufficient_data','資料不足'],['unable_to_query','本次無法查詢']],{category:'record'}));
     p.append(factSelect(ctx,state,'water.regulated.identity_match','查詢資料與現場主體是否為同一對象',[['confirmed_same','已確認相同'],['possible_same','可能相同'],['confirmed_different','已確認不同'],['unknown','尚未確認']],{category:'record'}));
-    p.append(factSelect(ctx,state,'water.subject.regulatory_scale_status','管制規模狀態',[['regulated_scale','達列管規模'],['below_regulated_scale','未達列管規模'],['unknown','尚待確認']],{category:'record'}));
-    p.append(row('業別／製程',inputControl('text',value(state,'water.subject.activity_type')||'','例如：食品製造、營建工地、土石加工',v=>{if(v)setFact(state,'water.subject.activity_type',v,{category:'record'});persist(ctx,state);})));return p;
+    p.append(factSelect(ctx,state,'water.subject.regulatory_scale_status','管制規模狀態',[['regulated_scale','達列管規模'],['below_regulated_scale','未達列管規模'],['nonregulated','非公告事業／非列管類型'],['unknown','尚待確認']],{category:'record'}));
+    p.append(factSelect(ctx,state,'water.subject.activity_type','業別／製程（供公告規則比對）',activityOptions,{category:'record'}));
+    if(value(state,'water.subject.activity_type')==='other')p.append(row('其他業別／製程說明',inputControl('text',value(state,'water.subject.activity_type_other')||'','自由文字補充，不會自動套公告',v=>{if(v)setFact(state,'water.subject.activity_type_other',v,{category:'record'});persist(ctx,state);})));p.append(factSelect(ctx,state,'water.control_zone.status','行為地點是否位於水污染管制區',[['inside','是'],['outside','否'],['unknown','尚待確認']],{category:'record'}));
+    if(['confirmed_not_regulated','possible_match'].includes(value(state,'water.regulated.query_result'))||['below_regulated_scale','nonregulated'].includes(value(state,'water.subject.regulatory_scale_status')))p.append(factSelect(ctx,state,'water.discharge.affects_water_quality','是否有事實支持影響水體品質',[['confirmed','已確認有影響'],['possible','可能影響'],['insufficient','目前證據不足'],['unknown','尚待確認']]));return p;
   }
-  function reviewBlock(ctx,state,title,prefix,items){
-    const b=panel(title,'water-v2-review-block');b.append(factSelect(ctx,state,`${prefix}.review_status`,'本區查核狀態',[['no_obvious_abnormality','本次未發現明顯異常'],['difference_found','發現差異'],['pending_confirmation','尚待確認'],['unable_to_determine','本次無法判斷']]));
-    if(value(state,`${prefix}.review_status`)==='difference_found'||value(state,`${prefix}.review_status`)==='pending_confirmation')for(const item of items)b.append(factSelect(ctx,state,item.key,item.label,item.options||[['yes','是'],['no','否'],['unknown','尚待確認']],item.opts||{}));return b;
-  }
+  function reviewBlock(ctx,state,title,prefix,items){const b=panel(title,'water-v2-review-block');b.append(factSelect(ctx,state,`${prefix}.review_status`,'本區查核狀態',[['no_obvious_abnormality','本次未發現明顯異常'],['difference_found','發現差異'],['pending_confirmation','尚待確認'],['unable_to_determine','本次無法判斷']]));if(['difference_found','pending_confirmation'].includes(value(state,`${prefix}.review_status`)))for(const item of items)b.append(factSelect(ctx,state,item.key,item.label,item.options||[['yes','是'],['no','否'],['unknown','尚待確認']],item.opts||{}));return b;}
   function renderW07(ctx,state){
-    const p=E('div');p.append(panel('W07｜列管事業四區查核').appendChild?document.createTextNode(''):E('span'));
-    const head=panel('W07｜列管事業四區查核');head.append(note('不強迫固定順序；每區先做快速狀態判斷，只有發現差異才展開。'));p.replaceChildren(head);
+    const p=E('div'),head=panel('W07｜列管事業四區查核');head.append(note('不強迫固定順序；每區先做快速狀態判斷，只有發現差異或待確認才展開。'));p.append(head);
     p.append(reviewBlock(ctx,state,'A｜現場作業／製程','water.process',[{key:'water.process.operating',label:'目前作業狀態',options:[['operating','正在作業'],['not_operating','未作業'],['unknown','尚待確認']]},{key:'water.process.unexpected_process_present',label:'是否發現未預期製程'},{key:'water.process.operation_difference',label:'操作方式是否有差異'},{key:'water.process.water_use_present',label:'是否有用水'},{key:'water.wastewater.generated',label:'是否有廢污水產生'}]));
     p.append(reviewBlock(ctx,state,'B｜廢污水產生及流向','water.wastewater',[{key:'water.wastewater.flow_confirmed',label:'廢污水流向是否已確認'},{key:'water.wastewater.additional_pipe_present',label:'是否發現額外／不明管線'},{key:'water.wastewater.additional_outlet_present',label:'是否發現額外排放口'},{key:'water.wastewater.branch_present',label:'是否有不明支線／分流'},{key:'water.wastewater.route_difference',label:'實際流向是否與核准資料有差異'}]));
-    p.append(reviewBlock(ctx,state,'C｜處理設施','water.treatment',[{key:'water.treatment.present',label:'是否設有廢污水處理設施'},{key:'water.treatment.operating',label:'整體處理功能',options:[['operating','正常操作'],['partially_operating','部分操作'],['not_operating','未操作'],['unknown','尚待確認']]},{key:'water.treatment.abnormal_operation',label:'是否有異常操作'},{key:'water.treatment.leak_present',label:'是否有洩漏'},{key:'water.treatment.overflow_present',label:'是否有溢流'}]));
+    p.append(reviewBlock(ctx,state,'C｜處理設施','water.treatment',[{key:'water.treatment.present',label:'是否設有廢污水處理設施'},{key:'water.treatment.operating',label:'整體處理功能',options:[['operating','正常操作'],['partially_operating','部分操作'],['not_operating','未操作'],['unknown','尚待確認']]},{key:'water.treatment.abnormal_operation',label:'是否有異常操作'},{key:'water.leak.present',label:'是否有設備／管線洩漏'},{key:'water.overflow.present',label:'是否有溢流'}]));
     p.append(reviewBlock(ctx,state,'D｜水措／許可比對','water.permit',[{key:'water.permit.discharge_status',label:'排放許可狀態',options:[['valid','有效'],['expired','已逾期'],['revoked','已廢止'],['not_found','查無足以確認資料'],['not_obtained','已確認未取得'],['not_required','確認不需'],['unknown','尚待確認']],opts:{category:'record'}},{key:'water.permit.pipe_difference',label:'管線是否有差異'},{key:'water.permit.route_difference',label:'流向是否有差異'},{key:'water.permit.discharge_location_difference',label:'放流位置是否有差異'},{key:'water.permit.treatment_difference',label:'處理設施是否有差異'},{key:'water.permit.process_difference',label:'製程是否有差異'}]));return p;
   }
+  function incidentDetail(ctx,state,inc){const box=E('div',null,'water-v2-incident-detail');if(inc.type==='leak'){box.append(factSelect(ctx,state,'water.leak.transport_storage_equipment','涉案設備是否屬輸送或貯存設備',[['yes','是'],['no','否'],['unknown','尚待確認']]));box.append(factSelect(ctx,state,'water.leak.risk_to_water_body','是否有疏漏至水體之虞',[['yes','是'],['no','否'],['unknown','尚待確認']]));if(value(state,'water.leak.risk_to_water_body')==='yes')box.append(factSelect(ctx,state,'water.leak.preventive_measure_present','是否已有維護／防範措施',[['yes','有'],['no','無'],['unknown','尚待確認']]));box.append(factSelect(ctx,state,'water.leak.reached_water_body','本次疏漏是否進入水體',[['yes','是'],['no','否'],['unknown','尚待確認']]));if(value(state,'water.leak.reached_water_body')==='yes'){box.append(factSelect(ctx,state,'water.emergency.response_performed','是否已立即採取緊急應變',[['yes','已執行'],['no','未執行'],['unknown','尚待確認']],{category:'action'}));box.append(row('事故發生時間',inputControl('datetime-local',value(state,'water.emergency.incident_time')||'',null,v=>{if(v)setFact(state,'water.emergency.incident_time',v,{category:'event'});persist(ctx,state);})));box.append(row('通知主管機關時間',inputControl('datetime-local',value(state,'water.emergency.notification_time')||'',null,v=>{if(v)setFact(state,'water.emergency.notification_time',v,{category:'action'});persist(ctx,state);})));}}
+    if(inc.type==='treatment_nonoperation'){box.append(factSelect(ctx,state,'water.wastewater.generated','設備異常期間是否仍有廢污水產生',[['yes','有'],['no','無'],['unknown','尚待確認']]));if(value(state,'water.wastewater.generated')==='yes')box.append(factSelect(ctx,state,'water.wastewater.flow_confirmed','該股廢污水去向是否已確認',[['yes','已確認'],['no','未確認'],['unknown','尚待確認']]));}
+    if(['unknown_pipe','wastewater_route_abnormality'].includes(inc.type))box.append(note('請回 W04 建立點位與實際水流；若另有核准流程，也一併建立為「核准／登記流程」。','info'));
+    return box;}
   function renderW08(ctx,state){
     syncIncidents(state);const p=panel('W08｜動態異常事項');p.append(note('Incident 是把相關事實、行動與待查問題聚在一起，不代表違法。'));
     if(!state.incidents.length)p.append(note('目前尚無異常事項。W07 發現差異後會自動建立，也可手動新增。'));
-    for(const inc of state.incidents){const c=E('div',null,'water-v2-incident-card');c.append(E('strong',`${inc.id}｜${inc.title}`),statusChip(inc.status),statusChip(inc.handlingStatus));const actions=E('div',null,'actions');actions.append(btn('事實已查清',()=>{inc.status='resolved_factually';inc.handlingStatus='complete';persist(ctx,state);}),btn('已查仍無法確認',()=>{inc.status='unresolved';inc.handlingStatus='complete';persist(ctx,state);},true),btn('受阻',()=>{inc.status='blocked';inc.handlingStatus='complete';persist(ctx,state);},true));c.append(actions);p.append(c);}
-    const add=E('div',null,'water-v2-inline-form');const type=selectControl([['unknown_pipe','不明管線／額外出口'],['wastewater_route_abnormality','廢污水流向異常'],['treatment_nonoperation','處理設施異常'],['process_difference','製程差異'],['overflow','溢流'],['leak','洩漏'],['permit_difference','許可差異']],'',()=>{}),title=inputControl('text','','異常事項說明',()=>{});add.append(type,title,btn('新增',()=>{if(type.value){const defaultTitle=type.options[type.selectedIndex]?.textContent||type.value;const inc=ensureIncident(state,type.value,title.value.trim()||defaultTitle,'general');inc.notes=title.value.trim();persist(ctx,state);}}));p.append(add);return p;
+    for(const inc of state.incidents){const c=E('div',null,'water-v2-incident-card');c.append(E('strong',`${inc.id}｜${inc.title}`),statusChip(inc.status),statusChip(inc.handlingStatus),incidentDetail(ctx,state,inc));const actions=E('div',null,'actions');actions.append(btn('事實已查清',()=>{inc.status='resolved_factually';inc.handlingStatus='complete';persist(ctx,state);}),btn('已查仍無法確認',()=>{inc.status='unresolved';inc.handlingStatus='complete';persist(ctx,state);},true),btn('受阻',()=>{inc.status='blocked';inc.handlingStatus='complete';persist(ctx,state);},true));c.append(actions);p.append(c);}
+    const add=E('div',null,'water-v2-inline-form'),type=selectControl([['unknown_pipe','不明管線／額外出口'],['wastewater_route_abnormality','廢污水流向異常'],['treatment_nonoperation','處理設施異常'],['process_difference','製程差異'],['overflow','溢流'],['leak','洩漏'],['permit_difference','許可差異']],'',()=>{}),title=inputControl('text','','異常事項說明',()=>{});add.append(type,title,btn('新增',()=>{if(type.value){const defaultTitle=type.options[type.selectedIndex]?.textContent||type.value,inc=ensureIncident(state,type.value,title.value.trim()||defaultTitle,'general');inc.notes=title.value.trim();persist(ctx,state);}}));p.append(add);return p;
   }
   function renderW09(ctx,state){
     const p=panel('W09｜快篩工具');p.append(note('快篩只用於查源、比較與形成候選方向；不得直接當作放流水標準超標或污染源確認。'));
     if(state.screenings.length){const list=E('div');for(const s of state.screenings)list.append(E('div',`${s.id}｜${pointName(state,s.pointRef)}｜${s.parameter||'未填參數'}｜${s.result?.value||'未填結果'}｜目的：${s.purpose}`,'water-v2-list-row'));p.append(list);}
-    const form=E('div',null,'water-v2-tool-form');const point=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),purpose=selectControl([['source_tracing','查源'],['point_comparison','點位比較'],['water_characterization','水質特徵'],['process_inference','製程推論'],['other','其他']],'source_tracing',()=>{}),param=inputControl('text','','快篩參數／試劑',()=>{}),result=inputControl('text','','結果（定性／半定量值）',()=>{});form.append(row('點位',point),row('目的',purpose),row('參數',param),row('結果',result),btn('加入快篩紀錄',()=>{state.screenings.push({id:id('SC',state.screenings),kitId:null,parameter:param.value.trim(),pointRef:point.value||null,purpose:purpose.value,result:{type:'qualitative',value:result.value.trim()||'indeterminate'},evidenceRefs:[],performedAt:now()});setAction(state,'perform_screening','completed',null,'快篩');persist(ctx,state);}));p.append(form);
-    if(state.points.length>=2)p.append(note('反向建議：若仍有多個候選來源／分流，優先在可比較的不同支線使用「同一快篩項目」做點位比較；若已有直接管線／水流關聯可查，應優先查直接事實而不是繼續快篩。','info'));
-    return p;
+    const form=E('div',null,'water-v2-tool-form'),point=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),purpose=selectControl([['source_tracing','查源'],['point_comparison','點位比較'],['water_characterization','水質特徵'],['process_inference','製程推論'],['other','其他']],'source_tracing',()=>{}),param=inputControl('text','','快篩參數／試劑',()=>{}),result=inputControl('text','','結果（定性／半定量值）',()=>{});form.append(row('點位',point),row('目的',purpose),row('參數',param),row('結果',result),btn('加入快篩紀錄',()=>{state.screenings.push({id:nextId('SC',state.screenings),kitId:null,parameter:param.value.trim(),pointRef:point.value||null,purpose:purpose.value,result:{type:'qualitative',value:result.value.trim()||'indeterminate'},evidenceRefs:[],performedAt:now()});setAction(state,'perform_screening','completed',null,'快篩');persist(ctx,state);}));p.append(form);
+    const unresolved=value(state,'water.source.trace_status')==='multiple_candidates'||value(state,'water.source.trace_status')==='branch_found';if(unresolved&&state.points.length>=2)p.append(note('反向建議：目前仍有多個候選來源／分流，可優先挑選能區分候選製程特徵的快篩，並在不同支線使用同一項目比較。','info'));else if(state.flows.some(f=>f.status==='confirmed'))p.append(note('已有直接水流關係可查時，優先確認管線／流程關係，不要為了快篩而持續快篩。','info'));return p;
   }
   function renderW10(ctx,state){
     const p=panel('W10｜正式採樣');p.append(note('本模組止於現場採樣完成／送驗；檢驗結果回來後再補入正式結果。'));
-    if(state.samplings.length){for(const s of state.samplings)p.append(E('div',`${s.id}｜${s.sampleId||'未編號'}｜${pointName(state,s.pointRef)}｜${s.sampledAt||''}`,'water-v2-list-row'));}
-    const form=E('div',null,'water-v2-tool-form'),point=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),sampleId=inputControl('text','','樣品編號',()=>{}),time=inputControl('datetime-local','',null,()=>{}),params=inputControl('text','','檢測項目，以逗號分隔',()=>{});form.append(row('採樣點',point),row('樣品編號',sampleId),row('採樣時間',time),row('檢測項目',params),btn('記錄採樣',()=>{state.samplings.push({id:id('SMP',state.samplings),sampleId:sampleId.value.trim(),pointRef:point.value||null,sampledAt:time.value||now(),parameters:params.value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),dischargeState:value(state,'water.discharge.state')||'unknown',evidenceRefs:[]});setFact(state,'water.sampling.performed','yes',{category:'action'});setAction(state,'perform_sampling','completed',null,'正式採樣');persist(ctx,state);}));p.append(form);
-    p.append(factSelect(ctx,state,'water.sampling.formal_result_available','正式檢驗結果是否已取得',[['yes','已取得'],['no','尚未取得'],['unknown','尚待確認']],{category:'measurement'}));
-    if(value(state,'water.sampling.formal_result_available')==='yes'){p.append(factSelect(ctx,state,'water.sampling.applicable_standard_confirmed','是否已確認適用放流水標準',[['yes','已確認'],['no','尚未確認'],['unknown','尚待確認']],{category:'record'}));p.append(factSelect(ctx,state,'water.sampling.standard_exceeded','正式檢驗與適用標準比對結果',[['yes','有項目超過標準'],['no','未超過標準'],['unknown','尚待確認']],{category:'measurement'}));}
-    return p;
+    if(state.samplings.length)for(const s of state.samplings)p.append(E('div',`${s.id}｜${s.sampleId||'未編號'}｜${pointName(state,s.pointRef)}｜${s.sampledAt||''}`,'water-v2-list-row'));
+    const form=E('div',null,'water-v2-tool-form'),point=selectControl(state.points.map(x=>[x.id,x.label]),'',()=>{}),sampleId=inputControl('text','','樣品編號',()=>{}),time=inputControl('datetime-local','',null,()=>{}),params=inputControl('text','','檢測項目，以逗號分隔',()=>{});form.append(row('採樣點',point),row('樣品編號',sampleId),row('採樣時間',time),row('檢測項目',params),btn('記錄採樣',()=>{state.samplings.push({id:nextId('SMP',state.samplings),sampleId:sampleId.value.trim(),pointRef:point.value||null,sampledAt:time.value||now(),parameters:params.value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),dischargeState:value(state,'water.discharge.state')||'unknown',evidenceRefs:[]});setFact(state,'water.sampling.performed','yes',{category:'action'});setAction(state,'perform_sampling','completed',null,'正式採樣');persist(ctx,state);}));p.append(form);
+    p.append(factSelect(ctx,state,'water.sampling.formal_result_available','正式檢驗結果是否已取得',[['yes','已取得'],['no','尚未取得'],['unknown','尚待確認']],{category:'measurement'}));if(value(state,'water.sampling.formal_result_available')==='yes'){p.append(factSelect(ctx,state,'water.sampling.applicable_standard_confirmed','是否已確認適用放流水標準',[['yes','已確認'],['no','尚未確認'],['unknown','尚待確認']],{category:'record'}));p.append(factSelect(ctx,state,'water.sampling.standard_exceeded','正式檢驗與適用標準比對結果',[['yes','有項目超過標準'],['no','未超過標準'],['unknown','尚待確認']],{category:'measurement'}));}return p;
   }
   async function copyText(text,status){try{await navigator.clipboard.writeText(text);status.textContent='已複製。';}catch(_){status.textContent='無法自動複製，請手動選取。';}}
   function renderW11(ctx,state,a){
     const p=panel('W11｜事實整理、法規研判與完成');p.append(note('摘要只重組既有事實，不在摘要階段創造新判斷；Statement 與法律研判分開呈現。'));
-    const readiness=panel('完成狀態','water-v2-review-block');readiness.append(statusChip(a.workflow.completionStatus==='ready'?'已具備完成條件':'仍有事項待處理',a.workflow.completionStatus==='ready'?'success':'warning'));readiness.append(note(`確認事實：${state.facts.filter(activeFact).length}｜待查：${state.unknowns.filter(u=>u.status==='pending').length}｜已受阻：${state.unknowns.filter(u=>u.status==='blocked').length}｜開放 Incident：${state.incidents.filter(i=>i.handlingStatus!=='complete').length}`));p.append(readiness);
-    const factual=panel('本次事實摘要','water-v2-review-block');const ft=E('textarea');ft.rows=10;ft.readOnly=true;ft.value=a.factual;const fs=E('p');factual.append(ft,btn('複製事實摘要',()=>copyText(ft.value,fs),true),fs);p.append(factual);
-    const legal=panel('法規研判','water-v2-review-block');const visible=(a.legal?.results||[]).filter(r=>!['not_applicable','no_issue_found'].includes(r.status));if(!visible.length)legal.append(note('目前依已輸入事實，核心規則沒有需要優先處理的法規項目。'));for(const r of visible.slice(0,12)){const c=E('div',null,'water-v2-legal-card');c.append(E('strong',`${r.source?.law||''}第${r.source?.article||''}條｜${r.title}`),statusChip(ruleStatusLabels[r.status]||r.status,r.status==='potential_violation'?'danger':'warning'));const miss=(r.missingFacts||[]).map(x=>x.key||x.object||x.legalSource).filter(Boolean);if(miss.length)c.append(note(`尚缺：${miss.join('、')}`));legal.append(c);}p.append(legal);
-    const statement=panel('相關人員陳述','water-v2-review-block');if(!state.statements.length)statement.append(note('尚無陳述紀錄。'));for(const s of state.statements)statement.append(E('div',`${s.speakerType||'人員'}：${s.content}`,'water-v2-list-row'));const stype=selectControl([['operator','現場負責人／業者'],['complainant','陳情人'],['other','其他']],'operator',()=>{}),scontent=inputControl('textarea','','誰說了什麼；此內容不會自動升格為客觀事實',()=>{});const sf=E('div',null,'water-v2-tool-form');sf.append(row('陳述人',stype),row('陳述內容',scontent),btn('加入陳述',()=>{if(scontent.value.trim()){state.statements.push({id:id('ST',state.statements),speakerType:stype.value,speakerName:null,content:scontent.value.trim(),pointRef:null,incidentRefs:[],evidenceRefs:[],timestamp:now()});persist(ctx,state);}}));statement.append(sf);p.append(statement);
+    const readiness=panel('完成狀態','water-v2-review-block');readiness.append(statusChip(a.workflow.completionStatus==='ready'?'已具備完成條件':'仍有事項待處理',a.workflow.completionStatus==='ready'?'success':'warning'),note(`確認事實：${state.facts.filter(activeFact).length}｜待查：${state.unknowns.filter(u=>u.status==='pending').length}｜已受阻：${state.unknowns.filter(u=>u.status==='blocked').length}｜開放 Incident：${state.incidents.filter(i=>i.handlingStatus!=='complete').length}`));p.append(readiness);
+    const factual=panel('本次事實摘要','water-v2-review-block'),ft=E('textarea');ft.rows=10;ft.readOnly=true;ft.value=a.factual;const fs=E('p');factual.append(ft,btn('複製事實摘要',()=>copyText(ft.value,fs),true),fs);p.append(factual);
+    const legal=panel('法規研判','water-v2-review-block'),visible=(a.legal?.results||[]).filter(r=>!['not_applicable','no_issue_found'].includes(r.status));if(!visible.length)legal.append(note('目前依已輸入事實，核心規則沒有需要優先處理的法規項目。'));for(const r of visible.slice(0,12)){const c=E('div',null,'water-v2-legal-card');c.append(E('strong',`${r.source?.law||''}第${r.source?.article||''}條｜${r.title}`),statusChip(ruleStatusLabels[r.status]||r.status,r.status==='potential_violation'?'danger':'warning'));const miss=(r.missingFacts||[]).map(x=>x.key||x.object||x.legalSource).filter(Boolean);if(miss.length)c.append(note(`尚缺：${miss.join('、')}`));legal.append(c);}p.append(legal);
+    const statement=panel('相關人員陳述','water-v2-review-block');if(!state.statements.length)statement.append(note('尚無陳述紀錄。'));for(const s of state.statements)statement.append(E('div',`${s.speakerType||'人員'}：${s.content}`,'water-v2-list-row'));const stype=selectControl([['operator','現場負責人／業者'],['complainant','陳情人'],['other','其他']],'operator',()=>{}),scontent=inputControl('textarea','','誰說了什麼；此內容不會自動升格為客觀事實',()=>{}),sf=E('div',null,'water-v2-tool-form');sf.append(row('陳述人',stype),row('陳述內容',scontent),btn('加入陳述',()=>{if(scontent.value.trim()){state.statements.push({id:nextId('ST',state.statements),speakerType:stype.value,speakerName:null,content:scontent.value.trim(),pointRef:null,incidentRefs:[],evidenceRefs:[],timestamp:now()});persist(ctx,state);}}));statement.append(sf);p.append(statement);
     const complete=E('div',null,'actions');complete.append(btn(state.session.status==='completed'?'已完成本次現場稽查':'完成本次現場稽查',()=>{const pending=state.unknowns.filter(u=>u.status==='pending'&&u.priority==='critical');if(pending.length&&!window.confirm('仍有重要待查事項，仍要以目前事實完成本次現場稽查嗎？'))return;state.session.status='completed';state.session.completedAt=now();persist(ctx,state);},state.session.status==='completed'));p.append(complete);return p;
   }
   function renderWorkspace(ctx,state,a){switch(state.ui.workspace){case 'W00':return renderDashboard(ctx,state,a);case 'W01':return renderW01(ctx,state);case 'W02':return renderW02(ctx,state);case 'W03':return renderW03(ctx,state);case 'W04':return renderW04(ctx,state);case 'W05':return renderW05(ctx,state);case 'W06':return renderW06(ctx,state);case 'W07':return renderW07(ctx,state);case 'W08':return renderW08(ctx,state);case 'W09':return renderW09(ctx,state);case 'W10':return renderW10(ctx,state);case 'W11':return renderW11(ctx,state,a);default:return renderDashboard(ctx,state,a);}}
-
-  function render(ctx){
-    const state=parseState(ctx.session);state.ui=state.ui||{workspace:'W00'};syncIncidents(state);const a=analyze(state);ctx.session.setInputs({waterV2StateJson:JSON.stringify(state)});
-    const wrap=E('div',null,'water-v2-app');
-    const head=E('section',null,'water-v2-header');head.append(E('h2','水污染稽查 V2'),note('單一介面｜事實優先｜未知 ≠ 否定｜法規研判不反寫現場事實'));
-    const meta=E('div',null,'water-v2-meta');const date=inputControl('date',state.session.incidentDate||'','',v=>{state.session.incidentDate=v;persist(ctx,state);});meta.append(row('案件／稽查日期',date));head.append(meta);wrap.append(head,renderNav(ctx,state),renderWorkspace(ctx,state,a));ctx.app.append(wrap);
-  }
+  function render(ctx){const state=parseState(ctx.session);state.ui=state.ui||{workspace:'W00'};syncIncidents(state);const a=analyze(state);ctx.session.setInputs({waterV2StateJson:JSON.stringify(state)});const wrap=E('div',null,'water-v2-app'),head=E('section',null,'water-v2-header');head.append(E('h2','水污染稽查 V2'),note('單一操作介面｜事實優先｜未知 ≠ 否定｜法規研判不反寫現場事實'));const meta=E('div',null,'water-v2-meta'),date=inputControl('date',state.session.incidentDate||'','',v=>{state.session.incidentDate=v;persist(ctx,state);});meta.append(row('案件／稽查日期',date));head.append(meta);wrap.append(head,renderNav(ctx,state),renderWorkspace(ctx,state,a));ctx.app.append(wrap);}
   root.CustomRenderers.waterV2={render,provenance:PROVENANCE};
 })(typeof window==='undefined'?globalThis:window);
