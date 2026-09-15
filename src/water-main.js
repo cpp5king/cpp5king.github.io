@@ -90,6 +90,17 @@
     const industry=root.WaterIndustry.evaluate(out,facts);
     root.WaterWorkflow.apply(input,facts,out);
     root.WaterAssessment.apply(input,facts,out,lawVersion,results,sublaw,industry);
+
+    if(root.WaterLegalAdapter){
+      const v2=root.WaterLegalAdapter.analyze(out);
+      out.waterV2Session=v2.session;
+      out.waterV2Workflow=v2.workflow;
+      out.waterLegalAnalysis=v2.legal;
+      out.waterV2DashboardText=v2.dashboardText;
+      out.waterV2FactSummaryText=v2.factSummaryText;
+      out.waterLegalSummaryText=v2.legalSummaryText;
+    }
+
     const docs=root.WaterDocuments.build(out,facts);
     out.waterRecordDraftText=docs.recordText;
     out.waterReplyDraftText=docs.replyText;
