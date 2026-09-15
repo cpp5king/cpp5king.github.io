@@ -3,7 +3,7 @@
   root.INSPECTION_APP_META=Object.freeze({
     name:'稽查助手',
     version:'4.9.33',
-    label:'稽查助手4.9.33 TEST｜水污 V2＋法規研判原型',
+    label:'稽查助手4.9.33',
     ownerTag:'PP',
     productId:'INSPECTION-ASSISTANT',
     provenance:'PP-IA-41-7F3C9A21'
