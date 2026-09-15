@@ -46,17 +46,26 @@ window.INSPECTION_CONFIG = {
       "directTemplateId": "noise-main"
     },
     {
+      "id": "water-v2-inspection",
+      "categoryId": "water",
+      "title": "水污染稽查 V2（測試）",
+      "status": "active",
+      "directTemplateId": "water-v2"
+    },
+    {
       "id": "water-field-inspection",
       "categoryId": "water",
-      "title": "現場稽查",
+      "title": "舊版現場稽查（相容）",
       "status": "active",
+      "hidden": true,
       "directTemplateId": "water-field"
     },
     {
       "id": "water-inspection",
       "categoryId": "water",
-      "title": "案件研判（完整母法）",
+      "title": "舊版案件研判（相容）",
       "status": "active",
+      "hidden": true,
       "directTemplateId": "water-main"
     }
   ],
@@ -72,6 +81,10 @@ window.INSPECTION_CONFIG = {
     {
       "id": "noise-main",
       "file": "noise-main.js"
+    },
+    {
+      "id": "water-v2",
+      "file": "water-v2.js"
     },
     {
       "id": "water-field",
