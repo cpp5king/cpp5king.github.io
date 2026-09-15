@@ -1,7 +1,7 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.9.32';
-const CACHE_REVISION='release-4.9.32';
-const CACHE_NAME='inspection-assistant-4.9.32-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='4.9.33';
+const CACHE_REVISION='test-water-v2-legal-4.9.33';
+const CACHE_NAME='inspection-assistant-4.9.33-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -60,17 +60,24 @@ const APP_SHELL=[
   './data/rules/water-sublaw-core.js'+V,
   './data/rules/water-industry.js'+V,
   './data/rules/water-industry-catalog-v485.js'+V,
+  './data/rules/water-legal-v2.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,
+  './src/water-v2-session.js'+V,
   './src/water-rule-engine.js'+V,
   './src/water-industry.js'+V,
   './src/water-permit-check.js'+V,
   './src/water-workflow.js'+V,
+  './src/water-v2-workflow.js'+V,
   './src/water-dependencies.js'+V,
   './src/water-assessment.js'+V,
   './src/water-documents.js'+V,
+  './src/water-legal-engine.js'+V,
+  './src/water-v2-summary.js'+V,
+  './src/water-legal-adapter.js'+V,
   './src/water-main.js'+V,
   './src/water-field.js'+V,
+  './src/water-v2-ui.js'+V,
   './src/draft-engine.js'+V,
   './src/template-loader.js'+V,
   './src/case-file.js'+V,
