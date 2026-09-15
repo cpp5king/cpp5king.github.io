@@ -1,0 +1,6 @@
+稽查助手 4.9.33 TEST
+Branch: test/4.9.33-water-v2-legal
+Purpose: 水污 V2 structured session + workflow + legal Batch A prototype
+DO NOT RELEASE AS FORMAL BUILD
+Main stable version remains 4.9.32 until explicit release approval.
+Provenance: PP-IA-41-7F3C9A21
