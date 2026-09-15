@@ -46,3 +46,34 @@ jobs:
           path: dist/inspection-assistant-${{ steps.version.outputs.version }}-windows.zip
           if-no-files-found: error
           retention-days: 30
+
+  package-water-v2-test:
+    if: github.event_name == 'pull_request' && github.head_ref == 'test/4.9.33-water-v2-legal'
+    needs: node-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -e "const fs=require('fs');const s=fs.readFileSync('data/app-meta.js','utf8');const m=s.match(/version:\s*['\"]([^'\"]+)/);if(!m)process.exit(1);process.stdout.write(m[1]);")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Assemble water V2 Windows test package
+        shell: bash
+        run: |
+          VERSION='${{ steps.version.outputs.version }}'
+          ROOT="dist/inspection-assistant-${VERSION}-windows-mobile-test"
+          mkdir -p "$ROOT"
+          cp index.html manifest.webmanifest service-worker.js start.cmd TEST-BUILD.txt "$ROOT/"
+          cp -R data src icons "$ROOT/"
+          printf '%s\n' '稽查助手 4.9.33 水污 V2＋法規研判測試版' '' '使用方式：' '1. 解壓縮整個資料夾。' '2. Windows 雙擊 start.cmd，可完全離線測試。' '3. 手機 PWA 原始檔亦包含於本包，但正式線上站仍維持 main 4.9.32。' '' '此包僅供測試；未經明確「上線」指示不得視為正式版。' > "$ROOT/WINDOWS-README.txt"
+          cd dist
+          zip -r "inspection-assistant-${VERSION}-windows-mobile-test.zip" "inspection-assistant-${VERSION}-windows-mobile-test"
+      - name: Upload water V2 test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: inspection-assistant-${{ steps.version.outputs.version }}-windows-mobile-test
+          path: dist/inspection-assistant-${{ steps.version.outputs.version }}-windows-mobile-test.zip
+          if-no-files-found: error
+          retention-days: 30
