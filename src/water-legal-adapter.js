@@ -2,7 +2,8 @@
   'use strict';
   const PROVENANCE='PP-IA-41-7F3C9A21';
   function analyze(input={}){
-    const session=root.WaterV2Session.fromLegacy(input);
+    const source=input.waterV2UseSession===true?input:{...input,waterV2Session:null};
+    const session=root.WaterV2Session.fromLegacy(source);
     const workflow=root.WaterV2Workflow.apply(session);
     const legal=root.WaterLegalEngine.analyze(session);
     return {
