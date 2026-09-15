@@ -1,6 +1,6 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
 const VERSION='4.9.33';
-const CACHE_REVISION='test-water-v2-legal-4.9.33';
+const CACHE_REVISION='test-water-v2-rebuild-4.9.33';
 const CACHE_NAME='inspection-assistant-4.9.33-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
@@ -12,6 +12,7 @@ const APP_SHELL=[
   './src/styles.css'+V,
   './src/choice-cards.css'+V,
   './src/mobile-multiselect.css'+V,
+  './src/water-v2.css'+V,
   './data/provenance.js'+V,
   './data/app-meta.js'+V,
   './data/texts/noise-common.js'+V,
@@ -31,6 +32,7 @@ const APP_SHELL=[
   './data/templates/restaurant-odor.js'+V,
   './data/templates/restaurant-odor-sampling-pending.js'+V,
   './data/templates/noise-main.js'+V,
+  './data/templates/water-v2.js'+V,
   './data/templates/water-field.js'+V,
   './data/templates/water-main.js'+V,
   './data/rules/noise-article8.js'+V,
@@ -77,7 +79,6 @@ const APP_SHELL=[
   './src/water-legal-adapter.js'+V,
   './src/water-main.js'+V,
   './src/water-field.js'+V,
-  './src/water-v2-ui.js'+V,
   './src/draft-engine.js'+V,
   './src/template-loader.js'+V,
   './src/case-file.js'+V,
@@ -90,6 +91,7 @@ const APP_SHELL=[
   './src/water-industry-v485.js'+V,
   './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
+  './src/water-v2-app.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
   './icons/icon-512.png'
