@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const stateLabels={not_applicable:'目前不適用',facts_insufficient:'資料不足',possible_application:'可能適用',elements_substantially_met:'主要要件大致具備',exception_possible:'存在例外待確認',potential_violation:'可能不符合',no_issue_found:'目前未見不符',human_review_required:'建議人工確認'};
+  const stateLabels={not_applicable:'目前不適用',facts_insufficient:'資料不足',possible_application:'可能適用',elements_substantially_met:'主要要件大致具備',exception_possible:'存在例外待確認',potential_violation:'可能不符合',no_issue_found:'目前未見不符',human_review_required:'建議人工確認',applicable_pending_test:'待正式檢驗'};
   const keyLabels={
     'session.incidentDate':'案件／稽查日期',
     'water.subject.type':'行為主體',
@@ -33,12 +33,17 @@
     'water.soil.contact_mode':'排放於土壤之行為型態',
     'water.soil_treatment.permit_status':'土壤處理許可'
   };
+  const valueLabels={
+    'water.discharge.destination_type':{surface_water_body:'地面水體',soil:'土壤',groundwater:'地下水體／注入地下',sewer_system:'污水下水道',storage:'貯留',recycle:'回收使用',entrusted_treatment:'委託處理',unknown:'尚無法確認'},
+    'water.premises.relation_status':{candidate:'候選場所',nearby:'僅位置接近',supported_relation:'有支持關聯事實',confirmed_relation:'已確認關聯',excluded:'已排除',unresolved:'仍無法確認'},
+    'water.liquid.classification':{wastewater:'事業廢水',sewage:'污水',runoff:'逕流／雨水',other_water:'其他已確認水體／水流',unknown:'尚無法確認'}
+  };
   function missingFactLabel(item={}){
     if(item.displayLabel)return item.displayLabel;
     if(item.object==='flow'){
       if(item.kind==='authorized')return '核准收集／處理流程';
       if(item.kind==='actual')return '實際水流路徑';
-      return '水流關係';
+      return '核准流程與實際水流關係';
     }
     if(item.legalSource==='NOTICE-WATER-POLLUTING-BEHAVIOR')return '案件日期有效之「禁止足使水污染行為」公告';
     if(item.key&&keyLabels[item.key])return keyLabels[item.key];
@@ -57,23 +62,24 @@
     }
     return out;
   }
+  function valueLabel(key,value){return valueLabels[key]?.[value]||value||'尚未確認';}
   function legalText(analysis){
     if(!analysis||!analysis.results)return '尚無法規研判結果。';
     const visible=analysis.results.filter(r=>!['not_applicable','no_issue_found'].includes(r.status));if(!visible.length)return '目前依已輸入事實，Batch A 核心規則未發現需優先處理的法規研判項目。';
     return visible.slice(0,5).map((r,i)=>{
       const missing=missingFactLabels(r.missingFacts||[]).slice(0,5).join('、');
-      return `${i+1}. ${r.source.law}第${r.source.article}條｜${r.title}\n狀態：${stateLabels[r.status]||r.status}${missing?`\n尚缺：${missing}`:''}`;
+      return `${i+1}. ${r.source.law}第${r.source.article}條｜${r.title}\n狀態：${stateLabels[r.status]||'需人工確認'}${missing?`\n尚缺：${missing}`:''}`;
     }).join('\n\n');
   }
   function factualText(session){
     const idx=root.WaterV2Session.factIndex(session),parts=[];
     const val=k=>idx[k]&&idx[k].value;
     if(val('water.discharge.occurred')==='yes')parts.push('本次已記錄有實際排放行為。');
-    if(val('water.discharge.destination_type'))parts.push(`排放去向：${val('water.discharge.destination_type')}。`);
-    if(val('water.premises.relation_status'))parts.push(`場所關聯狀態：${val('water.premises.relation_status')}。`);
+    if(val('water.discharge.destination_type'))parts.push(`排放去向：${valueLabel('water.discharge.destination_type',val('water.discharge.destination_type'))}。`);
+    if(val('water.premises.relation_status'))parts.push(`場所關聯狀態：${valueLabel('water.premises.relation_status',val('water.premises.relation_status'))}。`);
     if((session.flows||[]).length)parts.push(`目前建立 ${(session.flows||[]).length} 筆水流關係。`);
-    if((session.incidents||[]).length)parts.push(`目前有 ${(session.incidents||[]).length} 個異常事件紀錄。`);
+    if((session.incidents||[]).length)parts.push(`目前有 ${(session.incidents||[]).length} 個異常事項紀錄。`);
     return parts.length?parts.join('\n'):'目前尚未形成足以摘要的核心現場事實。';
   }
-  root.WaterV2Summary={factualText,legalText,missingFactLabel,missingFactLabels,presentMissingFacts};
+  root.WaterV2Summary={factualText,legalText,missingFactLabel,missingFactLabels,presentMissingFacts,valueLabel,keyLabels,stateLabels};
 })(typeof window==='undefined'?globalThis:window);
