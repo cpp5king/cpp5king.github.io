@@ -3,11 +3,11 @@ const assert = require('node:assert/strict');
 const { loaded, plain } = require('./helpers.cjs');
 const { documentStub, nodes } = require('./dom-stub.cjs');
 
-test('4.0-dev3 水污染分類與主流程已正式接入 catalog',async()=>{
+test('4.0-dev3 水污染分類與舊完整母法核心仍保留相容',async()=>{
   const { config }=await loaded();
   assert.equal(config.categories.find(x=>x.id==='water').status,'active');
   const type=config.caseTypes.find(x=>x.id==='water-inspection');
-  assert.equal(type.status,'active');assert.equal(type.directTemplateId,'water-main');
+  assert.equal(type.status,'active');assert.equal(type.directTemplateId,'water-main');assert.equal(type.hidden,true);
   assert.ok(config.templates.some(x=>x.id==='water-main'));
 });
 
@@ -35,14 +35,14 @@ test('水污上游答案改變會清除不再有效的下游事實',async()=>{
   assert.equal(after.waterDischargePermit,'');
 });
 
-test('水污首頁可直接點入，判斷流程不顯示公文草稿按鈕',async()=>{
-  const env=await loaded();const doc=documentStub(),app=doc.createElement('main');doc.getElementById=()=>app;env.context.document=doc;env.root.confirm=()=>true;env.root.TemplateLoader.load=async()=>env.config;
-  env.run('src/field-renderer.js');env.run('src/sentence-app.js');await new Promise(r=>setImmediate(r));
-  const click=text=>{const b=nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent===text);assert.ok(b,text);b.dispatch('click');};
-  click('水污染');click('案件研判（完整母法）');
-  assert.ok(app.querySelector('form'));
-  const draftButton=nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent==='產生案件文字');
-  assert.ok(draftButton);assert.equal(draftButton.parentElement.hidden,true);
+test('4.9.33 舊完整母法模板留在相容層，不再作首頁主入口',async()=>{
+  const env=await loaded();
+  const type=env.config.caseTypes.find(x=>x.id==='water-inspection');
+  const template=env.config.templates.find(x=>x.id==='water-main');
+  assert.ok(type);assert.equal(type.hidden,true);assert.equal(type.directTemplateId,'water-main');
+  assert.ok(template);assert.equal(template.id,'water-main');
+  const visible=env.config.caseTypes.filter(x=>x.categoryId==='water'&&!x.hidden);
+  assert.equal(visible.map(x=>x.id).join(','),'water-v2-inspection');
 });
 
 test('4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀態控制',async()=>{

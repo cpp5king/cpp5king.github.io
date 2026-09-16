@@ -3,12 +3,12 @@ const assert=require('node:assert/strict');
 const {loaded,plain}=require('./helpers.cjs');
 const {documentStub,nodes}=require('./dom-stub.cjs');
 
-test('4.2 水污染新增現場稽查入口且案件研判保留',async()=>{
+test('4.9.33 舊水污現場與完整母法入口保留為隱藏相容層',async()=>{
   const {config}=await loaded();
   const field=config.caseTypes.find(x=>x.id==='water-field-inspection');
   const assess=config.caseTypes.find(x=>x.id==='water-inspection');
-  assert.equal(field.title,'現場稽查');assert.equal(field.directTemplateId,'water-field');
-  assert.equal(assess.title,'案件研判（完整母法）');assert.equal(assess.directTemplateId,'water-main');
+  assert.equal(field.title,'舊版現場稽查（相容）');assert.equal(field.directTemplateId,'water-field');assert.equal(field.hidden,true);
+  assert.equal(assess.title,'舊版案件研判（相容）');assert.equal(assess.directTemplateId,'water-main');assert.equal(assess.hidden,true);
 });
 
 test('4.2 現場稽查依前端順序逐步開啟，不先攤開法律條文',async()=>{

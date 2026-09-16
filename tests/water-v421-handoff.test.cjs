@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {loaded,plain}=require('./helpers.cjs');
 
-test('4.2.1 現場查察完成後提供繼續案件研判交接',async()=>{
+test('4.2.1 舊現場查察模板仍保留繼續案件研判交接',async()=>{
   const {config}=await loaded();
   const t=config.templates.find(x=>x.id==='water-field');
   assert.ok(t.handoff);
@@ -39,7 +39,7 @@ test('4.2.1 交接到完整母法模式時保留已填共同事實並重新計�
   assert.equal(state.inputs.waterRuleStatus,'insufficient');
 });
 
-test('4.2.1 水污介面預留「產生案件文字」名稱但未核定模板前仍不生成假草稿',async()=>{
+test('4.2.1 舊水污介面預留「產生案件文字」名稱但未核定模板前仍不生成假草稿',async()=>{
   const {config}=await loaded();
   for(const id of ['water-field','water-main']){
     const t=config.templates.find(x=>x.id===id);
@@ -48,24 +48,16 @@ test('4.2.1 水污介面預留「產生案件文字」名稱但未核定模板�
   }
 });
 
-test('4.2.1 介面的「繼續案件研判」按鈕可實際切換到完整母法模式',async()=>{
-  const {documentStub,nodes}=require('./dom-stub.cjs');
-  const env=await loaded();
-  // 本測試只驗證交接按鈕本身，條件顯示另由前述 workflow 測試負責。
-  env.config.templates.find(x=>x.id==='water-field').handoff.when=null;
-  const doc=documentStub(),app=doc.createElement('main');
-  doc.getElementById=()=>app;
-  env.context.document=doc;
-  env.root.confirm=()=>true;
-  env.root.TemplateLoader.load=async()=>env.config;
-  env.run('src/field-renderer.js');
-  env.run('src/sentence-app.js');
-  await new Promise(r=>setImmediate(r));
-  const button=text=>nodes(app).find(n=>n.tagName==='BUTTON'&&n.textContent===text);
-  button('水污染').dispatch('click');
-  button('現場稽查').dispatch('click');
-  const handoff=button('繼續案件研判');
-  assert.ok(handoff);
-  handoff.dispatch('click');
-  assert.match(app.textContent,/案件研判（完整母法）/);
+test('4.9.33 舊 handoff 只作相容能力，不再由首頁暴露舊入口',async()=>{
+  const {config}=await loaded();
+  const fieldType=config.caseTypes.find(x=>x.id==='water-field-inspection');
+  const assessType=config.caseTypes.find(x=>x.id==='water-inspection');
+  const fieldTemplate=config.templates.find(x=>x.id==='water-field');
+  assert.equal(fieldType.hidden,true);
+  assert.equal(assessType.hidden,true);
+  assert.ok(fieldTemplate.handoff);
+  assert.equal(fieldTemplate.handoff.caseTypeId,'water-inspection');
+  assert.equal(fieldTemplate.handoff.templateId,'water-main');
+  const visible=config.caseTypes.filter(x=>x.categoryId==='water'&&!x.hidden);
+  assert.equal(visible.map(x=>x.id).join(','),'water-v2-inspection');
 });

@@ -1,7 +1,7 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.9.32';
-const CACHE_REVISION='release-4.9.32';
-const CACHE_NAME='inspection-assistant-4.9.32-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='4.9.34';
+const CACHE_REVISION='test-water-v2-rebuild-4.9.34';
+const CACHE_NAME='inspection-assistant-4.9.34-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -12,6 +12,7 @@ const APP_SHELL=[
   './src/styles.css'+V,
   './src/choice-cards.css'+V,
   './src/mobile-multiselect.css'+V,
+  './src/water-v2.css'+V,
   './data/provenance.js'+V,
   './data/app-meta.js'+V,
   './data/texts/noise-common.js'+V,
@@ -31,6 +32,7 @@ const APP_SHELL=[
   './data/templates/restaurant-odor.js'+V,
   './data/templates/restaurant-odor-sampling-pending.js'+V,
   './data/templates/noise-main.js'+V,
+  './data/templates/water-v2.js'+V,
   './data/templates/water-field.js'+V,
   './data/templates/water-main.js'+V,
   './data/rules/noise-article8.js'+V,
@@ -60,15 +62,21 @@ const APP_SHELL=[
   './data/rules/water-sublaw-core.js'+V,
   './data/rules/water-industry.js'+V,
   './data/rules/water-industry-catalog-v485.js'+V,
+  './data/rules/water-legal-v2.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,
+  './src/water-v2-session.js'+V,
   './src/water-rule-engine.js'+V,
   './src/water-industry.js'+V,
   './src/water-permit-check.js'+V,
   './src/water-workflow.js'+V,
+  './src/water-v2-workflow.js'+V,
   './src/water-dependencies.js'+V,
   './src/water-assessment.js'+V,
   './src/water-documents.js'+V,
+  './src/water-legal-engine.js'+V,
+  './src/water-v2-summary.js'+V,
+  './src/water-legal-adapter.js'+V,
   './src/water-main.js'+V,
   './src/water-field.js'+V,
   './src/draft-engine.js'+V,
@@ -83,6 +91,7 @@ const APP_SHELL=[
   './src/water-industry-v485.js'+V,
   './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
+  './src/water-v2-app.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
   './icons/icon-512.png'

@@ -53,6 +53,11 @@
         session.restore(parsed.state); render();
       }catch(error){window.alert?.('無法匯入案件：'+error.message);}
     });
+    function renderCustom(template){
+      const renderer=root.CustomRenderers?.[template.customRenderer];
+      if(!renderer?.render){app.append(el('p','找不到自訂操作介面：'+template.customRenderer));return;}
+      renderer.render({app,template,session,render,el,button});
+    }
     function render() {
       app.replaceChildren(); const state = session.snapshot(); app.append(navigation(state));
       const category = config.categories.find(item => item.id === state.categoryId);
@@ -72,7 +77,7 @@
       } else if (!type) {
         title = '選擇案件類型'; app.append(el('h2', title));
         const list = el('div', '', 'actions');
-        for (const item of config.caseTypes.filter(item => item.categoryId === category.id)) {
+        for (const item of config.caseTypes.filter(item => item.categoryId === category.id && !item.hidden)) {
           const entry = button(item.title + (item.status === 'development' ? '（開發中）' : ''), () => { session.selectCaseType(item.id); if (item.directTemplateId) session.selectTemplate(item.directTemplateId); render(); });
           entry.disabled = item.status !== 'active'; list.append(entry);
         }
@@ -84,7 +89,8 @@
         for (const item of available) list.append(button(item.title, () => { session.selectTemplate(item.id); render(); }));
         if (!available.length) list.append(el('p', '目前尚無可用範本。'));
         app.append(list);
-      } else renderForm(template);
+      } else if(template.customRenderer) renderCustom(template);
+      else renderForm(template);
       const heading = app.querySelector('h2'); if (heading) { heading.tabIndex = -1; heading.focus(); }
     }
     function renderForm(template) {
@@ -211,7 +217,6 @@
         flowUi=root.InspectionFlowUI?.attach({template,fields,workflow,performHandoff,onEnd:endEarly,outputs,status});
         if(flowUi?.element){form.append(flowUi.element);updateQuickActions=flowUi.update;updateQuickActions(session.snapshot().inputs);}
       }
-
 
       form.append(actions,retry,finish,handoffActions); app.append(form, status, outputs);
       const existing=session.snapshot().inputs;
