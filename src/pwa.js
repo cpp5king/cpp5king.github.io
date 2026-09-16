@@ -7,7 +7,7 @@
   const isMobile=/Android|iPhone|iPad|iPod/i.test(root.navigator?.userAgent||'') || root.matchMedia?.('(max-width: 760px)').matches;
   const standalone=root.matchMedia?.('(display-mode: standalone)').matches || root.navigator?.standalone===true;
   const secure=root.location?.protocol==='https:' || (root.location?.protocol==='http:' && ['localhost','127.0.0.1','[::1]'].includes(root.location?.hostname));
-  const VERSION='4.9.33';
+  const VERSION='4.9.34';
   const CHECK_THROTTLE_MS=15000;
   let checkingUpdate=null;
   let lastCheckedAt=0;
@@ -55,9 +55,6 @@
     }
   };
 
-  // iOS/WebKit 與安裝型 PWA 從背景恢復時不一定重新觸發 load。
-  // 除首次載入外，在 pageshow、重新回到前景及恢復網路時都再確認已發布版本。
-  // 節流狀態只放記憶體，不寫入任何持久儲存。
   if(secure && 'serviceWorker' in root.navigator){
     root.addEventListener('load',()=>{void checkForUpdate(true);});
     root.addEventListener('pageshow',()=>{void checkForUpdate();});
