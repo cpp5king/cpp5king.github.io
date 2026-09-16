@@ -84,3 +84,33 @@ test('Water V2 可見清單不再直接輸出內部 Point/Incident/Screening/Sam
   assert.match(src,/pointTypeText\(point\.type\)/);
   assert.match(src,/statusText\(flow\.status\)/);
 });
+
+test('Water V2 一般操作重新 render 後保留桌面版捲動位置',()=>{
+  const src=read('src/water-v2-summary.js');
+  assert.match(src,/pendingView/);
+  assert.match(src,/root\.scrollTo/);
+  assert.match(src,/requestAnimationFrame/);
+  assert.match(src,/data-water-v2-anchor/);
+});
+
+test('Water V2 W01 改為三態入口且有發現才展開現場細節',()=>{
+  const src=read('src/water-v2-summary.js');
+  assert.match(src,/有發現需查情形/);
+  assert.match(src,/未發現明顯異常/);
+  assert.match(src,/無法確認原因/);
+  assert.match(src,/正在排水/);
+  assert.match(src,/其他已確認水體／水流/);
+  assert.match(src,/dischargeField\.hidden=true/);
+  assert.match(src,/showFindings&&val\(state,'water\.observation\.active_discharge'\)==='yes'/);
+});
+
+test('Water V2 W02 為時效性事實保全工作區而非 raw Action 狀態頁',()=>{
+  const src=read('src/water-v2-summary.js');
+  assert.match(src,/先保留可能隨時間消失的現場情形/);
+  assert.match(src,/現況已記錄/);
+  assert.match(src,/已拍攝/);
+  assert.match(src,/未拍攝／無法拍攝/);
+  assert.match(src,/前往 W04 循線記錄/);
+  assert.match(src,/目前無法確認/);
+  assert.match(src,/必要時使用現場工具/);
+});
