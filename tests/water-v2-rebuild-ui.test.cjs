@@ -4,7 +4,7 @@ const fs=require('fs'),path=require('path'),vm=require('vm');
 const root=path.join(__dirname,'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 
-test('4.9.33 水污主入口改為獨立 V2，舊入口只保留隱藏相容',()=>{
+test('4.9.34 水污主入口改為獨立 V2，舊入口只保留隱藏相容',()=>{
   const context=vm.createContext({window:{}});
   vm.runInContext(read('data/templates/catalog.js'),context);
   const water=context.window.INSPECTION_CONFIG.caseTypes.filter(x=>x.categoryId==='water');
@@ -16,8 +16,8 @@ test('4.9.33 水污主入口改為獨立 V2，舊入口只保留隱藏相容',()
 
 test('主頁載入全新 Water V2 app/css，不再載入舊 bridge',()=>{
   const html=read('index.html');
-  assert.match(html,/src\/water-v2\.css\?v=4\.9\.33/);
-  assert.match(html,/src\/water-v2-app\.js\?v=4\.9\.33/);
+  assert.match(html,/src\/water-v2\.css\?v=4\.9\.34/);
+  assert.match(html,/src\/water-v2-app\.js\?v=4\.9\.34/);
   assert.doesNotMatch(html,/src\/water-v2-ui\.js/);
   assert.ok(html.indexOf('water-v2-app.js')<html.indexOf('sentence-app.js'));
 });
@@ -48,7 +48,7 @@ test('離線 app shell 包含 Water V2 新入口、樣式與模板',()=>{
   const sw=read('service-worker.js');
   for(const file of ['src/water-v2.css','src/water-v2-app.js','data/templates/water-v2.js'])assert.ok(sw.includes(file),file);
   assert.ok(!sw.includes('src/water-v2-ui.js'));
-  assert.match(sw,/test-water-v2-rebuild-4\.9\.33/);
+  assert.match(sw,/test-water-v2-rebuild-4\.9\.34/);
 });
 
 test('Water V2 template 使用 custom renderer，不 handoff 到舊水污流程',()=>{
