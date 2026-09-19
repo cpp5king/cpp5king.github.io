@@ -1,0 +1,127 @@
+.water-v2-shell{
+  --bg:#f5f7f8;--surface:#fff;--surface-2:#eef3f4;--text:#172126;--muted:#65737a;
+  --line:#d7e0e3;--primary:#0f4c5c;--primary-2:#176b7e;--accent:#dceff3;--warn:#fff4d8;
+  --danger:#8f2d2d;--good:#176b45;--shadow:0 8px 28px rgba(20,42,49,.08);--radius:16px;
+}
+.water-v2-shell, .water-v2-shell *{box-sizing:border-box}
+.water-v2-shell{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.55}
+.water-v2-shell button,.water-v2-shell input,.water-v2-shell select,.water-v2-shell textarea{font:inherit}
+.water-v2-shell .app-header{position:sticky;top:0;z-index:20;display:flex;gap:24px;justify-content:space-between;align-items:center;padding:18px clamp(18px,4vw,48px);background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.water-v2-shell .app-header h1{margin:2px 0 0;font-size:24px;line-height:1.2}
+.water-v2-shell .app-header h1 span{font-size:14px;color:var(--primary);font-weight:800}
+.water-v2-shell .app-header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.water-v2-shell .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--primary)}
+.water-v2-shell .header-actions{display:flex;gap:10px;flex-wrap:wrap}
+.water-v2-shell .app-shell{max-width:1120px;margin:0 auto;padding:28px 22px 80px}
+.water-v2-shell .footer{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:20px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;background:#fff}
+.water-v2-shell .hero{background:linear-gradient(135deg,#0f4c5c,#176b7e);color:white;border-radius:22px;padding:28px;box-shadow:var(--shadow);margin-bottom:22px}
+.water-v2-shell .hero h2{margin:0 0 8px;font-size:28px}
+.water-v2-shell .hero p{margin:0;opacity:.9;max-width:760px}
+.water-v2-shell .hero .pill{display:inline-block;margin-top:14px;padding:6px 10px;border:1px solid rgba(255,255,255,.35);border-radius:99px;font-size:12px}
+.water-v2-shell .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.water-v2-shell .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.water-v2-shell .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 3px 14px rgba(20,42,49,.04);margin-bottom:16px}
+.water-v2-shell .card h3{margin:0 0 6px;font-size:19px}
+.water-v2-shell .card h4{margin:0 0 10px}
+.water-v2-shell .card p{margin:4px 0;color:var(--muted)}
+.water-v2-shell .entry-card{cursor:pointer;transition:.16s}
+.water-v2-shell .entry-card:hover{transform:translateY(-2px);border-color:#9ebcc4;box-shadow:var(--shadow)}
+.water-v2-shell .entry-card .big{font-size:26px;margin-bottom:10px}
+.water-v2-shell .entry-card .btn{margin-top:14px;width:100%}
+.water-v2-shell .section-title{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin:20px 0 12px}
+.water-v2-shell .section-title h2{margin:0}
+.water-v2-shell .section-title p{margin:4px 0 0;color:var(--muted)}
+.water-v2-shell .stepbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.water-v2-shell .step{background:#e7edef;color:#52636b;border-radius:99px;padding:7px 11px;font-size:12px;font-weight:700}
+.water-v2-shell .step.active{background:var(--primary);color:white}
+.water-v2-shell .step.done{background:#d9eee5;color:#185f43}
+.water-v2-shell .btn{border:1px solid transparent;border-radius:11px;padding:10px 14px;font-weight:750;cursor:pointer;background:#e8eef0;color:#26363d}
+.water-v2-shell .btn:hover{filter:brightness(.98)}
+.water-v2-shell .btn:disabled{opacity:.45;cursor:not-allowed}
+.water-v2-shell .btn-primary{background:var(--primary);color:white}
+.water-v2-shell .btn-secondary{background:#e0eef2;color:#123f4b;border-color:#c2dde4}
+.water-v2-shell .btn-ghost{background:white;border-color:var(--line)}
+.water-v2-shell .btn-danger{background:#fff0f0;color:var(--danger);border-color:#f1c9c9}
+.water-v2-shell .btn-good{background:#e6f4ed;color:var(--good);border-color:#bfe1d0}
+.water-v2-shell .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.water-v2-shell .btn-row.end{justify-content:flex-end}
+.water-v2-shell label.field{display:block;margin:14px 0}
+.water-v2-shell .field-label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
+.water-v2-shell .hint{font-size:12px;color:var(--muted);margin-top:5px}
+.water-v2-shell .text-input,.water-v2-shell .select-input,.water-v2-shell .text-area{width:100%;border:1px solid #cbd7da;border-radius:10px;padding:10px 12px;background:#fff;color:var(--text);outline:none}
+.water-v2-shell .text-input:focus,.water-v2-shell .select-input:focus,.water-v2-shell .text-area:focus{border-color:#4d8f9f;box-shadow:0 0 0 3px rgba(77,143,159,.12)}
+.water-v2-shell .text-area{min-height:88px;resize:vertical}
+.water-v2-shell .draft-area{min-height:300px;font-size:15px;line-height:1.7}
+.water-v2-shell .choice-row{display:flex;gap:8px;flex-wrap:wrap}
+.water-v2-shell .choice{position:relative}
+.water-v2-shell .choice input{position:absolute;opacity:0;pointer-events:none}
+.water-v2-shell .choice span{display:inline-flex;align-items:center;justify-content:center;min-width:76px;padding:9px 12px;border:1px solid #c8d5d9;background:#fff;border-radius:10px;cursor:pointer;font-weight:700}
+.water-v2-shell .choice input:checked+span{background:var(--accent);border-color:#6ea6b4;color:#0b4554}
+.water-v2-shell .check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.water-v2-shell .check{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;background:#fafcfc;border:1px solid var(--line);border-radius:10px}
+.water-v2-shell .check input{margin-top:4px}
+.water-v2-shell .notice{border-radius:12px;padding:11px 13px;margin:12px 0;font-size:13px}
+.water-v2-shell .notice.info{background:#e8f4f7;color:#174c58}
+.water-v2-shell .notice.warn{background:var(--warn);color:#684f0d}
+.water-v2-shell .notice.good{background:#e8f4ee;color:#17593d}
+.water-v2-shell .notice.danger{background:#fff0f0;color:#7e2828}
+.water-v2-shell .divider{height:1px;background:var(--line);margin:18px 0}
+.water-v2-shell .subcard{border:1px solid var(--line);border-radius:13px;padding:14px;background:#fbfcfc;margin-top:12px}
+.water-v2-shell .subcard h4{font-size:15px}
+.water-v2-shell .trace-card{border-left:5px solid #8eb7c1}
+.water-v2-shell .trace-card.level-1{margin-left:24px}
+.water-v2-shell .trace-card.level-2{margin-left:48px}
+.water-v2-shell .trace-card.level-3{margin-left:72px}
+.water-v2-shell .trace-card.level-4{margin-left:96px}
+.water-v2-shell .trace-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.water-v2-shell .trace-meta{font-size:12px;color:var(--muted)}
+.water-v2-shell .tag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:99px;background:#eef3f4;color:#53636a;font-size:11px;font-weight:800;margin-right:5px}
+.water-v2-shell .tag.confirmed{background:#dff1e7;color:#17613f}
+.water-v2-shell .tag.suspected{background:#fff0cf;color:#745300}
+.water-v2-shell .tag.stopped{background:#eceff0;color:#5e6b70}
+.water-v2-shell .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.water-v2-shell .table{width:100%;border-collapse:collapse;min-width:680px}
+.water-v2-shell .table th,.water-v2-shell .table td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.water-v2-shell .table th{background:#f1f5f6;font-size:12px}
+.water-v2-shell .table tr:last-child td{border-bottom:none}
+.water-v2-shell .table input,.water-v2-shell .table select{width:100%;border:1px solid #cbd7da;border-radius:8px;padding:7px;background:white}
+.water-v2-shell .summary-section{margin-bottom:22px}
+.water-v2-shell .summary-list{display:flex;flex-direction:column;gap:8px}
+.water-v2-shell .summary-item{padding:12px 13px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.water-v2-shell .summary-item strong{color:#0d4654}
+.water-v2-shell .empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed #bac8cc;border-radius:14px;background:#fbfcfc}
+.water-v2-shell .source-box{border:1px solid #bdd9ce;background:#f3fbf7;border-radius:12px;padding:14px;margin-top:12px}
+.water-v2-shell .source-box h4{color:#185c40}
+.water-v2-shell .sticky-actions{position:sticky;bottom:12px;display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding:10px;background:rgba(245,247,248,.92);backdrop-filter:blur(8px);border-radius:12px}
+.water-v2-shell .topic{padding:14px 0;border-bottom:1px solid var(--line)}
+.water-v2-shell .topic:last-child{border-bottom:0}
+.water-v2-shell .topic-head{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+.water-v2-shell .topic-title{font-weight:850}
+.water-v2-shell .topic-desc{color:var(--muted);font-size:13px;margin-top:3px}
+.water-v2-shell .details{margin-top:12px;padding:14px;background:#f8fbfb;border:1px solid #dce6e8;border-radius:12px}
+.water-v2-shell .muted{color:var(--muted)}
+.water-v2-shell .small{font-size:12px}
+.water-v2-shell .spacer{height:8px}
+@media(max-width:760px){.water-v2-shell .app-header{position:static;align-items:flex-start;flex-direction:column}
+.water-v2-shell .header-actions{width:100%}
+.water-v2-shell .header-actions .btn{flex:1}
+.water-v2-shell .app-shell{padding:18px 13px 70px}
+.water-v2-shell .grid-2,.water-v2-shell .grid-3{grid-template-columns:1fr}
+.water-v2-shell .check-grid{grid-template-columns:1fr}
+.water-v2-shell .hero{padding:20px}
+.water-v2-shell .hero h2{font-size:23px}
+.water-v2-shell .trace-card.level-1{margin-left:10px}
+.water-v2-shell .trace-card.level-2{margin-left:20px}
+.water-v2-shell .trace-card.level-3{margin-left:30px}
+.water-v2-shell .trace-card.level-4{margin-left:40px}
+.water-v2-shell .topic-head{grid-template-columns:1fr}
+.water-v2-shell .sticky-actions{bottom:8px}
+.water-v2-shell .choice span{min-width:68px;padding:9px 10px}}
+.water-v2-shell .source-link-notice{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.water-v2-shell .source-link-notice strong{color:#123f4b}
+.water-v2-shell .source-link-notice span{margin-right:auto}
+.water-v2-shell .relation-card{border-left:5px solid #8eb7c1}
+.water-v2-shell .relation-card h3{margin-bottom:4px}
+@media(max-width:760px){.water-v2-shell .source-link-notice{align-items:stretch;flex-direction:column}
+.water-v2-shell .source-link-notice span{margin-right:0}
+.water-v2-shell .source-link-notice .btn{width:100%}}

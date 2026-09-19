@@ -1,7 +1,7 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.9.32';
-const CACHE_REVISION='release-4.9.32';
-const CACHE_NAME='inspection-assistant-4.9.32-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='4.9.35';
+const CACHE_REVISION='release-4.9.35';
+const CACHE_NAME='inspection-assistant-4.9.35-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -12,6 +12,7 @@ const APP_SHELL=[
   './src/styles.css'+V,
   './src/choice-cards.css'+V,
   './src/mobile-multiselect.css'+V,
+  './src/water-v2-ui.css'+V,
   './data/provenance.js'+V,
   './data/app-meta.js'+V,
   './data/texts/noise-common.js'+V,
@@ -83,6 +84,7 @@ const APP_SHELL=[
   './src/water-industry-v485.js'+V,
   './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
+  './src/water-v2-ui.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
   './icons/icon-512.png'
