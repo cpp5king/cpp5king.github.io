@@ -19,10 +19,13 @@
     }
     function hasInput() {
       const state = session.snapshot();
-      return !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
+      const waterHasData = !!root.WaterV2UI?.hasData?.();
+      return waterHasData || !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
     }
     function navigate(action) {
+      const waterHasData = !!root.WaterV2UI?.hasData?.();
       if (hasInput() && !window.confirm('切換將清除目前輸入及兩份草稿（含手動修改），是否繼續？')) return;
+      if (waterHasData) root.WaterV2UI.reset();
       action(); render();
     }
     function navigation(state) {
@@ -58,6 +61,12 @@
       const category = config.categories.find(item => item.id === state.categoryId);
       const type = config.caseTypes.find(item => item.id === state.caseTypeId);
       const template = config.templates.find(item => item.id === state.templateId);
+      if (category?.id === 'water' && root.WaterV2UI?.mount) {
+        const waterHost = el('section', '', 'water-v2-host');
+        app.append(waterHost);
+        root.WaterV2UI.mount(waterHost);
+        return;
+      }
       const trail = [category?.title, type?.title, type?.directTemplateId ? null : template?.title].filter(Boolean).join(' → ');
       if (trail) app.append(el('p', trail));
       let title;
