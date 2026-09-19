@@ -1,6 +1,6 @@
 const fs=require('fs');
 const vm=require('vm');
-const path='/mnt/data/inspection-assistant-4.9.37-windows-local-test/src/water-v2-ui.js';
+const path=require('node:path').join(__dirname,'..','src','water-v2-ui.js');
 let src=fs.readFileSync(path,'utf8');
 src=src.replace("root.WaterV2UI=Object.freeze({", "root.__test={state,createInspection,lawAssessment};\n  root.WaterV2UI=Object.freeze({");
 const context={window:{},console};vm.createContext(context);vm.runInContext(src,context);
