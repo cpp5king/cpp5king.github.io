@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
 
-  const VERSION = '4.9.35';
+  const VERSION = '4.9.37';
   const PROVENANCE = 'PP-IA-41-7F3C9A21';
   let $app = null;
 
@@ -31,7 +31,7 @@
 
   const subjectTypes = [
     ['industry','水污法事業','依許可／核准資料進行 A～F 現場查核'],
-    ['sewer','污水下水道系統','沿用 A～F 現場事實，法規背景改採第19條準用'],
+    ['sewer','污水下水道系統','沿用 A～F 現場事實；第14、15、18條依第19條準用，其餘依各條文判斷'],
     ['building','建築物污水處理設施','依設施、管理、紀錄、排放四主題查核'],
     ['other','非上述管制主體','先記現場行為，再整理可能法規方向']
   ];
@@ -263,17 +263,17 @@
 
   function createInspection(prefill={}){
     return {
-      id:newId('inspection'),sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',methods:[],
+      id:newId('inspection'),sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',methods:[],
       topics:{B:newTopic(),C:newTopic(),D:newTopic(),E:newTopic(),F:newTopic()},
       details:{
         B:{meterRequired:'',meterInstalled:'',meterWorking:'',recordMatch:''},
         C:{shouldOperate:'',powerNormal:'',actuallyRunning:'',recordMatch:''},
         D:{recordRequired:'',recordAvailable:'',recordComplete:'',recordMatch:''},
         E:{needsTreatment:'',shouldOperate:'',actuallyRunning:'',alternativeTreatment:'',internalFlowMatch:''},
-        F:{approvedRoute:'',routeMatch:'',actualDischarge:'',destinationKnown:'',destination:'',nonApprovedFinalOutlet:'',sampled:'',sampleNote:'',dilutionNeedsTreatment:'',mixedWater:'',mixedWaterClean:'',mixedBeforeDischarge:''}
+        F:{approvedRoute:'',routeMatch:'',actualDischarge:'',destinationKnown:'',destination:'',nonApprovedFinalOutlet:'',soilTreatmentAuthorized:'',sampled:'',sampleNote:'',dilutionNeedsTreatment:'',mixedWater:'',mixedWaterClean:'',mixedBeforeDischarge:''}
       },
       building:{facility:newTopic(),management:newTopic(),records:newTopic(),discharge:newTopic()},
-      other:{article30:[],soilDischarge:'',groundwaterInjection:'',notes:''},
+      other:{article30:[],controlZone:'',soilDischarge:'',soilTreatmentAuthorized:'',groundwaterInjection:'',notes:''},
       notes:''
     };
   }
@@ -303,12 +303,13 @@
   function renderAF(i){
     const isSewer=i.subjectType==='sewer';
     const methods=[['ground','排放至地面水體'],['storage','貯留'],['recycle','全量回收'],['委託','全量委託'],['dilution','稀釋'],['sewer','納管'],['soil','土壤處理'],['none','無廢污水產生'],['other','其他']];
-    return `<section class="card"><h3>A｜許可／核准</h3><p>只確認「目前是否有有效水許可／核准資料」，不在系統建立許可證資料庫。</p>
+    return `<section class="card"><h3>A｜許可／核准</h3><p>只確認現場法規判斷需要的許可類型，不在系統建立許可證資料庫。</p>
       <label class="field"><span class="field-label">目前是否有有效水許可／核准資料？</span>${ynu(i.permitStatus,'permitStatus',{yes:'有',no:'無',unknown:'無法確認'})}</label>
+      ${i.permitStatus==='yes'?`<label class="field"><span class="field-label">目前核對的是哪一類許可／核准？</span><select class="select-input" id="permitType">${selectValue([['discharge','排放許可／簡易排放許可'],['storage','貯留許可'],['dilution','稀釋許可'],['soil','土壤處理許可'],['other','其他水措／核准資料'],['unknown','無法確認許可類型']],i.permitType)}</select></label>`:''}
       ${i.permitStatus==='no'?`<label class="field"><span class="field-label">現場實際處理方式（可複選）</span>${checkboxList(i.methods,methods,'methods')}</label>`:''}
-      ${i.permitStatus==='yes'?'<div class="notice info">請自行查看現有許可／核准內容，再依 B～F 核對現場。</div>':''}
+      ${i.permitStatus==='yes'?'<div class="notice info">請自行查看現有許可／核准內容，再依 B～F 核對現場。第14條只在排放許可／簡易排放許可的登記事項差異方向自動提示。</div>':''}
       ${i.permitStatus==='unknown'?'<div class="notice warn">「無法確認」不等同無許可；整理頁會列為尚待確認。</div>':''}
-      ${isSewer?'<div class="notice info">本對象為污水下水道系統；現場事實沿用 A～F，可能法規顯示時採第19條準用方向。</div>':''}
+      ${isSewer?'<div class="notice info">污水下水道系統的第14、15、18條依第19條準用；第20條等則依各該條文直接判斷，不一律冠上第19條。</div>':''}
     </section>
     ${topicCard('B','水量／流量','核對水量計測設施、位置、讀值／計量狀況及相關紀錄。',i)}
     ${topicCard('C','用電／設備運轉','確認設備當時是否應運轉、供電、實際運轉及相關紀錄。',i)}
@@ -328,7 +329,7 @@
     if(code==='C') return f('設備當時是否應運轉','shouldOperate')+f('是否有正常供電','powerNormal')+f('是否實際運轉','actuallyRunning')+f('用電／操作紀錄與現場是否一致','recordMatch');
     if(code==='D') return f('是否應有紀錄','recordRequired')+f('是否可提供','recordAvailable')+f('是否完整到足以查核','recordComplete')+f('是否與現場一致','recordMatch');
     if(code==='E') return f('是否有廢污水需要處理','needsTreatment')+f('設備當時是否應運轉','shouldOperate')+f('是否實際正常運轉','actuallyRunning')+f('是否有其他替代處理方式','alternativeTreatment')+f('廠內水路／處理流程與許可是否一致','internalFlowMatch');
-    if(code==='F') return f('是否有核准放流口／路徑','approvedRoute')+f('現場排放位置／路徑是否一致','routeMatch')+f('是否有廢污水實際排放','actualDischarge')+f('最終去向是否確認','destinationKnown')+`${d.destinationKnown==='yes'?`<label class="field"><span class="field-label">最終去向</span><select class="select-input" data-detail-code="F" data-detail-key="destination">${selectValue([['ground','地面水體'],['sewer','納管'],['soil','排放於土壤'],['groundwater','注入地下水體'],['other','其他']],d.destination)}</select></label>`:''}`+f('是否由非核准最終放流口／非核准納管口排出','nonApprovedFinalOutlet')+f('本次是否現場採樣','sampled')+`${d.sampled==='yes'?`<label class="field"><span class="field-label">採樣補充</span><input class="text-input" data-detail-code="F" data-detail-key="sampleNote" value="${esc(d.sampleNote)}" placeholder="採樣點／樣品資訊（不做實驗室結果判定）"></label>`:''}`+`<div class="divider"></div><h4>禁止稀釋事實（需要時才填）</h4>${f('廢污水是否需處理才能符合標準','dilutionNeedsTreatment')+f('是否與其他水混合','mixedWater')+f('混入水是否無需處理即可符合標準','mixedWaterClean')+f('是否在排放／納管前混合','mixedBeforeDischarge')}`;
+    if(code==='F') return f('是否有核准放流口／路徑','approvedRoute')+f('現場排放位置／路徑是否一致','routeMatch')+f('是否有廢污水實際排放','actualDischarge')+f('最終去向是否確認','destinationKnown')+`${d.destinationKnown==='yes'?`<label class="field"><span class="field-label">最終去向</span><select class="select-input" data-detail-code="F" data-detail-key="destination">${selectValue([['ground','地面水體'],['sewer','納管'],['soil','排放於土壤'],['groundwater','注入地下水體'],['other','其他']],d.destination)}</select></label>${d.destination==='soil'?`<label class="field"><span class="field-label">是否已確認符合土壤處理標準，且具有有效土壤處理許可？</span>${ynu(d.soilTreatmentAuthorized,'F_soilTreatmentAuthorized')}</label>`:''}`:''}`+f('是否由非核准最終放流口／非核准納管口排出','nonApprovedFinalOutlet')+f('本次是否現場採樣','sampled')+`${d.sampled==='yes'?`<label class="field"><span class="field-label">採樣補充</span><input class="text-input" data-detail-code="F" data-detail-key="sampleNote" value="${esc(d.sampleNote)}" placeholder="採樣點／樣品資訊（不做實驗室結果判定）"></label>`:''}`+`<div class="divider"></div><h4>禁止稀釋事實（需要時才填）</h4>${f('廢污水是否需處理才能符合標準','dilutionNeedsTreatment')+f('是否與其他水混合','mixedWater')+f('混入水是否無需處理即可符合標準','mixedWaterClean')+f('是否在排放／納管前混合','mixedBeforeDischarge')}`;
     return '';
   }
 
@@ -338,7 +339,7 @@
   function buildingTopic(key,title,i){const t=i.building[key];return `<div class="topic"><div class="topic-head"><div class="topic-title">${title}</div>${ynu(t.status,`building_${key}`,{none:'無疑點',doubt:'有疑點',unchecked:'本次未查'})}</div>${t.status==='doubt'?`<div class="details"><label class="field"><span class="field-label">現場查核事實</span><textarea class="text-area" data-building="${key}" data-building-field="factText">${esc(t.factText)}</textarea></label><label class="field"><span class="field-label">補充</span><textarea class="text-area" data-building="${key}" data-building-field="notes">${esc(t.notes)}</textarea></label></div>`:''}</div>`;}
   function renderOther(i){
     const a30=[['pesticide','農藥／肥料'],['discard','棄置污染物'],['kill_aquatic','捕殺水生物'],['livestock','飼養禽畜'],['other','其他污染水體行為']];
-    return `<section class="card"><h3>非上述管制主體</h3><p>先記現場行為，不要求稽查員自己選第幾款。</p><label class="field"><span class="field-label">現場行為（可複選）</span>${checkboxList(i.other.article30,a30,'otherA30')}</label><label class="field"><span class="field-label">是否有排放於土壤？</span>${ynu(i.other.soilDischarge,'soilDischarge')}</label><label class="field"><span class="field-label">是否有注入地下水體？</span>${ynu(i.other.groundwaterInjection,'groundwaterInjection')}</label><label class="field"><span class="field-label">其他現場事實</span><textarea class="text-area" id="otherNotes">${esc(i.other.notes)}</textarea></label></section>`;
+    return `<section class="card"><h3>非上述管制主體</h3><p>先記現場行為，不要求稽查員自己選第幾款。</p><label class="field"><span class="field-label">現場行為（可複選）</span>${checkboxList(i.other.article30,a30,'otherA30')}</label>${i.other.article30.length?`<label class="field"><span class="field-label">行為地點是否位於公告之水污染管制區？</span>${ynu(i.other.controlZone,'controlZone')}</label>`:''}<label class="field"><span class="field-label">是否有排放於土壤？</span>${ynu(i.other.soilDischarge,'soilDischarge')}</label>${i.other.soilDischarge==='yes'?`<label class="field"><span class="field-label">是否已確認符合土壤處理標準，且具有有效土壤處理許可？</span>${ynu(i.other.soilTreatmentAuthorized,'otherSoilTreatmentAuthorized')}</label>`:''}<label class="field"><span class="field-label">是否有注入地下水體？</span>${ynu(i.other.groundwaterInjection,'groundwaterInjection')}</label><label class="field"><span class="field-label">其他現場事實</span><textarea class="text-area" id="otherNotes">${esc(i.other.notes)}</textarea></label></section>`;
   }
 
   function bindSubject(i){
@@ -358,21 +359,24 @@
       if(n){n.sourceName=e.target.value;syncSources();}
     };
     document.querySelectorAll('input[name="subjectType"]').forEach(el=>el.onchange=e=>{i.subjectType=e.target.value;saveInspection();renderSubject();});
-    document.querySelectorAll('input[name="permitStatus"]').forEach(el=>el.onchange=e=>{i.permitStatus=e.target.value;if(e.target.value!=='no')i.methods=[];renderSubject();});
+    document.querySelectorAll('input[name="permitStatus"]').forEach(el=>el.onchange=e=>{i.permitStatus=e.target.value;if(e.target.value!=='no')i.methods=[];if(e.target.value!=='yes')i.permitType='';renderSubject();});
+    const permitType=document.getElementById('permitType');if(permitType)permitType.onchange=e=>i.permitType=e.target.value;
     document.querySelectorAll('input[name="methods"]').forEach(el=>el.onchange=()=>{i.methods=[...document.querySelectorAll('input[name="methods"]:checked')].map(x=>x.value);});
     ['B','C','D','E','F'].forEach(code=>{
       document.querySelectorAll(`input[name="topic_${code}"]`).forEach(el=>el.onchange=e=>{i.topics[code].status=e.target.value;renderSubject();});
       document.querySelectorAll(`input[name="doubt_${code}"]`).forEach(el=>el.onchange=()=>{i.topics[code].doubtTypes=[...document.querySelectorAll(`input[name="doubt_${code}"]:checked`)].map(x=>x.value);});
       document.querySelectorAll(`[data-topic="${code}"]`).forEach(el=>el.oninput=e=>{i.topics[code][e.target.dataset.topicField]=e.target.value;});
-      Object.keys(i.details[code]||{}).forEach(key=>document.querySelectorAll(`input[name="${code}_${key}"]`).forEach(el=>el.onchange=e=>{i.details[code][key]=e.target.value;if(code==='F'&&(key==='destinationKnown'||key==='sampled'))renderSubject();}));
+      Object.keys(i.details[code]||{}).forEach(key=>document.querySelectorAll(`input[name="${code}_${key}"]`).forEach(el=>el.onchange=e=>{i.details[code][key]=e.target.value;if(code==='F'&&(key==='destinationKnown'||key==='sampled'||key==='soilTreatmentAuthorized'))renderSubject();}));
     });
-    document.querySelectorAll('[data-detail-code]').forEach(el=>el.oninput=e=>{i.details[e.target.dataset.detailCode][e.target.dataset.detailKey]=e.target.value;});
+    document.querySelectorAll('[data-detail-code]').forEach(el=>el.oninput=e=>{i.details[e.target.dataset.detailCode][e.target.dataset.detailKey]=e.target.value;if(e.target.dataset.detailCode==='F'&&e.target.dataset.detailKey==='destination'){if(e.target.value!=='soil')i.details.F.soilTreatmentAuthorized='';renderSubject();}});
     ['facility','management','records','discharge'].forEach(key=>{
       document.querySelectorAll(`input[name="building_${key}"]`).forEach(el=>el.onchange=e=>{i.building[key].status=e.target.value;renderSubject();});
       document.querySelectorAll(`[data-building="${key}"]`).forEach(el=>el.oninput=e=>{i.building[key][e.target.dataset.buildingField]=e.target.value;});
     });
-    document.querySelectorAll('input[name="otherA30"]').forEach(el=>el.onchange=()=>i.other.article30=[...document.querySelectorAll('input[name="otherA30"]:checked')].map(x=>x.value));
-    document.querySelectorAll('input[name="soilDischarge"]').forEach(el=>el.onchange=e=>i.other.soilDischarge=e.target.value);
+    document.querySelectorAll('input[name="otherA30"]').forEach(el=>el.onchange=()=>{i.other.article30=[...document.querySelectorAll('input[name="otherA30"]:checked')].map(x=>x.value);if(!i.other.article30.length)i.other.controlZone='';renderSubject();});
+    document.querySelectorAll('input[name="controlZone"]').forEach(el=>el.onchange=e=>i.other.controlZone=e.target.value);
+    document.querySelectorAll('input[name="soilDischarge"]').forEach(el=>el.onchange=e=>{i.other.soilDischarge=e.target.value;if(e.target.value!=='yes')i.other.soilTreatmentAuthorized='';renderSubject();});
+    document.querySelectorAll('input[name="otherSoilTreatmentAuthorized"]').forEach(el=>el.onchange=e=>i.other.soilTreatmentAuthorized=e.target.value);
     document.querySelectorAll('input[name="groundwaterInjection"]').forEach(el=>el.onchange=e=>i.other.groundwaterInjection=e.target.value);
     const on=document.getElementById('otherNotes');if(on)on.oninput=e=>i.other.notes=e.target.value;
   }
@@ -404,14 +408,16 @@
       if(i.name) out.push(`【查核】稽查對象：${i.name}。`);
       const st=(subjectTypes.find(x=>x[0]===i.subjectType)||[])[1];if(st)out.push(`【查核】管制主體判斷：${st}。`);
       if((i.subjectType==='industry'||i.subjectType==='sewer')&&i.permitStatus) out.push(`【文件／查核】有效水許可／核准資料：${i.permitStatus==='yes'?'有':i.permitStatus==='no'?'無':'無法確認'}。`);
+      if((i.subjectType==='industry'||i.subjectType==='sewer')&&i.permitStatus==='yes'&&i.permitType)out.push(`【文件／查核】目前核對之許可／核准類型：${permitTypeLabel(i.permitType)}。`);
       if(i.permitStatus==='no'&&i.methods.length) out.push(`【查核】現場實際處理方式：${i.methods.map(methodLabel).join('、')}。`);
       if(i.subjectType==='industry'||i.subjectType==='sewer') ['B','C','D','E','F'].forEach(code=>{const t=i.topics[code];if(t.status==='doubt'&&t.factText)out.push(`【查核】${code} 項現場事實：${t.factText}`); if(t.status==='unchecked')out.push(`【查核】${code} 項本次未查。`);});
-      const F=i.details.F;if(F.actualDischarge==='yes')out.push('【目視】現場有廢污水實際排放。');if(F.destinationKnown==='yes'&&F.destination)out.push(`【目視】最終去向：${destLabel(F.destination)}。`);if(F.nonApprovedFinalOutlet==='yes')out.push('【目視】廢污水由非核准最終放流口／非核准納管口排出。');if(F.sampled==='yes')out.push(`【採樣】本次已進行現場採樣${F.sampleNote?`：${F.sampleNote}`:''}。`);
-      if(i.subjectType==='other'){if(i.other.article30.length)out.push(`【目視】現場行為：${i.other.article30.map(a30Label).join('、')}。`);if(i.other.soilDischarge==='yes')out.push('【目視】現場有排放於土壤情形。');if(i.other.groundwaterInjection==='yes')out.push('【目視】現場有注入地下水體情形。');if(i.other.notes)out.push(`【目視】其他事實：${i.other.notes}`);}
+      const F=i.details.F;if(F.actualDischarge==='yes')out.push('【目視】現場有廢污水實際排放。');if(F.destinationKnown==='yes'&&F.destination)out.push(`【目視】最終去向：${destLabel(F.destination)}。`);if(F.destination==='soil'&&F.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${F.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':F.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(F.nonApprovedFinalOutlet==='yes')out.push('【目視】廢污水由非核准最終放流口／非核准納管口排出。');if(F.sampled==='yes')out.push(`【採樣】本次已進行現場採樣${F.sampleNote?`：${F.sampleNote}`:''}。`);
+      if(i.subjectType==='other'){if(i.other.article30.length)out.push(`【目視】現場行為：${i.other.article30.map(a30Label).join('、')}。`);if(i.other.article30.length&&i.other.controlZone)out.push(`【文件／查核】行為地點${i.other.controlZone==='yes'?'位於':i.other.controlZone==='no'?'不位於':'尚無法確認是否位於'}公告水污染管制區。`);if(i.other.soilDischarge==='yes')out.push('【目視】現場有排放於土壤情形。');if(i.other.soilDischarge==='yes'&&i.other.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${i.other.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':i.other.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(i.other.groundwaterInjection==='yes')out.push('【目視】現場有注入地下水體情形。');if(i.other.notes)out.push(`【目視】其他事實：${i.other.notes}`);}
     });
     return out;
   }
   function methodLabel(v){return ({ground:'排放至地面水體',storage:'貯留',recycle:'全量回收','委託':'全量委託',dilution:'稀釋',sewer:'納管',soil:'土壤處理',none:'無廢污水產生',other:'其他'})[v]||v;}
+  function permitTypeLabel(v){return ({discharge:'排放許可／簡易排放許可',storage:'貯留許可',dilution:'稀釋許可',soil:'土壤處理許可',other:'其他水措／核准資料',unknown:'無法確認許可類型'})[v]||v;}
   function destLabel(v){return ({ground:'地面水體',sewer:'納管',soil:'土壤',groundwater:'地下水體',other:'其他'})[v]||v;}
   function a30Label(v){return ({pesticide:'農藥／肥料',discard:'棄置污染物',kill_aquatic:'捕殺水生物',livestock:'飼養禽畜',other:'其他污染水體行為'})[v]||v;}
 
@@ -419,25 +425,116 @@
     const laws=[], pending=[];
     const inspections=[...state.inspections];if(state.currentInspection&&!inspections.some(x=>x.id===state.currentInspection.id))inspections.push(state.currentInspection);
     inspections.forEach(i=>{
-      const prefix=i.subjectType==='sewer'?'第19條準用':'水污染防治法';
       if(i.subjectType==='industry'||i.subjectType==='sewer'){
-        const F=i.details.F;
-        if(i.permitStatus==='unknown')pending.push(`${i.name||'稽查對象'}：目前是否具有有效水許可／核准資料。`);
-        if(i.permitStatus==='no'&&i.methods.includes('ground')) laws.push({law:i.subjectType==='sewer'?'水污染防治法第19條準用第14條':'水污染防治法第14條',reason:'目前結構化事實為無有效許可／核准資料，且有排放至地面水體方向。'});
-        if(i.permitStatus==='no'&&i.methods.some(m=>['storage','recycle','委託','dilution'].includes(m))) laws.push({law:i.subjectType==='sewer'?'水污染防治法第19條準用第20條':'水污染防治法第20條',reason:'目前結構化事實顯示採貯留／全量回收／全量委託／稀釋等方式，但無有效許可／核准資料。'});
-        if(i.permitStatus==='no'&&i.methods.includes('soil')) laws.push({law:'水污染防治法第32條',reason:'目前結構化事實顯示有土壤處理／排放於土壤方向。'});
-        if(i.permitStatus==='yes'&&F.actualDischarge==='yes'&&F.routeMatch==='no') laws.push({law:i.subjectType==='sewer'?'水污染防治法第19條準用第14條':'水污染防治法第14條',reason:'已有許可／核准資料，但現場排放位置／路徑與登記事項不一致，且有實際排放。'});
-        if(F.nonApprovedFinalOutlet==='yes') laws.push({law:'水污染防治法第18條之1',reason:'結構化事實顯示由非核准最終放流口／非核准納管口排出，進入繞流方向。'});
-        if(['yes'].every(v=>v===F.dilutionNeedsTreatment)&&F.mixedWater==='yes'&&F.mixedWaterClean==='yes'&&F.mixedBeforeDischarge==='yes') laws.push({law:'水污染防治法第18條之1',reason:'結構化事實符合禁止稀釋的查核方向；仍由稽查員依完整事證判斷。'});
-        if(F.destination==='soil') laws.push({law:'水污染防治法第32條',reason:'最終去向記錄為排放於土壤。'});
-        if(F.destination==='groundwater') laws.push({law:'水污染防治法第32條',reason:'最終去向記錄為注入地下水體。'});
-        if(F.actualDischarge==='yes'&&F.destinationKnown!=='yes') pending.push(`${i.name||'稽查對象'}：實際排放之最終去向。`);
-        if(F.sampled==='yes') pending.push(`${i.name||'稽查對象'}：本次僅記錄現場採樣；V2 不輸入實驗室結果，也不自動判定第7條超標。`);
+        const F=i.details.F, subjectName=i.name||'稽查對象';
+        const law14=i.subjectType==='sewer'?'水污染防治法第19條準用第14條第1項':'水污染防治法第14條第1項';
+        const law18=i.subjectType==='sewer'?'水污染防治法第19條準用第18條':'水污染防治法第18條';
+        const hasTopicEvidence=code=>{
+          const t=i.topics[code], d=i.details[code]||{};
+          return !!(t?.permitText?.trim()||t?.factText?.trim()||Object.values(d).some(v=>v!==''));
+        };
+        const permitMismatchCodes=['B','C','D','E'].filter(code=>{
+          const t=i.topics[code];
+          const directMismatch=code==='E'&&i.details.E.internalFlowMatch==='no';
+          return directMismatch||(t.status==='doubt'&&t.doubtTypes.includes('permit_mismatch')&&hasTopicEvidence(code));
+        });
+
+        if(i.permitStatus==='unknown')pending.push(`${subjectName}：目前是否具有有效水許可／核准資料。`);
+        if(i.permitStatus==='yes'&&!i.permitType)pending.push(`${subjectName}：確認目前核對的有效許可／核准類型。`);
+        if(i.permitStatus==='yes'&&i.permitType==='unknown')pending.push(`${subjectName}：目前許可類型尚無法確認，暫不以許可登記事項差異直接指定第14條或第20條。`);
+
+        // 無有效許可時，依實際處理方式判斷。第20條是事業或污水下水道系統直接適用，不經第19條準用。
+        if(i.permitStatus==='no'&&i.methods.includes('ground')) laws.push({law:i.subjectType==='sewer'?'水污染防治法第19條準用第14條第1項':'水污染防治法第14條第1項',reason:'目前結構化事實為無有效排放許可／核准資料，且有排放廢污水至地面水體方向。'});
+        if(i.permitStatus==='no'&&i.methods.some(m=>['storage','dilution'].includes(m))) laws.push({law:'水污染防治法第20條',reason:'目前結構化事實顯示採貯留或稀釋方式，但無有效許可／核准資料；第20條對事業及污水下水道系統直接適用。'});
+        if(i.permitStatus==='no'&&i.methods.some(m=>['recycle','委託'].includes(m))) pending.push(`${subjectName}：全量回收／全量委託情境尚需確認是否涉及廢水貯留及相應許可義務，不直接僅因處理方式套用第20條。`);
+        if(i.permitStatus==='no'&&i.methods.includes('soil')) laws.push({law:'水污染防治法第32條',reason:'目前結構化事實顯示廢污水排放於土壤，且未有有效水許可／核准資料可支持土壤處理合法例外。'});
+
+        // B～E 許可差異：先依「許可類型」分流，避免把任何水許可都錯套第14條。
+        if(permitMismatchCodes.length&&i.permitStatus==='yes'){
+          if(i.permitType==='discharge'){
+            permitMismatchCodes.forEach(code=>laws.push({law:law14,reason:`${code} 項已記錄與排放許可／簡易排放許可登記事項不一致，進入未依登記事項運作之查核方向。`}));
+          }else if(i.permitType==='storage'||i.permitType==='dilution'){
+            permitMismatchCodes.forEach(code=>laws.push({law:'水污染防治法第20條',reason:`${code} 項已記錄與${i.permitType==='storage'?'貯留':'稀釋'}許可登記事項不一致，進入第20條「依登記事項運作」之查核方向。`}));
+          }else if(i.permitType){
+            pending.push(`${subjectName}：B～E 已發現許可／核准差異，但目前許可類型為「${permitTypeLabel(i.permitType)}」，需再確認該差異所對應之具體法規義務。`);
+          }
+        }
+
+        // F 非核准最終放流口／納管口屬第18條之1第1項；優先於一般許可差異。
+        if(F.nonApprovedFinalOutlet==='yes') laws.push({law:'水污染防治法第18條之1第1項',reason:'結構化事實顯示由非核准最終放流口／非核准納管口排出，進入繞流排放方向。'});
+
+        // F 一般路徑差異只有在「排放許可 + 地面水體 + 已確認不是非核准最終出口」時才自動進第14條。
+        if(i.permitStatus==='yes'&&F.actualDischarge==='yes'&&F.routeMatch==='no'&&F.nonApprovedFinalOutlet==='no'){
+          if(i.permitType==='discharge'&&F.destinationKnown==='yes'&&F.destination==='ground'){
+            laws.push({law:law14,reason:'現場有實際排放至地面水體，排放位置／路徑與排放許可登記事項不一致，且已確認並非由非核准最終放流口排出，進入第14條第1項方向。'});
+          }else if(F.destinationKnown==='yes'&&F.destination==='sewer'){
+            pending.push(`${subjectName}：實際最終去向為納管，路徑與核准內容不一致時，不直接套用第14條；需釐清是否屬第18條之1繞流、下水道核准排放口差異或其他水措義務。`);
+          }else{
+            pending.push(`${subjectName}：排放路徑與許可／核准內容不一致，但尚缺「排放許可類型」及「排放至地面水體」等第14條前提，暫不直接指定第14條。`);
+          }
+        }else if(F.actualDischarge==='yes'&&F.routeMatch==='no'&&F.nonApprovedFinalOutlet!=='yes'&&F.nonApprovedFinalOutlet!=='no'){
+          pending.push(`${subjectName}：排放路徑與許可不一致時，需確認是否屬非核准最終放流口／非核准納管口，以區分第18條之1第1項與其他許可差異。`);
+        }
+
+        // 第18條之1第2項：禁止稀釋。
+        if(F.dilutionNeedsTreatment==='yes'&&F.mixedWater==='yes'&&F.mixedWaterClean==='yes'&&F.mixedBeforeDischarge==='yes') laws.push({law:'水污染防治法第18條之1第2項',reason:'結構化事實符合排放／納管前，將須處理之廢污水與無需處理即可符合標準之水混合稀釋的查核方向。'});
+
+        // 第18條之1第4項：處理設施應具足夠功能與設備並維持正常操作。
+        const E=i.details.E;
+        if(E.needsTreatment==='yes'&&E.shouldOperate==='yes'&&E.actuallyRunning==='no'){
+          if(E.alternativeTreatment==='no') laws.push({law:'水污染防治法第18條之1第4項',reason:'結構化事實顯示廢污水需要處理、處理設施當時應運轉但未正常運轉，且未記錄其他替代處理方式。'});
+          else if(E.alternativeTreatment!=='yes') pending.push(`${subjectName}：處理設施應運轉但未正常運轉時，尚需確認是否有有效替代處理方式，以判斷第18條之1第4項方向。`);
+        }
+
+        // 第18條：只在既有結構化事實指出具體水措義務類型時提示。
+        const B=i.details.B, D=i.details.D;
+        if(B.meterRequired==='yes'&&(B.meterInstalled==='no'||B.meterWorking==='no')){
+          const issue=B.meterInstalled==='no'?'應設水量計測但現場未設置':'應設之水量計測未正常計量';
+          laws.push({law:law18,reason:`已記錄「${issue}」之具體事實，屬水污染防治措施中計測設施之查核方向；仍需依實際處理方式、設置位置及適用子法確認具體義務。`});
+          pending.push(`${subjectName}：確認該水量計測設施之適用水措規定、法定設置位置及具體義務。`);
+        }
+        if(D.recordRequired==='yes'&&(D.recordAvailable==='no'||D.recordComplete==='no')){
+          const issue=D.recordAvailable==='no'?'依法應有之紀錄無法提供':'依法應有之紀錄不完整';
+          laws.push({law:law18,reason:`已記錄「${issue}」之具體事實，屬水污染防治措施中操作／管理紀錄義務之查核方向；仍需確認本案適用之具體子法規定。`});
+          pending.push(`${subjectName}：確認本案應保存／提供之具體水措紀錄種類、頻率及保存義務。`);
+        }
+
+        // 第32條：地下水注入原則禁止；土壤排放須保留法定合法例外判斷。
+        if(F.destinationKnown==='yes'&&F.destination==='groundwater') laws.push({law:'水污染防治法第32條第1項',reason:'最終去向記錄為注入地下水體，進入第32條第1項禁止方向。'});
+        if(F.destinationKnown==='yes'&&F.destination==='soil'){
+          if(F.soilTreatmentAuthorized==='no') laws.push({law:'水污染防治法第32條第1項',reason:'現場有排放廢污水於土壤，且已確認未具備「符合土壤處理標準並取得主管機關許可」之合法例外。'});
+          else if(F.soilTreatmentAuthorized!=='yes'){
+            laws.push({law:'水污染防治法第32條方向',reason:'現場有排放廢污水於土壤情形；第32條原則禁止，但法律另有符合土壤處理標準並經許可之例外。'});
+            pending.push(`${subjectName}：確認土壤排放是否已處理符合土壤處理標準，且具有有效土壤處理許可。`);
+          }
+        }
+        if(F.actualDischarge==='yes'&&F.destinationKnown!=='yes') pending.push(`${subjectName}：實際排放之最終去向。`);
+        if(F.sampled==='yes') pending.push(`${subjectName}：本次僅記錄現場採樣；V2 不輸入實驗室結果，也不自動判定第7條超標。`);
       }
+
       if(i.subjectType==='building') laws.push({law:'水污染防治法第25條方向',reason:'本對象選定為建築物污水處理設施；應依設施狀態、管理／清理、紀錄及排放事實進一步判斷。'});
+
       if(i.subjectType==='other'){
-        if(i.other.article30.length)laws.push({law:'水污染防治法第30條方向',reason:`已記錄限制水域相關行為：${i.other.article30.map(a30Label).join('、')}；款次由具體行為及必要條件再對應。`});
-        if(i.other.soilDischarge==='yes'||i.other.groundwaterInjection==='yes')laws.push({law:'水污染防治法第32條',reason:'現場結構化事實包含排放於土壤或注入地下水體。'});
+        const subjectName=i.name||'稽查對象';
+        if(i.other.article30.length){
+          if(i.other.controlZone==='yes'){
+            laws.push({law:'水污染防治法第30條方向',reason:`已確認行為地點位於水污染管制區，並記錄行為：${i.other.article30.map(a30Label).join('、')}；仍依各款具體要件進一步確認。`});
+            if(i.other.article30.includes('pesticide'))pending.push(`${subjectName}：第30條第1款尚需確認是否涉及主管機關指定水體，且有污染之虞。`);
+            if(i.other.article30.includes('discard'))pending.push(`${subjectName}：第30條第2款尚需確認棄置位置是否在水體或其沿岸規定距離內，及棄置物是否屬法定污染物。`);
+            if(i.other.article30.includes('livestock'))pending.push(`${subjectName}：第30條第4款尚需確認是否位於主管機關指定水體或其沿岸規定距離內。`);
+            if(i.other.article30.includes('other'))pending.push(`${subjectName}：第30條第5款尚需確認是否有主管機關公告禁止該類足使水污染之行為。`);
+          }else if(i.other.controlZone!=='no'){
+            pending.push(`${subjectName}：第30條適用前提為行為地點位於公告之水污染管制區，尚需先確認管制區範圍。`);
+          }
+        }
+        if(i.other.groundwaterInjection==='yes') laws.push({law:'水污染防治法第32條第1項',reason:'現場結構化事實包含將廢污水注入地下水體，進入第32條第1項禁止方向。'});
+        if(i.other.soilDischarge==='yes'){
+          if(i.other.soilTreatmentAuthorized==='no') laws.push({law:'水污染防治法第32條第1項',reason:'現場有排放廢污水於土壤，且已確認未具備「符合土壤處理標準並取得主管機關許可」之合法例外。'});
+          else if(i.other.soilTreatmentAuthorized!=='yes'){
+            laws.push({law:'水污染防治法第32條方向',reason:'現場有排放廢污水於土壤情形；第32條原則禁止，但法律另有符合土壤處理標準並經許可之例外。'});
+            pending.push(`${subjectName}：確認土壤排放是否已處理符合土壤處理標準，且具有有效土壤處理許可。`);
+          }
+        }
       }
     });
     return {laws:dedupeLaw(laws),pending:[...new Set(pending)]};
