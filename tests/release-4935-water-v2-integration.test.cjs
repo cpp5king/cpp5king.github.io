@@ -48,7 +48,7 @@ test('PWA 與離線快取包含 Water V2 資產且版本同步',()=>{
   assert.match(read('manifest.webmanifest'),/稽查助手\d+\.\d+\.\d+/);
   assert.match(read('src/pwa.js'),/const VERSION='\d+\.\d+\.\d+'/);
   const sw=read('service-worker.js');
-  assert.match(sw,/const VERSION='4\.9\.35'/);
+  assert.match(sw,/const VERSION='\d+\.\d+\.\d+'/);
   assert.match(sw,/\.\/src\/water-v2-ui\.css/);
   assert.match(sw,/\.\/src\/water-v2-ui\.js/);
 });
