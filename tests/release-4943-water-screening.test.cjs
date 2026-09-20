@@ -57,9 +57,9 @@ test('field phenomenon recommendations and repeat-along-route behavior stay fact
   const a = screening();
   const foam = a.recommendations(['泡沫']);
   assert.deepEqual(new Set(foam.codes), new Set(['DET', 'COD']));
-  assert.deepEqual(a.repeatFrom([
+  assert.deepEqual(Array.from(a.repeatFrom([
     { code: 'COD', reaction: 'yes' },
     { code: 'NH4', reaction: 'no' },
     { code: 'CU', reaction: 'unclear' }
-  ]), ['COD']);
+  ])), ['COD']);
 });
