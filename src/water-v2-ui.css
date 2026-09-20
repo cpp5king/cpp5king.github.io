@@ -125,3 +125,36 @@
 @media(max-width:760px){.water-v2-shell .source-link-notice{align-items:stretch;flex-direction:column}
 .water-v2-shell .source-link-notice span{margin-right:0}
 .water-v2-shell .source-link-notice .btn{width:100%}}
+.water-v2-shell .screening-panel{margin-top:12px}
+.water-v2-shell .screen-rec{padding:13px;border:1px solid #cfe0e4;background:#f5fafb;border-radius:12px;margin-bottom:12px}
+.water-v2-shell .screen-rec-title{font-weight:850;color:#174c58;margin-bottom:7px}
+.water-v2-shell .screen-rec-reasons{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55}
+.water-v2-shell .screen-chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.water-v2-shell .screen-chip{border:1px solid #b9d4da;background:#fff;color:#174c58;border-radius:999px;padding:7px 10px;font-weight:750;cursor:pointer}
+.water-v2-shell .screen-chip:hover{background:#eef7f9}
+.water-v2-shell .screen-chip.selected,.water-v2-shell .screen-chip:disabled{background:#dcefeb;border-color:#a7cfc3;color:#185c40;cursor:default;opacity:1}
+.water-v2-shell .screen-basic{margin-top:8px}
+.water-v2-shell .input-suffix{display:flex;align-items:center;gap:7px}
+.water-v2-shell .input-suffix .text-input{flex:1}
+.water-v2-shell .input-suffix span{font-weight:800;color:var(--muted)}
+.water-v2-shell .screen-all{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;margin:12px 0}
+.water-v2-shell .screen-all summary{cursor:pointer;font-weight:800;color:#174c58;margin-bottom:8px}
+.water-v2-shell .screen-records{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.water-v2-shell .screen-record{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfcfc}
+.water-v2-shell .screen-record-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.water-v2-shell .screen-directions{margin-top:14px}
+.water-v2-shell .source-direction{border-left:4px solid #7eabb6;background:#f7fbfc;padding:10px 12px;margin:8px 0;border-radius:0 10px 10px 0}
+.water-v2-shell .source-direction strong{color:#0d4654}
+.water-v2-shell .screen-summary{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line)}
+.water-v2-shell .screen-summary h4{color:#174c58;margin-bottom:8px}
+.water-v2-shell .empty.compact{padding:14px}
+@media(max-width:760px){.water-v2-shell .screen-record-head{align-items:stretch;flex-direction:column}.water-v2-shell .screen-record-head .btn{align-self:flex-start}.water-v2-shell .screen-chip{font-size:13px}}
+
+
+.water-v2-shell .field-help{display:block;font-size:12px;color:var(--muted);margin:-1px 0 8px;line-height:1.55}
+.water-v2-shell .phenomenon-check span{display:flex;flex-direction:column;gap:2px;line-height:1.35}
+.water-v2-shell .phenomenon-check span b{font-size:13px;color:var(--text)}
+.water-v2-shell .phenomenon-check span small{font-size:11px;color:var(--muted);font-weight:400}
+.water-v2-shell .screen-context{border:1px solid #d9e4e7;border-radius:11px;padding:10px 12px;background:#fbfcfc;margin:0 0 12px}
+.water-v2-shell .screen-context summary{cursor:pointer;font-weight:800;color:#174c58}
+.water-v2-shell .screen-context[open] summary{margin-bottom:8px}
