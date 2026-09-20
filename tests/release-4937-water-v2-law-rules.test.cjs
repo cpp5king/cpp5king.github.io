@@ -1,9 +1,15 @@
 const fs=require('fs');
 const vm=require('vm');
-const path=require('node:path').join(__dirname,'..','src','water-v2-ui.js');
+const nodePath=require('node:path');
+const ROOT=nodePath.join(__dirname,'..');
+const path=nodePath.join(ROOT,'src','water-v2-ui.js');
+const context={window:{},console};vm.createContext(context);
+for(const rel of ['src/water-rule-engine.js','data/rules/water-v2-core.js','src/water-v2-facts.js','src/water-v2-assessment.js']){
+  vm.runInContext(fs.readFileSync(nodePath.join(ROOT,rel),'utf8'),context,{filename:rel});
+}
 let src=fs.readFileSync(path,'utf8');
 src=src.replace("root.WaterV2UI=Object.freeze({", "root.__test={state,createInspection,lawAssessment};\n  root.WaterV2UI=Object.freeze({");
-const context={window:{},console};vm.createContext(context);vm.runInContext(src,context);
+vm.runInContext(src,context,{filename:'src/water-v2-ui.js'});
 const {state,createInspection,lawAssessment}=context.window.__test;
 function reset(){state.inspections=[];state.currentInspection=null;}
 function assess(i){reset();state.inspections.push(i);return lawAssessment();}
