@@ -29,16 +29,17 @@ test('water template generate appends review snapshots instead of overwriting pr
   const {session}=await waterSession();
   session.setInputs({
     waterBehaviorDate:'2026-09-21',waterInspectionDate:'2026-09-21',
-    waterSubjectType:'nonBusiness',waterMatterType:'unknown',waterInvestigationComplete:'no'
+    waterSubjectType:'nonBusiness',waterMatterType:'unknown',waterInvestigationComplete:'yes',
+    waterSurfaceWaterPollutionEventConfirmed:'no'
   });
   session.generate();
   const first=plain(session.snapshot().legalReviews);
   assert.equal(first.length,1);
   assert.equal(first[0].sequence,1);
   assert.equal(first[0].behaviorDate,'2026-09-21');
-  assert.match(first[0].assessment.finalConclusion,/尚有要件待確認/);
+  assert.match(first[0].assessment.finalConclusion,/目前不支持/);
 
-  session.setInputs({...session.snapshot().inputs,waterInvestigationComplete:'yes',waterSurfaceWaterPollutionEventConfirmed:'no'});
+  session.setInputs({...session.snapshot().inputs,waterSurfaceWaterPollutionEventConfirmed:'yes',waterPolluterIdentified:'yes'});
   session.generate();
   const reviews=plain(session.snapshot().legalReviews);
   assert.equal(reviews.length,2);
