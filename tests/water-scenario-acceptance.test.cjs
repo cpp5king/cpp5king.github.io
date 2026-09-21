@@ -164,7 +164,7 @@ test('情境6｜特定業別：半導體§49-9分流題目、法規內容與Meas
   }));
   assert.match(out.waterHighTechRequiredStreamsText,/TMAH/);
   assert.match(out.waterIndustryOverviewText,/§49-9/);
-  assert.match(out.waterIndustryOverviewText,/已完成/);
+  assert.match(out.waterIndustryOverviewText,/已確認符合/);
   assert.match(out.waterMeasureRulePackVersionText,/2026\.09\.21\.6-test/);
 });
 
