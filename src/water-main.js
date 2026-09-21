@@ -10,9 +10,9 @@
     }
   }
 
-  function evaluateRules(facts){
+  function evaluateRules(facts,version){
     if(!root.WaterLaw?.evaluateBindings)throw new Error('WaterLaw core bindings are required before water-main.');
-    return root.WaterLaw.evaluateBindings('core',facts);
+    return root.WaterLaw.evaluateBindings('core',facts,{version});
   }
 
   function evaluateSublaw(facts){
@@ -55,12 +55,18 @@
     normalizeSourceTypes(out);
     root.WaterPermitCheck?.apply(out,out);
     const facts=root.WaterFacts.build(out);
-    const lawVersion=root.WaterLawVersions.resolve(out.waterInspectionDate);
+    const hasBehaviorDateField=Object.prototype.hasOwnProperty.call(out,'waterBehaviorDate');
+    const behaviorDate=hasBehaviorDateField?out.waterBehaviorDate:out.waterInspectionDate;
+    const coreLawVersion=root.WaterLaw.resolveLawVersion(behaviorDate);
+    const lawVersion=root.WaterLawVersions.resolve(behaviorDate);
     facts.sublawVersionResolved=(lawVersion.status==='resolved'&&lawVersion.date>='2026-04-20')?'yes':'unknown';
     out.sublawVersionResolved=facts.sublawVersionResolved;
     out.waterLawVersionText=lawVersion.text;
+    out.waterCoreLawVersionText=coreLawVersion.message+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    const packInfo=root.WaterLaw.packInfo();
+    out.waterRulePackVersionText=packInfo?'Water Rules：'+packInfo.packVersion+'（'+packInfo.status+'）':'Water Rules：未載入';
 
-    const results=evaluateRules(facts);
+    const results=evaluateRules(facts,coreLawVersion);
     const sublaw=evaluateSublaw(facts);
     const industry=root.WaterIndustry.evaluate(out,facts);
     root.WaterWorkflow.apply(input,facts,out);
