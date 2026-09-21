@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'f0781057'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'1fe121e8'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -653,22 +653,22 @@
   root.WATER_CORE_PRESENTATION=Object.freeze({
     narratives:Object.freeze({
       article14NoPermit:Object.freeze({
-        established:'本案具水污染防治法第14條第1項無許可排放之成立方向。',
-        notEstablished:'第14條無許可排放目前不成立。',
+        established:'水污染防治法第14條第1項無許可排放方向之構成要件事實目前已完整。',
+        notEstablished:'第14條無許可排放方向目前不支持。',
         notApplicable:'目前不進入第14條無許可排放判斷。',
-        insufficient:'目前事證不足以認定第14條無許可排放。'
+        insufficient:'第14條無許可排放方向尚有要件待確認。'
       }),
       article7Effluent:Object.freeze({
-        established:'本案具水污染防治法第7條第1項放流水超標之成立方向。',
-        notEstablished:'依目前已確認事實，第7條放流水超標目前不成立。',
+        established:'水污染防治法第7條第1項放流水標準方向之構成要件事實目前已完整。',
+        notEstablished:'依目前已確認事實，第7條放流水標準方向目前不支持。',
         notApplicable:'目前不屬第7條管制主體。',
-        insufficient:'目前事證不足以認定第7條放流水超標。'
+        insufficient:'第7條放流水標準方向尚有要件待確認。'
       }),
       article35FalseReporting:Object.freeze({
         established:'本案已具第35條刑事疑義之核心要件方向；應進一步固定「明知」及虛偽申報／記載證據，不以本助手直接作成刑事責任終局判斷。',
-        notEstablished:'依目前事證，第35條刑事疑義之必要要件尚有不成立。',
+        notEstablished:'依目前事證，第35條刑事疑義方向目前不支持。',
         notApplicable:'目前不進入第35條刑事疑義判斷。',
-        insufficient:'目前事證不足以進一步認定第35條刑事疑義。'
+        insufficient:'第35條刑事疑義方向尚有要件待確認。'
       }),
       article59Exception:Object.freeze({
         established:'第59條所列條件目前均已確認，該處理設施故障於法定期間內可能適用標準例外；仍不免除其他獨立法規方向之檢核。',
@@ -678,9 +678,9 @@
       }),
       article71Cleanup:Object.freeze({
         established:'已具第71條後續處理基礎：主管機關應令污染行為人限期清除處理；屆期不為清除處理時，得代為清除並求償必要費用。',
-        notEstablished:'目前尚未具第71條污染清除處理之完整啟動事實。',
+        notEstablished:'第71條污染清除處理方向目前不支持。',
         notApplicable:'目前不進入第71條污染清除後續。',
-        insufficient:'第71條後續處理尚待確認污染事件或污染行為人。'
+        insufficient:'第71條後續處理尚有要件待確認。'
       })
     }),
     guards:Object.freeze({
