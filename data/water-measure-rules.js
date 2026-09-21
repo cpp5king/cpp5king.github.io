@@ -4,14 +4,14 @@
     packId:'WATER-MEASURE-TW',
     name:'Water Measure Rules',
     lawName:'水污染防治措施及檢測申報管理辦法',
-    packVersion:'2026.09.21.2-test',
+    packVersion:'2026.09.21.3-test',
     status:'test',
     createdAt:'2026-09-21',
     updatedAt:'2026-09-21',
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'b44f3409'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'4b0364d2'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
