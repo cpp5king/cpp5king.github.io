@@ -2,84 +2,199 @@
 
 ## 定位
 
-本次將水污染母法規則從既有 UI／流程載入結構抽離，建立可獨立更新的 Water Rule Pack。
+水污染母法規則已由既有 UI／workflow／assessment 抽離，建立可獨立更新的 Water Rule Pack。
 
-- Rule Pack：2026.09.21.1-test
+- Rule Pack：2026.09.21.2-test
 - Pack ID：WATER-CORE-TW
 - provenance：PP-IA-41-7F3C9A21
 - 官方來源：環境部主管法規共用系統 FL015486
 - 狀態：test
+- 正式 main：尚未合併
 
-## 新架構
+## 目前架構
 
 ```text
-既有水污染事實層
+既有水污染客觀事實
         ↓
 data/water-rules.js
-        ↓
-src/water-rule-engine.js
+  ├─ coreRules
+  ├─ fieldRules
+  ├─ legal navigation / guidance
+  ├─ core presentation / groups / exceptions
+  ├─ core bindings
+  ├─ fact adapters
+  └─ law versions / metadata / integrity
         ↓
 src/water-law.js
+        ↓
+src/water-rule-engine.js
         ↓
 water-main / water-v2-assessment
         ↓
 既有 UI / 摘要
 ```
 
-水污 UI 與現場流程不再直接載入各個 water-article*.js 或 water-v2-core.js。
+App Shell 不再載入個別 `water-article*.js` 或 `water-v2-core.js`。
 
-## 相容策略
+## 已完成解耦
 
-第一階段不改成熟事實流程，Rule Pack 同時輸出：
+### 1. 法規資料集中
 
-- WATER_RULES：既有完整案件研判相容介面。
-- WATER_V2_RULES：既有 V2 現場查核相容介面。
-- WATER_RULE_PACK：新規則包介面。
+母法與 V2 法規規則集中於 `data/water-rules.js`。舊 `WATER_RULES` / `WATER_V2_RULES` 名稱仍輸出作相容層，但正式 App 不再直接載入舊規則檔。
 
-因此可先完成法規資料解耦，再逐步將舊 assessment 內殘留的法條文字與分流搬入 WaterLaw／Rule Pack。
+### 2. 法規執行入口
+
+`src/water-law.js` 為唯一母法規則入口，提供：
+
+- Rule Pack 讀取。
+- 規則評估。
+- 法條方向與理由。
+- 待確認提示。
+- §19 準用等主體關係。
+- §7 × §59 等例外關係。
+- §18-1、§20、§27、§28、§32 群組分流。
+- 法規顯示條件。
+- Rule Pack fact adapters。
+- 法規版本解析。
+- 完整性驗證。
+
+### 3. workflow 不再決定法條
+
+`water-workflow.js` 保留追水、認人、認水、水路、許可、事故、採樣等事實流程。
+
+母法 `waterShowArticleXX` 相關啟動條件改由 `WaterLaw.visibility()` 提供。
+
+### 4. assessment 不再保存第二份法規表
+
+`water-v2-assessment.js` 已移除硬編碼之：
+
+- 第14、18、19、20、25、30、32條法條名稱。
+- 第19條準用關係。
+- 法規方向 reason。
+- 主要待確認提示。
+
+`water-assessment.js` 已改由 Rule Pack 提供入口 guard、群組分流、例外關係、摘要標籤與法律狀態文字。
+
+### 5. water-main 不再手寫母法清單
+
+`water-main.js` 不再列出 24 個 rule key，由 Rule Pack `coreBindings` 決定要評估哪些規則。
+
+新增／調整母法規則時，不需再同步修改主程式的規則清單。
+
+### 6. 法律適用前提改由 Rule Pack adapter 決定
+
+舊 `water-facts.js` 仍保留 `article7SubjectEligible` 等欄位作舊案件／舊測試相容，但 `WaterLaw` 不再信任其值。
+
+Rule Pack `factAdapters` 會依中性事實重新計算：
+
+- 第7條適用主體。
+- 第18條之1／20／22／27／28條適用主體。
+- 第26條查證對象。
+- 第28條物質範圍。
+- 第30條污染物範圍。
+
+因此未來法律適用主體或物質範圍變更，可改 Rule Pack，不需改 `water-facts.js`。
 
 ## 規則引擎
 
-WaterRuleEngine schemaVersion 2.0 保留既有 elements[] 全 AND 規則，並新增巢狀：
+`WaterRuleEngine schemaVersion 2.0`：
 
-- AND
-- OR
-- AND + OR
+- 相容舊 `elements[]` 全 AND 規則。
+- 支援 AND。
+- 支援 OR。
+- 支援巢狀 AND + OR。
 
-舊規則不需改寫即可繼續運作。
+## 法律研判狀態
+
+對外文字統一為：
+
+- 構成要件事實已完整。
+- 尚有要件待確認。
+- 目前不支持。
+- 無法確認（資料模型預留）。
+- 本次未查（資料模型／事實層使用）。
+- 本案不適用。
+
+系統不再以「違規成立」、「違反法規」作為母法最終研判文字。
 
 ## 法規版本
 
-WaterLaw.resolveLawVersion() 只接受行為發生日期概念；日期未提供時回傳：
+新案件新增：
+
+- `waterBehaviorDate`：行為發生日期，供法規版本解析。
+- `waterInspectionDate`：稽查日期，只作案件紀錄。
+
+`WaterLaw.resolveLawVersion()` 不以裝置日期或稽查日期替代行為日期。
+
+行為日期不明時：
 
 > 行為發生日期尚未確認，適用法規版本待確認。
 
-不以裝置日期或稽查日期替代。
+且版本未解析時，即使事實本身符合目前規則，正式法律狀態仍降為「尚有要件待確認」；系統保留 `baseStatus` 供內部知道事實匹配程度，但不輸出現行法方向。
 
-目前 Rule Pack 僅完整掛載現行母法規則集（WPA-2018-06-13）。更早行為日期不應硬套現行規則；後續應依需求逐版增加歷史 revision。
+舊案件若資料結構中完全不存在 `waterBehaviorDate`，才走明示 legacy fallback，以避免既有案件在載入新版程式後被默默改寫。
+
+目前母法 Rule Pack 完整掛載：
+
+- WPA-2018-06-13
+
+更早行為日期若無對應歷史 revision，不應硬套現行規則。
 
 ## 完整性
 
-Rule Pack 內建 integrity：
+Rule Pack 內建：
 
 - algorithm：fnv1a32-json
-- checksum：7c0a77be
+- checksum：c2b9e4aa
 
-WaterLaw.verifyIntegrity() 可於載入後檢查 coreRules 與 fieldRules 是否與規則包 metadata 相符。
+checksum 涵蓋：
 
-## 本次未處理
+- coreRules
+- fieldRules
+- fieldNavigation
+- pendingGuidance
+- coreRelations
+- corePresentation
+- coreBindings
+- factAdapters
 
-- 不改水污事實欄位。
-- 不改追水、認人、認水、水路、許可核對、採樣流程。
-- 不把水措管理辦法、許可審查辦法、放流水標準併入母法 Rule Pack。
+`WaterLaw.verifyIntegrity()` 可檢查規則包核心資料是否被意外改動。
+
+## 本次刻意不改
+
+- 不重做追水。
+- 不重做認人／認水。
+- 不重做水路節點與連線。
+- 不重做許可核對。
+- 不重做採樣流程。
+- 不刪除既有事實欄位。
+- 不把水措管理辦法、許可審查辦法、放流水標準、地方公告混進 Water Core Rules。
 - 不更新正式 main。
-- 不變更 App 正式版本號。
-- 舊 data/rules/water-article*.js 暫保留於 repo 作歷史相容／測試參考，但正式 App Shell 已不再載入。
+- 不變更正式 App 版本號。
 
-## 後續第二階段
+舊 `data/rules/water-article*.js` 仍暫留 repository 作歷史相容／參考，但正式 App Shell 與共用測試 runtime 已改用單一 Water Rule Pack。
 
-1. 將 water-v2-assessment.js 內法規 reason／準用關係／待確認文字逐步資料化。
-2. 將 water-assessment.js 內條文式顯示條件與例外關係搬入 WaterLaw。
-3. 新增行為發生日期／期間與重新檢視結果資料契約。
-4. 逐版補入仍可能使用的歷史母法 revision。
-5. 再拆 Water Measure / Permit / Standard / Local Rule Packs。
+## 驗證
+
+Draft PR：#24 `Refactor water law into independent Rule Pack`
+
+GitHub Actions active regression tests 已通過；Rule Pack 專用測試包含：
+
+- 單一 Rule Pack 載入。
+- integrity。
+- 行為日期版本解析。
+- 日期不明不回退最新法。
+- 舊 `elements[]` 相容。
+- 巢狀 AND + OR。
+- V2 經 WaterLaw 產生既有法規方向。
+- 版本未確認時 suppression。
+- Rule Pack fact adapter 覆蓋舊法律衍生欄位。
+
+## 下一階段
+
+以下不是本次合併前必要條件，可獨立續做：
+
+1. 逐版補入仍可能適用的歷史母法 revisions。
+2. 將 Water Measure Rules、Permit Rules、Standard Rules、Local Rules 各自拆成獨立 Rule Pack。
+3. 將 UI 上仍保留的「§條號提示文字」逐步改為由 Rule Pack 提供顯示 metadata；不改事實題目的本質。
+4. 建立「重新檢視結果」資料契約，使規則包更新後可另產生新研判而不覆寫舊結果。
