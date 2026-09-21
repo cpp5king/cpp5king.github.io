@@ -42,7 +42,7 @@ test('4.3 核准水措內容與現場不一致可形成管理辦法第4條疑似
   }));
   assert.equal(facts.waterShowSublawCore,'yes');
   assert.match(facts.waterSublawOverviewText,/§4 核准內容與現場：⚠ 疑似不符合/);
-  assert.match(facts.waterFinalConclusionText,/B｜構成要件完整|C｜事證不足/);
+  assert.match(facts.waterFinalConclusionText,/B｜構成要件事實已完整|C｜尚有要件待確認/);
 });
 
 test('4.3 貯留案件自動開啟第39與40條共通檢核',async()=>{
