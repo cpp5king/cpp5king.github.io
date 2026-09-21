@@ -155,12 +155,24 @@
       }, true));
       const draftAction=button(draftActionLabel, () => {
         if(!template.validateOnSubmit&&template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,fields.read()))return;
-        if (session.snapshot().outputs && !window.confirm('重新產生將覆蓋下方兩份紀錄及手動修改，是否繼續？')) return;
+        const beforeGenerate=session.snapshot();
+        if (beforeGenerate.outputs) {
+          const reviewCount=Array.isArray(beforeGenerate.legalReviews)?beforeGenerate.legalReviews.length:0;
+          const message=beforeGenerate.categoryId==='water'&&reviewCount
+            ?'重新產生會更新下方兩份草稿及手動修改；先前第 '+reviewCount+' 次法規研判快照會保留，不會被覆寫。是否繼續？'
+            :'重新產生將覆蓋下方兩份紀錄及手動修改，是否繼續？';
+          if(!window.confirm(message))return;
+        }
         try {
           session.setInputs(fields.read()); const generated = session.generate();
           drafts.record.value = generated.record; drafts.reply.value = generated.reply;
           outputs.querySelectorAll('[role="status"]').forEach(node => { node.textContent = ''; });
-          outputs.hidden = false; status.textContent = '已依選項產生兩份紀錄，請核對後複製使用。';
+          outputs.hidden = false;
+          const generatedState=session.snapshot();
+          const reviewCount=Array.isArray(generatedState.legalReviews)?generatedState.legalReviews.length:0;
+          status.textContent = generatedState.categoryId==='water'&&reviewCount
+            ?'已依選項產生兩份紀錄，並保留第 '+reviewCount+' 次法規研判快照；請核對後複製使用。'
+            :'已依選項產生兩份紀錄，請核對後複製使用。';
           const shownInMobileResult=flowUi?.showResults?.()===true;
           if(!shownInMobileResult)drafts.record.focus();
         } catch (error) {
