@@ -53,6 +53,14 @@
     return out;
   }
 
+  function evaluateBindings(bindingName,facts){
+    const pack=root.WATER_RULE_PACK||{};
+    const bindings=bindingName==='core'?(pack.coreBindings||{}):{};
+    const out={};
+    Object.entries(bindings).forEach(([alias,ruleKey])=>{out[alias]=evaluate(ruleKey,facts,bindingName);});
+    return out;
+  }
+
   function formatTemplate(template,context={}){
     return String(template||'').replace(/\{([A-Za-z0-9_]+)\}/g,(all,key)=>{
       const value=context[key];
@@ -223,7 +231,8 @@
       fieldNavigation:pack.fieldNavigation||{},
       pendingGuidance:pack.pendingGuidance||{},
       coreRelations:pack.coreRelations||{},
-      corePresentation:pack.corePresentation||{}
+      corePresentation:pack.corePresentation||{},
+      coreBindings:pack.coreBindings||{}
     });
     const actual=fnv1a32(payload);
     return {ok:expected.algorithm==='fnv1a32-json'&&actual===expected.value,algorithm:expected.algorithm,expected:expected.value,actual};
@@ -250,6 +259,7 @@
     getRule,
     evaluate,
     evaluateMany,
+    evaluateBindings,
     direction,
     pending,
     relation,
