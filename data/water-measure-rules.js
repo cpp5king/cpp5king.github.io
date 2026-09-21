@@ -305,6 +305,109 @@
 
 (function(root){
   'use strict';
+  const tri=Object.freeze([
+    Object.freeze({id:'yes',label:'是，已確認',value:'是，已確認'}),
+    Object.freeze({id:'no',label:'否，已確認不是／不符合',value:'否，已確認不是／不符合'}),
+    Object.freeze({id:'unknown',label:'已查證但目前仍無法確認',value:'已查證但目前仍無法確認'})
+  ]);
+  const yn=Object.freeze([
+    Object.freeze({id:'yes',label:'是',value:'是'}),
+    Object.freeze({id:'no',label:'否',value:'否'}),
+    Object.freeze({id:'unknown',label:'已查證但目前仍無法確認',value:'已查證但目前仍無法確認'})
+  ]);
+  const when=(field,value='yes')=>Object.freeze({field,value});
+  const inWhen=(field,value)=>Object.freeze({field,operator:'in',value:Object.freeze(value)});
+  const select=(id,label,optionSet,showWhen)=>Object.freeze({id,label,type:'select',missing:'尚待確認',allowCustom:false,optionSet,showWhen});
+  const computed=(id,label=id,extra={})=>Object.freeze({id,label,type:'computed',missing:'尚待確認',...extra});
+  root.WATER_MEASURE_INDUSTRY_FIELDS=Object.freeze([
+    select('waterConstructionVisibleSedimentFound','營建工地周圍排水溝排放管線底部、進入水體處或周圍環境，是否形成可見沉積污泥？','yn',when('waterIndustryType','construction')),
+    select('waterConstructionSedimentCleanedCompliant','發現可見沉積污泥後，是否已清除或依主管機關命令於三日內清除？','tri',when('waterConstructionVisibleSedimentFound','yes')),
+    select('waterConstructionWasteOilFound','施工機具／車輛維修保養是否有廢機油、潤滑油、柴油等棄置或溢洩？','yn',when('waterIndustryType','construction')),
+    select('waterConstructionWasteOilHandledCompliant','前述廢油是否以適當儲存設備收集處理，未隨廢（污）水／逕流廢水排放或溢流至作業環境外？','tri',when('waterConstructionWasteOilFound','yes')),
+    select('waterConstructionCleanupRecordsCompliant','沉積污泥清除／廢油收集處理之時間、方法、紀錄及妥善處理證明文件是否符合？','tri',when('waterIndustryType','construction')),
+
+    select('waterShipContainmentCompliant','拆解場所四週截流設施，或經主管機關同意之替代防堵設施，是否符合？','tri',when('waterIndustryType','shipDismantling')),
+    select('waterShipOilBoomCompliant','作業區域周圍水面是否有佈設浮油攔除設備？','tri',when('waterIndustryType','shipDismantling')),
+    select('waterShipReceivingFacilitiesCompliant','作業區域是否有適當之廢油、廢水及其他污染物收受設施？','tri',when('waterIndustryType','shipDismantling')),
+
+    select('waterLivestockFishIntegratedUse','是否採漁牧綜合經營？','yn',when('waterIndustryType','livestock')),
+    select('waterLivestockFishDailyVolumeCompliant','每日排放至每公頃魚池之廢水量是否在4立方公尺以下？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockFishStockingCompliant','每公頃魚池承受之豬隻廢水量是否不超過200頭豬隻？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockFishDOCompliant','魚池溶氧是否達1.0 mg/L以上？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockFishFreeboardCompliant','非雨季期間魚池最高液面距池頂是否維持30公分以上？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockFishRecordsCompliant','畜舍清洗、排入魚池水量及魚池排放時間等紀錄是否完整並保存三年？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockFishNoticeCompliant','魚池廢水排放前三日是否已主動通知主管機關？','tri',when('waterLivestockFishIntegratedUse','yes')),
+    select('waterLivestockPigCattleResourceApplicable','是否屬飼養豬隻或牛隻，需檢核畜牧糞尿資源化處理措施？','yn',when('waterIndustryType','livestock')),
+    select('waterLivestockResourceMeasureApproved','是否至少採行一項依法核准之畜牧糞尿資源化處理措施？','tri',when('waterLivestockPigCattleResourceApplicable','yes')),
+    select('waterLivestockResourceRatioCompliant','依法適用之畜牧糞尿資源化處理比率是否符合？','tri',when('waterLivestockPigCattleResourceApplicable','yes')),
+    select('waterLivestockSmallPigPlanApplicable','是否屬飼養豬隻20頭以上未滿200頭之畜牧業？','yn',when('waterIndustryType','livestock')),
+    select('waterLivestockSmallPigPlanApproved','該小型養豬場廢（污）水管理計畫是否已依法核准？','tri',when('waterLivestockSmallPigPlanApplicable','yes')),
+    select('waterLivestockSmallPigPlanOperationCompliant','現場運作是否符合核准之廢（污）水管理計畫？','tri',when('waterLivestockSmallPigPlanApplicable','yes')),
+    select('waterLivestockFertilizerPauseCondition','目前是否有依法應暫停沼液沼渣農地肥分使用之情形（如大雨／豪雨特報期間等）？','yn',when('waterShowIndustryLivestockFertilizer','yes')),
+    select('waterLivestockFertilizerPauseCompliant','應暫停期間是否確實停止沼液沼渣農地肥分使用？','tri',when('waterLivestockFertilizerPauseCondition','yes')),
+
+    select('waterWaterworksEmergencyDischargeUsed','本次是否以豪雨／天然災害緊急應變條件直接排放？','yn',when('waterIndustryType','waterworks')),
+    select('waterWaterworksEmergencyConditionsMet','是否已確認豪雨特報／天然災害、原水SS或濁度超過2000，且致廢水處理設施無法正常操作？','tri',when('waterWaterworksEmergencyDischargeUsed','yes')),
+    select('waterWaterworksEmergencyRegistered','緊急應變措施是否已納入水措計畫核准文件或許可證（文件）？','tri',when('waterWaterworksEmergencyDischargeUsed','yes')),
+    select('waterWaterworksBasinsEmptied','沉澱池及污泥濃縮池是否已先淨空？','tri',when('waterWaterworksEmergencyDischargeUsed','yes')),
+    select('waterWaterworksNoticeCompliant','排放前是否通知下游用水者並通報當地主管機關？','tri',when('waterWaterworksEmergencyDischargeUsed','yes')),
+    select('waterWaterworksDailyMonitoringCompliant','排放期間是否按日檢測並記錄原水濁度、SS及放流水SS，並保存紀錄？','tri',when('waterWaterworksEmergencyDischargeUsed','yes')),
+
+    select('waterFoodServiceProvided','是否提供餐飲服務？','yn',inWhen('waterIndustryType',['restaurant','touristHotel'])),
+    select('waterGreaseTrapPresent','餐飲廢水是否設置油脂截留設施？','tri',when('waterFoodServiceProvided','yes')),
+    select('waterGreaseTrapMaintenanceRecordsCompliant','油脂截留設施是否定期清理維護並保存三年紀錄？','tri',when('waterFoodServiceProvided','yes')),
+    select('waterHotSpringServiceProvided','是否提供溫泉泡湯服務？','yn',inWhen('waterIndustryType',['restaurant','touristHotel'])),
+    select('waterHotSpringSeparatedCollectionCompliant','單純泡湯廢水是否依規定與其他作業廢水分流收集處理？','tri',when('waterHotSpringServiceProvided','yes')),
+    select('waterHotSpringMudSpring','本案泉質是否屬泥漿泉質？','yn',when('waterHotSpringServiceProvided','yes')),
+    select('waterHotSpringFiltersCompliant','非泥漿泉之單純泡湯廢水，毛髮過濾及懸浮固體過濾設施是否符合？','tri',when('waterHotSpringMudSpring','no')),
+    select('waterHotSpringMaintenanceRecordsCompliant','相關油脂截留／毛髮／懸浮固體過濾設施之清理維護及三年紀錄是否符合？','tri',when('waterHotSpringServiceProvided','yes')),
+
+    select('waterDialysisManagementPlanApproved','洗腎診所營運前之廢（污）水管理計畫是否已核准？','tri',when('waterIndustryType','dialysisClinic')),
+    select('waterDialysisOperationMatchesPlan','現場是否依核准之廢（污）水管理計畫實施？','tri',when('waterIndustryType','dialysisClinic')),
+
+    select('waterCoalMercuryRecordsCompliant','燃煤來源、總汞含量、每日（次）使用量及每月統計等紀錄是否符合並保存三年？','tri',when('waterIndustryType','coalPower')),
+    select('waterCoalMercuryReportingCompliant','每年一月及七月底前之前半年燃煤來源、總汞含量及使用量網路申報是否符合？','tri',when('waterIndustryType','coalPower')),
+    select('waterCoalMercuryThresholdExceeded','是否達需提出汞總量管理計畫之門檻？','yn',when('waterIndustryType','coalPower')),
+    select('waterCoalMercuryPlanApproved','達門檻時，汞總量管理計畫是否已經主管機關審查核准？','tri',when('waterCoalMercuryThresholdExceeded','yes')),
+    select('waterCoalMercuryPlanImplemented','是否依核准之汞總量管理計畫執行？','tri',when('waterCoalMercuryThresholdExceeded','yes')),
+
+    select('waterHighTech49_9Trigger','是否符合第49條之9第1項任一分流收集處理觸發情形？','yn',inWhen('waterIndustryType',['semiconductor','optoelectronics','pcb','electroplating','metalSurface'])),
+    computed('waterHighTechRequiredStreamsText','本業別應分流之作業廢水',{display:true,showWhen:when('waterHighTech49_9Trigger','yes'),className:'live-assessment'}),
+    select('waterHighTechSeparatedCollectionCompliant','應分流之作業廢水是否已分流收集處理？','tri',when('waterHighTech49_9Trigger','yes')),
+
+    Object.freeze({
+      id:'waterSpecialOperationTypes',label:'本案是否涉及下列跨業別特殊作業？（有才勾，可複選）',type:'checklist',missing:'尚待確認',separator:'、',showWhen:when('waterShowIndustryChoice','yes'),
+      items:Object.freeze([
+        Object.freeze({id:'organicGroundwaterPollutant',label:'貯存／輸送地下水污染管制標準有機污染物'}),
+        Object.freeze({id:'constructionResidualReceiving',label:'收容處理特定淤泥／高含水土壤／皂土等營建剩餘土石方'}),
+        Object.freeze({id:'batPermitReview',label:'附表五業別規模之水措／許可申請、變更或展延'}),
+        Object.freeze({id:'none',label:'均未涉及',exclusive:true}),
+        Object.freeze({id:'unknown',label:'尚待確認',exclusive:true})
+      ])
+    }),
+    computed('waterSpecialOrganic'),
+    computed('waterSpecialResidual'),
+    computed('waterSpecialBat'),
+    select('waterOrganicLeakPreventionCompliant','有機污染物貯存／輸送設施之防滲漏材質及防範措施是否符合？','tri',when('waterSpecialOrganic','yes')),
+    select('waterOrganicInspectionRecordsCompliant','定期巡查檢視紀錄是否完整並保存三年？','tri',when('waterSpecialOrganic','yes')),
+    select('waterResidualDailyRecordsCompliant','車輛進出、土質種類、收容量及處理量是否每日記錄並保存三年？','tri',when('waterSpecialResidual','yes')),
+    Object.freeze({
+      id:'waterBatPermitActivity',label:'本案附表五最佳可行控制技術檢核情境',type:'select',missing:'尚待確認',allowCustom:false,showWhen:when('waterSpecialBat','yes'),
+      options:Object.freeze([
+        Object.freeze({id:'application',label:'申請水措計畫／許可',value:'申請水措計畫／許可'}),
+        Object.freeze({id:'change',label:'變更水措計畫／許可',value:'變更水措計畫／許可'}),
+        Object.freeze({id:'extension',label:'展延許可',value:'展延許可'}),
+        Object.freeze({id:'notCurrent',label:'本次非申請／變更／展延審查',value:'本次非申請／變更／展延審查'}),
+        Object.freeze({id:'unknown',label:'尚待確認',value:'尚待確認'})
+      ])
+    }),
+    select('waterBatEvaluationConfirmed','於申請／變更／展延時，是否已依附表五優先評估最佳可行控制技術？','tri',inWhen('waterBatPermitActivity',['application','change','extension']))
+  ]);
+  root.WATER_MEASURE_INDUSTRY_FIELD_OPTIONS=Object.freeze({tri,yn});
+})(typeof window==='undefined'?globalThis:window);
+
+(function(root){
+  'use strict';
   const meta=root.WATER_MEASURE_RULE_PACK_META;
   root.WATER_MEASURE_RULE_PACK=Object.freeze({
     meta,
@@ -315,6 +418,8 @@
     industryRules:root.WATER_INDUSTRY_RULES||{},
     industryCatalog:root.WATER_INDUSTRY_CATALOG_V485||{},
     industryExtensions:root.WATER_MEASURE_INDUSTRY_EXTENSIONS||{},
+    industryFields:root.WATER_MEASURE_INDUSTRY_FIELDS||[],
+    industryFieldOptions:root.WATER_MEASURE_INDUSTRY_FIELD_OPTIONS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
