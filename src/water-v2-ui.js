@@ -7,6 +7,7 @@
 
   const state = {
     view: 'home',
+    caseInfo: { behaviorDate:'', inspectionDate:'' },
     pollutionPoint: {
       presence: '', phenomena: [], otherPhenomenon: '', location: '', directionKnown: '', directionText: '', notes: ''
     },
@@ -15,7 +16,8 @@
     sources: [],
     currentInspection: null,
     inspections: [],
-    draftText: ''
+    draftText: '',
+    legalReviews: []
   };
 
   const phenomenaOptions = [
@@ -42,7 +44,7 @@
 
   const subjectTypes = [
     ['industry','水污法事業','依許可／核准資料進行 A～F 現場查核'],
-    ['sewer','污水下水道系統','沿用 A～F 現場事實；第14、15、18條依第19條準用，其餘依各條文判斷'],
+    ['sewer','污水下水道系統',root.WaterLaw?.uiText?.('sewerSubjectHelp','v2')||'沿用 A～F 現場事實；準用關係依目前 Rule Pack 顯示'],
     ['building','建築物污水處理設施','依設施、管理、紀錄、排放四主題查核'],
     ['other','非上述管制主體','先記現場行為，再整理可能法規方向']
   ];
@@ -71,6 +73,14 @@
   function screeningRecord(code){
     return {code, reaction:''};
   }
+  const BASIC_SCREENING_CODES=Object.freeze(['COD']);
+  function ensureBasicScreeningRecords(records){
+    BASIC_SCREENING_CODES.forEach(code=>{
+      if(!records.some(r=>screeningAssist().normalizeRecord(r).code===code)) records.push(screeningRecord(code));
+    });
+    return records;
+  }
+  function isBasicScreeningCode(code){return BASIC_SCREENING_CODES.includes(code);}
   function screenScopeId(scope){return String(scope).replace(/[^a-zA-Z0-9_-]/g,'_');}
   function previousScreeningRecords(node){
     if(!node) return [];
@@ -104,14 +114,16 @@
   }
   function screeningRecommendationHtml(scope,records,node=null,meta={}){
     const rec=screeningRecommendationData(scope,node,meta);
-    if(!rec.codes.length){
-      const msg=scope==='base'?'目前沒有足夠的現場情形或行業／製程資訊產生特定建議；可依現場判斷自行選擇。':'目前沒有可沿用的有反應項目或行業／製程建議；可依現場判斷自行選擇。';
-      return `<div class="screen-rec"><div class="screen-rec-title">建議優先快篩</div><div class="muted small">${esc(msg)}</div></div>`;
+    const optionalCodes=rec.codes.filter(code=>!isBasicScreeningCode(code));
+    if(!optionalCodes.length){
+      const msg=scope==='base'?'目前沒有足夠的現場情形或行業／製程資訊產生其他特定建議；可依現場判斷自行選擇。':'目前沒有可沿用的其他有反應項目或行業／製程建議；可依現場判斷自行選擇。';
+      return `<div class="screen-rec"><div class="screen-rec-title">其他建議快篩</div><div class="muted small">${esc(msg)}</div></div>`;
     }
-    return `<div class="screen-rec"><div class="screen-rec-title">綜合建議優先快篩</div><div class="screen-chip-row">${rec.codes.map(code=>{const d=screeningAssist().item(code);const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${code}" ${exists?'disabled':''}>${esc(d?.label||code)}${exists?' ✓':''}</button>`;}).join('')}</div>${rec.reasons.length?`<div class="screen-rec-reasons">${rec.reasons.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div>`:''}</div>`;
+    return `<div class="screen-rec"><div class="screen-rec-title">其他建議快篩</div><div class="screen-chip-row">${optionalCodes.map(code=>{const d=screeningAssist().item(code);const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${code}" ${exists?'disabled':''}>${esc(d?.label||code)}${exists?' ✓':''}</button>`;}).join('')}</div>${rec.reasons.length?`<div class="screen-rec-reasons">${rec.reasons.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div>`:''}</div>`;
   }
   function screeningAllItemsHtml(scope,records){
-    return `<details class="screen-all"><summary>其他可選快篩（目前共 ${screeningAssist().items.length} 項）</summary><div class="screen-chip-row">${screeningAssist().items.map(d=>{const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===d.code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${d.code}" ${exists?'disabled':''}>${esc(d.label)}${exists?' ✓':''}</button>`;}).join('')}</div></details>`;
+    const items=screeningAssist().items.filter(d=>!isBasicScreeningCode(d.code));
+    return `<details class="screen-all"><summary>其他可選快篩（目前共 ${items.length} 項）</summary><div class="screen-chip-row">${items.map(d=>{const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===d.code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${d.code}" ${exists?'disabled':''}>${esc(d.label)}${exists?' ✓':''}</button>`;}).join('')}</div></details>`;
   }
   function screeningDirectionsHtml(records,scope,meta={}){
     const dirs=screeningAssist().sourceDirections(records,{ph:meta.ph??''});
@@ -120,18 +132,23 @@
     return `<div id="${id}" class="screen-directions"><div class="screen-rec-title">可能來源方向</div>${dirs.map(d=>`<div class="source-direction"><strong>${esc(d.title)}</strong><div>${esc(d.reason)}</div><div class="hint">${esc(d.caution)}</div></div>`).join('')}<div class="notice warn">僅供污染查源參考，不代表污染來源、行業別、法定超標或違規成立。</div></div>`;
   }
   function screeningTable(records,scope,meta={},node=null){
+    ensureBasicScreeningRecords(records);
     const normalized=records.map((r,i)=>Object.assign(r,screeningAssist().normalizeRecord(r)));
     const ph=meta.ph??'', temp=meta.temperature??'';
+    const basicRecords=normalized.map((r,i)=>({r,i})).filter(x=>isBasicScreeningCode(x.r.code));
+    const optionalRecords=normalized.map((r,i)=>({r,i})).filter(x=>!isBasicScreeningCode(x.r.code));
     return `<div class="screening-panel">
       ${screeningContextHtml(scope,meta)}
-      ${screeningRecommendationHtml(scope,records,node,meta)}
+      <div class="screen-rec-title">固定基本快篩</div>
       <div class="grid-2 screen-basic">
-        <label class="field"><span class="field-label">pH（固定基本量測）</span><input class="text-input" inputmode="decimal" data-screen-basic="ph" data-scope="${scope}" value="${esc(ph)}" placeholder="例如 7.2"></label>
-        <label class="field"><span class="field-label">水溫（固定基本量測）</span><div class="input-suffix"><input class="text-input" inputmode="decimal" data-screen-basic="temperature" data-scope="${scope}" value="${esc(temp)}" placeholder="例如 26.4"><span>°C</span></div></label>
+        <label class="field"><span class="field-label">pH</span><input class="text-input" inputmode="decimal" data-screen-basic="ph" data-scope="${scope}" value="${esc(ph)}" placeholder="例如 7.2"></label>
+        <label class="field"><span class="field-label">水溫</span><div class="input-suffix"><input class="text-input" inputmode="decimal" data-screen-basic="temperature" data-scope="${scope}" value="${esc(temp)}" placeholder="例如 26.4"><span>°C</span></div></label>
       </div>
-      ${(ph===''||temp==='')?'<div class="notice warn">已進行快篩時，pH 與水溫建議固定記錄。</div>':''}
+      <div class="screen-records screen-basic-records">${basicRecords.map(({r,i})=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact screen-record-basic"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code)}</strong><span class="screen-basic-badge">固定基本快篩</span></div></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>
+      ${(ph===''||temp===''||basicRecords.some(x=>!x.r.reaction))?'<div class="notice warn">進行快篩時，pH、水溫與 COD 為固定基本項目；尚未完成的項目可先保留待補。</div>':''}
+      ${screeningRecommendationHtml(scope,records,node,meta)}
       ${screeningAllItemsHtml(scope,records)}
-      ${normalized.length?`<div class="screen-records">${normalized.map((r,i)=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code||'快篩項目')}</strong></div><button type="button" class="btn btn-danger" data-remove-screen="${scope}" data-index="${i}">刪除</button></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>`:'<div class="empty compact">尚未加入實際快篩項目。</div>'}
+      ${optionalRecords.length?`<div class="screen-records">${optionalRecords.map(({r,i})=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code||'快篩項目')}</strong></div><button type="button" class="btn btn-danger" data-remove-screen="${scope}" data-index="${i}">刪除</button></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>`:'<div class="empty compact">尚未加入其他快篩項目。</div>'}
       ${screeningDirectionsHtml(records,scope,{ph})}
     </div>`;
   }
@@ -158,7 +175,7 @@
   }
   function hasData(){
     const p = state.pollutionPoint;
-    return !!(p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection);
+    return !!(state.caseInfo.behaviorDate || state.caseInfo.inspectionDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection || state.legalReviews.length);
   }
   function setView(v){ state.view=v; root.scrollTo?.({top:0,behavior:'smooth'}); render(); }
 
@@ -182,6 +199,14 @@
         <p>先選你現在面對的情境。污染來源未知就從「污染排查」開始；已經知道要查誰，就直接進「對象查核」。流程可做到一半停止，隨時整理目前內容。</p>
         <span class="pill">資料只存在本次頁面記憶體，不寫入 localStorage / IndexedDB</span>
       </section>
+      <section class="card">
+        <h3>案件日期與法規版本</h3>
+        <div class="grid-2">
+          <label class="field"><span class="field-label">行為發生日期</span><input class="text-input" type="date" id="caseBehaviorDate" value="${esc(state.caseInfo.behaviorDate)}"><span class="field-help">用於選擇適用法規版本；不明可留空，系統會標示「適用法規版本待確認」。</span></label>
+          <label class="field"><span class="field-label">稽查日期</span><input class="text-input" type="date" id="caseInspectionDate" value="${esc(state.caseInfo.inspectionDate)}"><span class="field-help">僅作案件紀錄，不替代行為發生日期。</span></label>
+        </div>
+        <div class="notice info">${esc(root.WaterLaw?.packInfo?.()?.packVersion?('Water Rules：'+root.WaterLaw.packInfo().packVersion+'（'+root.WaterLaw.packInfo().status+'）'):'Water Rules：未載入')}<br>${esc(root.WaterLaw?.resolveLawVersion?.(state.caseInfo.behaviorDate)?.message||'適用法規版本待確認')}</div>
+      </section>
       <section class="grid-2">
         <article class="card entry-card" id="enterPollution">
           <div class="big">⌁</div><h3>污染排查</h3>
@@ -201,6 +226,8 @@
         <p>流程不要求全部完成；污染排查或對象查核做到任何階段，都可以先整理目前已記錄的事實、可能法規與尚待確認事項。</p>
         <div class="btn-row"><button class="btn btn-secondary" id="homeSummary" ${hasData()?'':'disabled'}>整理目前內容</button></div>
       </section>`;
+    const behaviorDate=document.getElementById('caseBehaviorDate');if(behaviorDate)behaviorDate.onchange=e=>{state.caseInfo.behaviorDate=e.target.value;renderHome();};
+    const inspectionDate=document.getElementById('caseInspectionDate');if(inspectionDate)inspectionDate.onchange=e=>{state.caseInfo.inspectionDate=e.target.value;};
     document.getElementById('enterPollution').onclick=()=>setView('pollution');
     document.getElementById('enterSubject').onclick=()=>{ if(!state.currentInspection) state.currentInspection=createInspection(); setView('subject'); };
     document.getElementById('homeSummary').onclick=()=>setView('summary');
@@ -490,7 +517,7 @@
       <label class="field"><span class="field-label">自由文字補充（選填）</span><textarea class="text-area" id="permitNotes" placeholder="例如：文件來源、現場說明或需後續確認事項">${esc(i.permitNotes||'')}</textarea></label>
       ${i.permitStatus==='yes'?'<div class="notice info">請自行查看現有許可／核准內容，再依 B～F 核對現場。系統只使用結構化事實進行規則配對，不解析自由文字。</div>':''}
       ${i.permitStatus==='unknown'?'<div class="notice warn">「無法確認」不等同無許可；整理頁會列為尚待確認。</div>':''}
-      ${isSewer?'<div class="notice info">污水下水道系統的第14、15、18條依第19條準用；第20條等則依各該條文直接判斷，不一律冠上第19條。</div>':''}
+      ${isSewer?`<div class="notice info">${esc(root.WaterLaw?.uiText?.('sewerNotice','v2')||'污水下水道系統準用關係依目前 Rule Pack 顯示。')}</div>`:''}
     </section>
     ${topicCard('B','水量／流量','先選具體疑點；特殊細節以自由文字補充。',i)}
     ${topicCard('C','用電／設備運轉','只留下可辨識的運轉事實，不要求逐項抄錄設備資料。',i)}
@@ -597,6 +624,9 @@
 
   function facts(){
     const out=[];const p=state.pollutionPoint;
+    if(state.caseInfo.behaviorDate)out.push(`【時間】行為發生日期：${state.caseInfo.behaviorDate}。`);
+    else out.push('【時間】行為發生日期尚未確認；適用法規版本待確認。');
+    if(state.caseInfo.inspectionDate)out.push(`【時間】稽查日期：${state.caseInfo.inspectionDate}。`);
     if(p.presence) out.push(`【目視】污染現象目前${p.presence==='yes'?'仍存在':p.presence==='no'?'已未見':'無法確認是否仍存在'}。`);
     if(p.location) out.push(`【目視】污染點位置：${p.location}。`);
     if(p.phenomena.length||p.otherPhenomenon) out.push(`【目視】污染現象：${[...p.phenomena.map(phenomenonLabel),p.otherPhenomenon].filter(Boolean).join('、')}。`);
@@ -646,7 +676,7 @@
     if(!root.WaterV2Assessment?.assess) throw new Error('WaterV2Assessment 尚未載入。');
     const inspections=[...state.inspections];
     if(state.currentInspection&&!inspections.some(x=>x.id===state.currentInspection.id)) inspections.push(state.currentInspection);
-    return root.WaterV2Assessment.assess(inspections);
+    return root.WaterV2Assessment.assess(inspections,{behaviorDate:state.caseInfo.behaviorDate});
   }
 
   function renderScreeningSummary(){
@@ -657,15 +687,41 @@
     return `<div class="screen-summary"><h4>快篩查源輔助</h4>${entries.map(e=>`<div class="source-direction"><strong>${esc(e.location)}</strong>${e.dirs.map(d=>`<div><b>${esc(d.title)}</b>：${esc(d.reason)}</div>`).join('')}</div>`).join('')}<div class="notice warn">快篩相似 ≠ 來源確認；快篩異常 ≠ 法定超標。可能來源方向僅供污染查源參考。</div></div>`;
   }
 
+  function reviewHistoryHtml(){
+    if(!state.legalReviews.length)return '<div class="empty">尚未保留法規研判快照。只有按下「保留本次研判快照」才會新增版本。</div>';
+    return '<div class="summary-list">'+state.legalReviews.slice().reverse().map(review=>{
+      const packs=review.packSnapshot||{};
+      const versions=[packs.core?.packVersion,packs.measure?.packVersion,packs.permit?.packVersion,packs.standard?.packVersion,packs.local?.packVersion].filter(Boolean).join('／');
+      return '<div class="summary-item"><strong>第 '+esc(review.sequence)+' 次研判</strong><br>'
+        +'行為日期：'+esc(review.behaviorDate||'尚未確認')+'<br>'
+        +'Rule Packs：'+esc(versions||'未記錄')+'<br>'
+        +'<span class="muted small">'+esc(review.reviewedAt||'')+'</span></div>';
+    }).join('')+'</div>';
+  }
+
+  function preserveReview(fs,as){
+    if(!root.WaterReview?.captureV2)throw new Error('WaterReview 尚未載入。');
+    const review=root.WaterReview.captureV2({
+      caseInfo:state.caseInfo,
+      factLines:fs,
+      assessment:as,
+      rawState:state,
+      draftText:state.draftText
+    },state.legalReviews.length+1);
+    state.legalReviews.push(review);
+    return review;
+  }
+
   function renderSummary(){
     saveInspection();const fs=facts(), as=lawAssessment();
     $app.innerHTML=`<div class="section-title"><div><h2>整理目前內容</h2><p>不是結案；只把目前已經查到的內容整理出來。</p></div><button class="btn btn-ghost" id="summaryHome">返回水污首頁</button></div>
       <section class="card summary-section"><h3>1｜目前查核事實</h3>${fs.length?`<div class="summary-list">${fs.map(x=>`<div class="summary-item">${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前尚無可整理的查核事實。</div>'}${renderScreeningSummary()}</section>
       <section class="card summary-section"><h3>2｜目前可能法規</h3><div class="notice info">系統只做規則配對，不代表違規成立；最終適用由稽查員判斷。</div>${as.laws.length?`<div class="summary-list">${as.laws.map(x=>`<div class="summary-item"><strong>可能法條：${esc(x.law)}</strong><br><span>${esc(x.reason)}</span></div>`).join('')}</div>`:'<div class="empty">目前沒有足夠的結構化事實產生可能法規。</div>'}</section>
       <section class="card summary-section"><h3>3｜尚待確認</h3>${as.pending.length?`<div class="summary-list">${as.pending.map(x=>`<div class="summary-item">尚待確認：${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前沒有系統列出的尚待確認事項。</div>'}</section>
+      <section class="card summary-section"><h3>4｜法規研判版本</h3><div class="notice info">保留快照會記錄目前事實、法規研判，以及五個 Rule Pack 的版本與完整性資訊。之後重新研判會新增下一筆，不覆寫舊結果。</div>${reviewHistoryHtml()}<div class="btn-row"><button class="btn btn-secondary" id="saveReview">保留本次研判快照</button></div></section>
       <section class="card"><h3>稽查紀錄敘述草稿</h3><p>草稿只寫事實，不自動寫可能法條或違規研判。</p><div class="btn-row"><button class="btn btn-primary" id="makeDraft">產生稽查紀錄敘述草稿</button></div></section>
       <div class="sticky-actions"><button class="btn btn-ghost" id="summaryBack">返回</button><button class="btn btn-secondary" id="backPollution">污染排查</button>${state.currentInspection?'<button class="btn btn-secondary" id="backSubject">對象查核</button>':''}</div>`;
-    document.getElementById('summaryHome').onclick=()=>setView('home');document.getElementById('summaryBack').onclick=()=>setView('home');document.getElementById('backPollution').onclick=()=>setView('pollution');const bs=document.getElementById('backSubject');if(bs)bs.onclick=()=>setView('subject');document.getElementById('makeDraft').onclick=()=>{state.draftText=makeDraftText(fs);setView('draft');};
+    document.getElementById('summaryHome').onclick=()=>setView('home');document.getElementById('summaryBack').onclick=()=>setView('home');document.getElementById('backPollution').onclick=()=>setView('pollution');const bs=document.getElementById('backSubject');if(bs)bs.onclick=()=>setView('subject');document.getElementById('saveReview').onclick=()=>{preserveReview(fs,as);renderSummary();};document.getElementById('makeDraft').onclick=()=>{state.draftText=makeDraftText(fs);setView('draft');};
   }
 
   function makeDraftText(fs){
@@ -681,6 +737,7 @@
 
   function reset(){
     state.view='home';
+    state.caseInfo={behaviorDate:'',inspectionDate:''};
     state.pollutionPoint={presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
     state.baseScreening={status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
     state.traceNodes=[];
@@ -688,8 +745,36 @@
     state.currentInspection=null;
     state.inspections=[];
     state.draftText='';
+    state.legalReviews=[];
     if($app) render();
   }
+  const cloneState=value=>JSON.parse(JSON.stringify(value));
+  function validateState(next){
+    if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('Water V2 案件狀態格式無效。');
+    const copy=cloneState(next);
+    if(!copy.caseInfo||typeof copy.caseInfo!=='object'||Array.isArray(copy.caseInfo))throw new Error('Water V2 案件缺少日期資訊。');
+    for(const key of ['traceNodes','sources','inspections','legalReviews'])if(copy[key]!==undefined&&!Array.isArray(copy[key]))throw new Error('Water V2 案件陣列資料格式無效：'+key);
+    copy.legalReviews=(copy.legalReviews||[]).map(review=>{
+      if(!root.WaterReview?.validate)throw new Error('WaterReview 尚未載入。');
+      return root.WaterReview.validate(review);
+    });
+    return copy;
+  }
+  function snapshot(){saveInspection();return cloneState(state);}
+  function restore(next){
+    const copy=validateState(next);
+    state.view=copy.view||'home';
+    state.caseInfo=copy.caseInfo||{behaviorDate:'',inspectionDate:''};
+    state.pollutionPoint=copy.pollutionPoint||{presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
+    state.baseScreening=copy.baseScreening||{status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
+    state.traceNodes=copy.traceNodes||[];
+    state.sources=copy.sources||[];
+    state.currentInspection=copy.currentInspection||null;
+    state.inspections=copy.inspections||[];
+    state.draftText=String(copy.draftText||'');
+    state.legalReviews=copy.legalReviews||[];
+  }
+
   function mount(container){
     if(!container) throw new Error('WaterV2UI mount target is required.');
     $app=container;
@@ -701,6 +786,9 @@
     provenance:PROVENANCE,
     mount,
     hasData,
+    snapshot,
+    restore,
+    validateState,
     reset
   });
 })(window);

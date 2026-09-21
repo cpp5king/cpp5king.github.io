@@ -3,7 +3,7 @@
   const copy = value => JSON.parse(JSON.stringify(value));
   function create(config) {
     let state = { categoryId: "", caseTypeId: "", templateId: "", inputs: {}, outputs: null, stale: false };
-    function clearDraft() { state.inputs = {}; state.outputs = null; state.stale = false; }
+    function clearDraft() { state.inputs = {}; state.outputs = null; state.stale = false; delete state.legalReviews; delete state.waterV2State; }
     function template() {
       const found = config.templates.find(item => item.id === state.templateId);
       if (!found) throw new Error("請先選擇模板。");
@@ -48,7 +48,13 @@
         const current=template();
         if(current.previewOnlyWhen && root.DraftEngine.matches(current.previewOnlyWhen,state.inputs))throw new Error(state.inputs[current.validationMessageField] || current.previewOnlyMessage);
         state.outputs = root.DraftEngine.generate(config, state.templateId, state.inputs);
-        state.stale = false; return copy(state.outputs);
+        state.stale = false;
+        if(state.categoryId==='water'&&root.WaterReview?.captureTemplate){
+          const reviews=Array.isArray(state.legalReviews)?state.legalReviews:[];
+          reviews.push(root.WaterReview.captureTemplate(state,reviews.length+1));
+          state.legalReviews=reviews;
+        }
+        return copy(state.outputs);
       },
       editOutput(kind, text) {
         if (!state.outputs || !["record", "reply"].includes(kind)) throw new Error("尚無可修改的草稿。");

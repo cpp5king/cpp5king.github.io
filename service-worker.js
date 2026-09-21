@@ -1,7 +1,7 @@
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='4.9.43';
-const CACHE_REVISION='release-4.9.43';
-const CACHE_NAME='inspection-assistant-4.9.43-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.0.0';
+const CACHE_REVISION='release-5.0.0';
+const CACHE_NAME='inspection-assistant-5.0.0-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -13,6 +13,7 @@ const APP_SHELL=[
   './src/choice-cards.css'+V,
   './src/mobile-multiselect.css'+V,
   './src/water-v2-ui.css'+V,
+  './src/waste-v1-ui.css'+V,
   './data/provenance.js'+V,
   './data/app-meta.js'+V,
   './data/texts/noise-common.js'+V,
@@ -36,6 +37,12 @@ const APP_SHELL=[
   './data/templates/water-main.js'+V,
   './data/rules/noise-article8.js'+V,
   './data/rules/noise-article9.js'+V,
+  './data/water-rules.js'+V,
+  './data/waste-rules.js'+V,
+  './data/water-measure-rules.js'+V,
+  './data/water-permit-rules.js'+V,
+  './data/water-standard-rules.js'+V,
+  './data/water-local-rules.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,
   './src/noise-method-guidance.js'+V,
@@ -44,27 +51,17 @@ const APP_SHELL=[
   './src/noise-priority-routing.js'+V,
   './src/noise-mobile-wizard.js'+V,
   './src/noise-approved-drafts.js'+V,
-  './data/rules/water-article13.js'+V,
-  './data/rules/water-article14.js'+V,
-  './data/rules/water-article18.js'+V,
-  './data/rules/water-article20.js'+V,
-  './data/rules/water-article22-35.js'+V,
-  './data/rules/water-article26.js'+V,
-  './data/rules/water-article27.js'+V,
-  './data/rules/water-article7.js'+V,
-  './data/rules/water-article18-1.js'+V,
-  './data/rules/water-article28.js'+V,
-  './data/rules/water-article30.js'+V,
-  './data/rules/water-article32.js'+V,
-  './data/rules/water-article59.js'+V,
-  './data/rules/water-article71.js'+V,
-  './data/rules/water-sublaw-core.js'+V,
-  './data/rules/water-industry.js'+V,
-  './data/rules/water-industry-catalog-v485.js'+V,
+  './src/water-measure-law.js'+V,
+  './src/water-permit-law.js'+V,
+  './src/water-standard-law.js'+V,
+  './src/water-local-law.js'+V,
+  './src/water-review.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,
   './src/water-rule-engine.js'+V,
-  './data/rules/water-v2-core.js'+V,
+  './src/water-law.js'+V,
+  './src/waste-model.js'+V,
+  './src/waste-law.js'+V,
   './src/water-v2-facts.js'+V,
   './src/water-v2-assessment.js'+V,
   './src/water-screening-assist.js'+V,
@@ -89,6 +86,7 @@ const APP_SHELL=[
   './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
   './src/water-v2-ui.js'+V,
+  './src/waste-v1-ui.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
   './icons/icon-512.png'

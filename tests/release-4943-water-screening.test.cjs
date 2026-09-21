@@ -15,13 +15,14 @@ function screening() {
   return context.window.WaterScreeningAssist;
 }
 
-test('4.9.43 quick-screen module is wired into offline app', () => {
+test('quick-screen module remains wired into current offline app', () => {
   const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const sw = fs.readFileSync(path.join(ROOT, 'service-worker.js'), 'utf8');
   const meta = fs.readFileSync(path.join(ROOT, 'data/app-meta.js'), 'utf8');
-  assert.match(index, /water-screening-assist\.js\?v=4\.9\.43/);
+  const version = meta.match(/version:\s*['\"]([^'\"]+)/)?.[1];
+  assert.ok(version);
+  assert.match(index, new RegExp('water-screening-assist\\.js\\?v='+version.replaceAll('.', '\\.')));
   assert.match(sw, /src\/water-screening-assist\.js/);
-  assert.match(meta, /version:\s*['\"]4\.9\.43['\"]/);
 });
 
 test('unknown reaction combination keeps unknown instead of guessing industry', () => {

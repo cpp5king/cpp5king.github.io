@@ -17,7 +17,21 @@
       if(typeof state.outputs!=='object'||Array.isArray(state.outputs))throw new Error('案件檔草稿格式無效。');
       for(const key of ['record','reply'])if(state.outputs[key]!==undefined&&typeof state.outputs[key]!=='string')throw new Error('案件檔草稿格式無效。');
     }
-    return {categoryId,caseTypeId,templateId,inputs:clone(state.inputs),outputs:state.outputs?{record:String(state.outputs.record||''),reply:String(state.outputs.reply||'')}:null,stale:!!state.stale};
+    const validated={categoryId,caseTypeId,templateId,inputs:clone(state.inputs),outputs:state.outputs?{record:String(state.outputs.record||''),reply:String(state.outputs.reply||'')}:null,stale:!!state.stale};
+    if(Object.prototype.hasOwnProperty.call(state,'legalReviews')){
+      if(!Array.isArray(state.legalReviews))throw new Error('案件檔法規研判歷程格式無效。');
+      if(!root.WaterReview?.validate)throw new Error('目前版本缺少法規研判快照驗證模組。');
+      validated.legalReviews=state.legalReviews.map(review=>root.WaterReview.validate(review));
+    }
+    if(Object.prototype.hasOwnProperty.call(state,'waterV2State')){
+      if(!root.WaterV2UI?.validateState)throw new Error('目前版本缺少 Water V2 案件驗證模組。');
+      validated.waterV2State=root.WaterV2UI.validateState(state.waterV2State);
+    }
+    if(Object.prototype.hasOwnProperty.call(state,'wasteV1State')){
+      if(!root.WasteV1UI?.validateState)throw new Error('目前版本缺少 Waste V1 案件驗證模組。');
+      validated.wasteV1State=root.WasteV1UI.validateState(state.wasteV1State);
+    }
+    return validated;
   }
 
   function createPayload(state,appMeta){
@@ -40,8 +54,8 @@
   }
 
   function filename(state){
-    const date=String(state?.inputs?.waterInspectionDate||'').replaceAll('-','')||new Date().toISOString().slice(0,10).replaceAll('-','');
-    const template=String(state?.templateId||'case').replace(/[^a-zA-Z0-9_-]+/g,'-');
+    const date=String(state?.inputs?.waterInspectionDate||state?.wasteV1State?.caseInfo?.inspectionDate||'').replaceAll('-','')||new Date().toISOString().slice(0,10).replaceAll('-','');
+    const template=String(state?.templateId||(state?.categoryId==='waste'?'waste-v1':'case')).replace(/[^a-zA-Z0-9_-]+/g,'-');
     return `inspection-${date}-${template}.json`;
   }
 

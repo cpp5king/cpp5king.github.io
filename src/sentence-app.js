@@ -20,12 +20,15 @@
     function hasInput() {
       const state = session.snapshot();
       const waterHasData = !!root.WaterV2UI?.hasData?.();
-      return waterHasData || !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
+      const wasteHasData = !!root.WasteV1UI?.hasData?.();
+      return waterHasData || wasteHasData || !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
     }
     function navigate(action) {
       const waterHasData = !!root.WaterV2UI?.hasData?.();
+      const wasteHasData = !!root.WasteV1UI?.hasData?.();
       if (hasInput() && !window.confirm('切換將清除目前輸入及兩份草稿（含手動修改），是否繼續？')) return;
       if (waterHasData) root.WaterV2UI.reset();
+      if (wasteHasData) root.WasteV1UI.reset();
       action(); render();
     }
     function navigation(state) {
@@ -33,7 +36,7 @@
       if (state.categoryId) nav.append(button('首頁／案件大類', () => navigate(() => session.home()), true));
       if (state.caseTypeId) nav.append(button('重新選擇案件類型', () => navigate(() => session.selectCategory(state.categoryId)), true));
       if (state.templateId && !config.caseTypes.find(item => item.id === state.caseTypeId)?.directTemplateId) nav.append(button('切換紀錄範本', () => navigate(() => session.selectCaseType(state.caseTypeId)), true));
-      if (state.templateId) nav.append(button('匯出案件', () => exportCase(), true));
+      if (state.templateId || root.WasteV1UI?.hasData?.()) nav.append(button('匯出案件', () => exportCase(), true));
       nav.append(button('匯入案件', () => importInput.click(), true));
       return nav;
     }
@@ -42,7 +45,12 @@
     if(document.body?.append)document.body.append(importInput);
     function exportCase(){
       const state=session.snapshot();
-      if(!state.templateId){window.alert?.('目前沒有可匯出的案件。');return;}
+      const wasteHasData=state.categoryId==='waste'&&root.WasteV1UI?.hasData?.()&&root.WasteV1UI?.snapshot;
+      if(!state.templateId&&!wasteHasData){window.alert?.('目前沒有可匯出的案件。');return;}
+      if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.()&&root.WaterV2UI?.snapshot){
+        state.waterV2State=root.WaterV2UI.snapshot();
+      }
+      if(wasteHasData)state.wasteV1State=root.WasteV1UI.snapshot();
       const text=root.CaseFile.serialize(state,root.INSPECTION_APP_META);
       const blob=new Blob([text],{type:'application/json;charset=utf-8'});
       const url=URL.createObjectURL(blob);
@@ -53,7 +61,16 @@
       try{
         if(hasInput()&&!window.confirm('匯入案件將取代目前輸入及草稿，是否繼續？'))return;
         const parsed=root.CaseFile.parse(await file.text(),config);
-        session.restore(parsed.state); render();
+        session.restore(parsed.state);
+        if(root.WaterV2UI){
+          if(parsed.state.waterV2State&&root.WaterV2UI.restore)root.WaterV2UI.restore(parsed.state.waterV2State);
+          else root.WaterV2UI.reset?.();
+        }
+        if(root.WasteV1UI){
+          if(parsed.state.wasteV1State&&root.WasteV1UI.restore)root.WasteV1UI.restore(parsed.state.wasteV1State);
+          else root.WasteV1UI.reset?.();
+        }
+        render();
       }catch(error){window.alert?.('無法匯入案件：'+error.message);}
     });
     function render() {
@@ -61,10 +78,17 @@
       const category = config.categories.find(item => item.id === state.categoryId);
       const type = config.caseTypes.find(item => item.id === state.caseTypeId);
       const template = config.templates.find(item => item.id === state.templateId);
+      document.body?.setAttribute?.('data-module',category?.id || 'home');
       if (category?.id === 'water' && root.WaterV2UI?.mount) {
         const waterHost = el('section', '', 'water-v2-host');
         app.append(waterHost);
         root.WaterV2UI.mount(waterHost);
+        return;
+      }
+      if (category?.id === 'waste' && root.WasteV1UI?.mount) {
+        const wasteHost = el('section', '', 'waste-v1-host');
+        app.append(wasteHost);
+        root.WasteV1UI.mount(wasteHost);
         return;
       }
       const trail = [category?.title, type?.title, type?.directTemplateId ? null : template?.title].filter(Boolean).join(' → ');
@@ -75,6 +99,7 @@
         const list = el('div', '', 'actions');
         for (const item of config.categories) {
           const entry = button(item.title + (item.status === 'development' ? '（開發中）' : ''), () => { session.selectCategory(item.id); render(); });
+          entry.setAttribute('data-module',item.id);
           entry.disabled = item.status !== 'active'; list.append(entry);
         }
         app.append(el('h2', title), list);
@@ -155,12 +180,24 @@
       }, true));
       const draftAction=button(draftActionLabel, () => {
         if(!template.validateOnSubmit&&template.previewOnlyWhen && root.DraftEngine.matches(template.previewOnlyWhen,fields.read()))return;
-        if (session.snapshot().outputs && !window.confirm('重新產生將覆蓋下方兩份紀錄及手動修改，是否繼續？')) return;
+        const beforeGenerate=session.snapshot();
+        if (beforeGenerate.outputs) {
+          const reviewCount=Array.isArray(beforeGenerate.legalReviews)?beforeGenerate.legalReviews.length:0;
+          const message=beforeGenerate.categoryId==='water'&&reviewCount
+            ?'重新產生會更新下方兩份草稿及手動修改；先前第 '+reviewCount+' 次法規研判快照會保留，不會被覆寫。是否繼續？'
+            :'重新產生將覆蓋下方兩份紀錄及手動修改，是否繼續？';
+          if(!window.confirm(message))return;
+        }
         try {
           session.setInputs(fields.read()); const generated = session.generate();
           drafts.record.value = generated.record; drafts.reply.value = generated.reply;
           outputs.querySelectorAll('[role="status"]').forEach(node => { node.textContent = ''; });
-          outputs.hidden = false; status.textContent = '已依選項產生兩份紀錄，請核對後複製使用。';
+          outputs.hidden = false;
+          const generatedState=session.snapshot();
+          const reviewCount=Array.isArray(generatedState.legalReviews)?generatedState.legalReviews.length:0;
+          status.textContent = generatedState.categoryId==='water'&&reviewCount
+            ?'已依選項產生兩份紀錄，並保留第 '+reviewCount+' 次法規研判快照；請核對後複製使用。'
+            :'已依選項產生兩份紀錄，請核對後複製使用。';
           const shownInMobileResult=flowUi?.showResults?.()===true;
           if(!shownInMobileResult)drafts.record.focus();
         } catch (error) {

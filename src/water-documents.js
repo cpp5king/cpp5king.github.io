@@ -2,14 +2,14 @@
   'use strict';
   const maps={
     subject:{business:'水污法事業',sewerSystem:'污水下水道系統',buildingSewage:'建築物污水處理設施',nonBusiness:'一般民眾／其他非事業',unknown:'管制主體尚待確認'},
-    industry:{construction:'營建工地',readyMix:'預拌混凝土（第9條所稱水泥業）',stoneProcessing:'土石加工業',stoneExtraction:'土石採取業',mining:'採礦業',earthworkDump:'土石方堆（棄）置場',livestock:'畜牧業',other:'其他事業',unknown:'業別尚待確認'},
+    industry:{other:'其他事業',unknown:'尚待確認'},
     matter:{wastewater:'廢（污）水',sludge:'污泥',acidAlkaliWasteLiquid:'酸鹼廢液',waterFertilizer:'水肥',garbage:'垃圾',constructionWaste:'建築廢料',otherPollutant:'其他污染物',unknown:'污染物性質尚待確認'},
     destination:{surfaceWater:'地面水體',sewer:'污水下水道',storage:'貯留',reuse:'回收使用',outsourced:'委外處理',soil:'土壤',groundwater:'地下／疑似地下水體',unknown:'最終去向尚待確認'},
     surface:{river:'河川',ocean:'海洋',lake:'湖潭',reservoir:'水庫',pond:'池塘',irrigationChannel:'灌溉渠道',drainage:'各級排水路',roadsideDitch:'道路側溝',other:'其他疑似地面水體',unknown:'地面水體類型尚待確認'},
     source:{manufacturing:'製造製程',operation:'操作過程',naturalResource:'自然資源開發',workEnvironment:'作業環境',domestic:'生活污水',cleaning:'清洗水',cooling:'冷卻水',rain:'雨水',groundwater:'地下水',other:'其他',unknown:'來源尚待確認'},
     yesno:{yes:'是',no:'否',unknown:'尚待確認'}
   };
-  const label=(map,key)=>maps[map]?.[key]||'';
+  const label=(map,key)=>{if(map==='industry'){const item=root.WaterMeasureLaw?.industryCatalog?.().industries?.[key];return item?.documentLabel||item?.label||maps.industry?.[key]||'';}return maps[map]?.[key]||'';};
   const list=(map,values)=>Array.isArray(values)?values.map(x=>label(map,x)).filter(Boolean).join('、'):'';
   const firstLine=text=>String(text||'').split('\n')[0].trim();
   const rocDate=iso=>{

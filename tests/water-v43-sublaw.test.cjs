@@ -6,10 +6,10 @@ test('4.3 法規版本引擎不以裝置日期代替案件日期',()=>{
   const env=runtime();
   const unknown=plain(env.root.WaterLawVersions.resolve(''));
   assert.equal(unknown.status,'unknown');
-  assert.match(unknown.text,/稽查日期尚未填寫/);
+  assert.match(unknown.text,/行為發生日期尚未確認/);
 });
 
-test('4.3 依稽查日期切換115年10月1日前後許可審查版本提示',()=>{
+test('4.3 依行為日期切換115年10月1日前後許可審查版本提示',()=>{
   const env=runtime();
   const before=plain(env.root.WaterLawVersions.resolve('2026-09-30'));
   const after=plain(env.root.WaterLawVersions.resolve('2026-10-01'));
@@ -23,7 +23,7 @@ test('4.3 早於115年4月20日案件不以新版水措共通規則回溯下結�
   const env=await loaded();
   const t=env.config.templates.find(x=>x.id==='water-main');
   const facts=plain(env.root.DraftEngine.normalize(t,{
-    waterInspectionDate:'2026-04-19',waterSubjectType:'business',waterSubjectConfirmed:'yes',
+    waterBehaviorDate:'2026-04-19',waterInspectionDate:'2026-04-19',waterSubjectType:'business',waterSubjectConfirmed:'yes',
     waterMatterType:'wastewater',waterWastewaterStatus:'yes',
     waterSublawApprovedMeasuresConfirmed:'yes',waterSublawOperationMatchesApprovedMeasures:'no'
   }));
@@ -36,20 +36,20 @@ test('4.3 核准水措內容與現場不一致可形成管理辦法第4條疑似
   const env=await loaded();
   const t=env.config.templates.find(x=>x.id==='water-main');
   const facts=plain(env.root.DraftEngine.normalize(t,{
-    waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
+    waterBehaviorDate:'2026-09-11',waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
     waterMatterType:'wastewater',waterWastewaterStatus:'yes',
     waterSublawApprovedMeasuresConfirmed:'yes',waterSublawOperationMatchesApprovedMeasures:'no'
   }));
   assert.equal(facts.waterShowSublawCore,'yes');
   assert.match(facts.waterSublawOverviewText,/§4 核准內容與現場：⚠ 疑似不符合/);
-  assert.match(facts.waterFinalConclusionText,/B｜構成要件完整|C｜事證不足/);
+  assert.match(facts.waterFinalConclusionText,/B｜構成要件事實已完整|C｜尚有要件待確認/);
 });
 
 test('4.3 貯留案件自動開啟第39與40條共通檢核',async()=>{
   const env=await loaded();
   const t=env.config.templates.find(x=>x.id==='water-main');
   const facts=plain(env.root.DraftEngine.normalize(t,{
-    waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
+    waterBehaviorDate:'2026-09-11',waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
     waterMatterType:'wastewater',waterWastewaterStatus:'yes',waterDestination:'storage',
     waterSublawStorageMeterCompliant:'yes',waterSublawStorageRecordsCompliant:'yes',waterSublawStorageCapacityCompliant:'yes'
   }));
@@ -63,7 +63,7 @@ test('4.3 地面水體放流案件開啟第53條放流口共通檢核',async()=>
   const env=await loaded();
   const t=env.config.templates.find(x=>x.id==='water-main');
   const facts=plain(env.root.DraftEngine.normalize(t,{
-    waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
+    waterBehaviorDate:'2026-09-11',waterInspectionDate:'2026-09-11',waterSubjectType:'business',waterSubjectConfirmed:'yes',
     waterMatterType:'wastewater',waterWastewaterStatus:'yes',waterActualDischarge:'yes',
     waterDestination:'surfaceWater',waterSurfaceWaterConfirmed:'yes',
     waterSublawOutletLocationCompliant:'yes',waterSublawOutletAccessCompliant:'yes',
@@ -78,7 +78,7 @@ test('4.3 地面水體放流案件開啟第53條放流口共通檢核',async()=>
 test('4.3 現場模式保留案件日期並顯示子法版本判定',async()=>{
   const env=await loaded();
   const t=env.config.templates.find(x=>x.id==='water-field');
-  const facts=plain(env.root.DraftEngine.normalize(t,{waterInspectionDate:'2026-09-11'}));
+  const facts=plain(env.root.DraftEngine.normalize(t,{waterBehaviorDate:'2026-09-11',waterInspectionDate:'2026-09-11'}));
   assert.equal(facts.waterInspectionDate,'2026-09-11');
   assert.match(facts.waterLawVersionText,/水措管理/);
 });

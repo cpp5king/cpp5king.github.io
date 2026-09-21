@@ -10,69 +10,14 @@
     }
   }
 
-  function evaluateRules(facts){
-    const evalRule=id=>root.WaterRuleEngine.evaluate(root.WATER_RULES[id],facts);
-    return {
-      r13:evalRule('article13Plan'),
-      r14:evalRule('article14NoPermit'),
-      r7:evalRule('article7Effluent'),
-      r18:evalRule('article18Measures'),
-      rb:evalRule('article181Bypass'),
-      rd:evalRule('article181Dilution'),
-      rt:evalRule('article181Treatment'),
-      r20s:evalRule('article20StorageNoPermit'),
-      r20sm:evalRule('article20StorageMismatch'),
-      r20d:evalRule('article20DilutionNoPermit'),
-      r20dm:evalRule('article20DilutionMismatch'),
-      r22:evalRule('article22Reporting'),
-      r35:evalRule('article35FalseReporting'),
-      r26:evalRule('article26Obstruction'),
-      r27e:evalRule('article27Emergency'),
-      r27n:evalRule('article27Notice'),
-      r28p:evalRule('article28Prevention'),
-      r28e:evalRule('article28Emergency'),
-      r28n:evalRule('article28Notice'),
-      r30:evalRule('article30Dumping'),
-      r32s:evalRule('article32Soil'),
-      r32g:evalRule('article32Groundwater'),
-      r59:evalRule('article59Exception'),
-      r71:evalRule('article71Cleanup')
-    };
+  function evaluateRules(facts,version){
+    if(!root.WaterLaw?.evaluateBindings)throw new Error('WaterLaw core bindings are required before water-main.');
+    return root.WaterLaw.evaluateBindings('core',facts,{version});
   }
 
-  function evaluateSublaw(facts){
-    const evalSub=id=>{
-      const rule=root.WATER_SUBLAW_RULES[id];
-      const result=root.WaterRuleEngine.evaluate(rule,facts);
-      if(facts.sublawVersionResolved!=='yes'&&result.status!=='notApplicable'){
-        result.status='insufficient';
-        if(!result.missingFacts.includes('sublawVersionResolved'))result.missingFacts.unshift('sublawVersionResolved');
-        if(!result.missingLabels.includes('已確認本版支援之水措管理辦法版本適用'))result.missingLabels.unshift('已確認本版支援之水措管理辦法版本適用');
-        if(!result.nextChecks.includes('填入稽查日期並確認當日有效之子法版本'))result.nextChecks.unshift('填入稽查日期並確認當日有效之子法版本');
-      }
-      return result;
-    };
-    return {
-      approvedMeasuresMismatch:evalSub('approvedMeasuresMismatch'),
-      rainWastewaterSeparation:evalSub('rainWastewaterSeparation'),
-      runoffCollection:evalSub('runoffCollection'),
-      outsourceStorage:evalSub('outsourceStorage'),
-      outsourceMeter:evalSub('outsourceMeter'),
-      storageMeter:evalSub('storageMeter'),
-      storageRecords:evalSub('storageRecords'),
-      storageCapacity:evalSub('storageCapacity'),
-      reuseStandard:evalSub('reuseStandard'),
-      reuseSamplingPort:evalSub('reuseSamplingPort'),
-      outletLocation:evalSub('outletLocation'),
-      outletAccess:evalSub('outletAccess'),
-      outletMeter:evalSub('outletMeter'),
-      outletSign:evalSub('outletSign'),
-      outletSampling:evalSub('outletSampling'),
-      outletMixing:evalSub('outletMixing'),
-      meterCalibration:evalSub('meterCalibration'),
-      reportingDocuments:evalSub('reportingDocuments'),
-      reportingSite:evalSub('reportingSite')
-    };
+  function evaluateSublaw(facts,version){
+    if(!root.WaterMeasureLaw?.evaluateAll)throw new Error('WaterMeasureLaw is required before water-main.');
+    return root.WaterMeasureLaw.evaluateAll(facts,'common',{version});
   }
 
   function prepare(input={}){
@@ -80,16 +25,42 @@
     normalizeSourceTypes(out);
     root.WaterPermitCheck?.apply(out,out);
     const facts=root.WaterFacts.build(out);
-    const lawVersion=root.WaterLawVersions.resolve(out.waterInspectionDate);
-    facts.sublawVersionResolved=(lawVersion.status==='resolved'&&lawVersion.date>='2026-04-20')?'yes':'unknown';
+    const hasBehaviorDateField=Object.prototype.hasOwnProperty.call(out,'waterBehaviorDate');
+    const behaviorDate=hasBehaviorDateField?out.waterBehaviorDate:out.waterInspectionDate;
+    const coreLawVersion=root.WaterLaw.resolveLawVersion(behaviorDate);
+    const measureVersion=root.WaterMeasureLaw.resolveVersion(behaviorDate);
+    const permitVersion=root.WaterPermitLaw.resolveVersion(behaviorDate);
+    const standardVersion=root.WaterStandardLaw.resolveVersion(behaviorDate);
+    const standardRoute=root.WaterStandardLaw.routeAppendix(out);
+    const localRule=root.WaterLocalLaw.resolveArea(out.waterLocalStandardArea||'',behaviorDate);
+    const lawVersion=root.WaterLawVersions.resolve(behaviorDate);
+
+    facts.sublawVersionResolved=measureVersion.status==='resolved'?'yes':'unknown';
     out.sublawVersionResolved=facts.sublawVersionResolved;
     out.waterLawVersionText=lawVersion.text;
+    out.waterCoreLawVersionText=coreLawVersion.message+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    out.waterMeasureLawVersionText=measureVersion.text+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    out.waterPermitLawVersionText=permitVersion.text+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    const permitPackInfo=root.WaterPermitLaw.packInfo();
+    out.waterPermitRulePackVersionText=permitPackInfo?'Water Permit Rules：'+permitPackInfo.packVersion+'（'+permitPackInfo.status+'）':'Water Permit Rules：未載入';
+    const standardPackInfo=root.WaterStandardLaw.packInfo();
+    out.waterStandardRulePackVersionText=standardPackInfo?'Water Standard Rules：'+standardPackInfo.packVersion+'（'+standardPackInfo.status+'）':'Water Standard Rules：未載入';
+    out.waterStandardLawVersionText=standardVersion.text+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    out.waterStandardRouteText=standardRoute.message;
+    const localPackInfo=root.WaterLocalLaw.packInfo();
+    out.waterLocalRulePackVersionText=localPackInfo?'Water Local Rules：'+localPackInfo.packVersion+'（'+localPackInfo.status+'；'+localPackInfo.jurisdiction+'）':'Water Local Rules：未載入';
+    out.waterLocalRuleStatusText=localRule.message+(root.WaterLocalLaw.precedenceMessage()?'\n'+root.WaterLocalLaw.precedenceMessage():'');
 
-    const results=evaluateRules(facts);
-    const sublaw=evaluateSublaw(facts);
-    const industry=root.WaterIndustry.evaluate(out,facts);
+    const packInfo=root.WaterLaw.packInfo();
+    out.waterRulePackVersionText=packInfo?'Water Rules：'+packInfo.packVersion+'（'+packInfo.status+'）':'Water Rules：未載入';
+    const measurePackInfo=root.WaterMeasureLaw.packInfo();
+    out.waterMeasureRulePackVersionText=measurePackInfo?'Water Measure Rules：'+measurePackInfo.packVersion+'（'+measurePackInfo.status+'）':'Water Measure Rules：未載入';
+
+    const results=evaluateRules(facts,coreLawVersion);
+    const sublaw=evaluateSublaw(facts,measureVersion);
+    const industry=root.WaterIndustry.evaluate(out,facts,measureVersion);
     root.WaterWorkflow.apply(input,facts,out);
-    root.WaterAssessment.apply(input,facts,out,lawVersion,results,sublaw,industry);
+    root.WaterAssessment.apply(input,facts,out,measureVersion,results,sublaw,industry);
     const docs=root.WaterDocuments.build(out,facts);
     out.waterRecordDraftText=docs.recordText;
     out.waterReplyDraftText=docs.replyText;

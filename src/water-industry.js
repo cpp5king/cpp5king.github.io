@@ -1,6 +1,5 @@
 (function(root){
   'use strict';
-  const article9Types=new Set(['mining','stoneExtraction','stoneProcessing','readyMix','earthworkDump','construction']);
   const tri=v=>v==='yes'?'yes':v==='no'?'no':'unknown';
   const inverse=v=>v==='yes'?'no':v==='no'?'yes':'unknown';
   const complianceViolation=v=>v==='yes'?'no':v==='no'?'yes':'unknown';
@@ -12,6 +11,7 @@
   }
   function facts(input,facts){
     const type=input.waterIndustryType||'';
+    const article9Types=new Set(root.WaterMeasureLaw?.industryGroups?.().article9Types||[]);
     return Object.assign({},facts,{
       industryType:type,
       industryArticle9Applicable:type? (article9Types.has(type)?'yes':'no'):'unknown',
@@ -31,20 +31,12 @@
       livestockFertilizerOperationViolation:complianceViolation(input.waterLivestockFertilizerMatchesPlan)
     });
   }
-  function evaluate(input,baseFacts){
+  function evaluate(input,baseFacts,measureVersion){
     const merged=facts(input,baseFacts);
-    const out={facts:merged,results:{}};
-    for(const [key,rule] of Object.entries(root.WATER_INDUSTRY_RULES)){
-      const result=root.WaterRuleEngine.evaluate(rule,merged);
-      if(merged.sublawVersionResolved!=='yes'&&result.status!=='notApplicable'){
-        result.status='insufficient';
-        if(!result.missingFacts.includes('sublawVersionResolved'))result.missingFacts.unshift('sublawVersionResolved');
-        if(!result.missingLabels.includes('已依稽查日期確認本案適用之子法施行版本'))result.missingLabels.unshift('已依稽查日期確認本案適用之子法施行版本');
-        if(!result.nextChecks.includes('填入稽查日期並確認當日有效之子法版本'))result.nextChecks.unshift('填入稽查日期並確認當日有效之子法版本');
-      }
-      out.results[key]=result;
-    }
-    return out;
+    if(!root.WaterMeasureLaw?.evaluateAll)throw new Error('WaterMeasureLaw is required before WaterIndustry.');
+    const context=measureVersion?{version:measureVersion}:{};
+    return {facts:merged,results:root.WaterMeasureLaw.evaluateAll(merged,'industry',context)};
   }
-  root.WaterIndustry={evaluate,article9Types};
+
+  root.WaterIndustry={evaluate};
 })(typeof window==='undefined'?globalThis:window);

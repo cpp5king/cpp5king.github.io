@@ -158,3 +158,8 @@
 .water-v2-shell .screen-context{border:1px solid #d9e4e7;border-radius:11px;padding:10px 12px;background:#fbfcfc;margin:0 0 12px}
 .water-v2-shell .screen-context summary{cursor:pointer;font-weight:800;color:#174c58}
 .water-v2-shell .screen-context[open] summary{margin-bottom:8px}
+
+/* 5.0 fixed quick-screening basics: pH + temperature + COD. */
+.water-v2-shell .screen-basic-records{margin:8px 0 12px}
+.water-v2-shell .screen-record-basic{border:1px solid #b9d5f7;background:#f5f9ff}
+.water-v2-shell .screen-basic-badge{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:99px;background:#e8f2ff;color:#245e9f;font-size:.72rem;font-weight:800;vertical-align:middle}

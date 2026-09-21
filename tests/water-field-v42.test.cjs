@@ -59,7 +59,7 @@ test('4.2 完成現場查察後才顯示後台法規初步研判',async()=>{
   assert.equal(facts.fieldShowAssessment,'no');
   facts=plain(e.root.DraftEngine.normalize(t,{...base,waterInvestigationComplete:'yes'}));
   assert.equal(facts.fieldShowAssessment,'yes');
-  assert.match(facts.fieldFinalConclusionText,/構成要件完整|事證不足/);
+  assert.match(facts.fieldFinalConclusionText,/構成要件事實已完整|尚有要件待確認/);
   assert.match(facts.fieldRulesOverviewText,/§14/);
 });
 

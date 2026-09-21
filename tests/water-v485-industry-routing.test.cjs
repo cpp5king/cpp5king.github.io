@@ -4,7 +4,6 @@ const {runtime,plain}=require('./helpers.cjs');
 
 async function loaded485(){
   const env=runtime();
-  env.run('data/rules/water-industry-catalog-v485.js');
   env.run('src/water-industry-v485.js');
   env.run('src/water-industry-v485-final.js');
   await env.root.TemplateLoader.load(env.root.INSPECTION_CONFIG,file=>env.run('data/templates/'+file));
@@ -85,5 +84,5 @@ test('4.8.5 保留既有營建第9、10條成立規則',async()=>{
     waterConstructionVisibleSedimentFound:'no',waterConstructionWasteOilFound:'no',waterConstructionCleanupRecordsCompliant:'yes',waterSpecialOperationTypes:['none']
   });
   assert.match(out.waterIndustryOverviewText,/削減計畫/);
-  assert.match(out.waterFinalConclusionText,/B｜構成要件完整/);
+  assert.match(out.waterFinalConclusionText,/B｜構成要件事實已完整/);
 });
