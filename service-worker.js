@@ -53,6 +53,7 @@ const APP_SHELL=[
   './src/water-permit-law.js'+V,
   './src/water-standard-law.js'+V,
   './src/water-local-law.js'+V,
+  './src/water-review.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,
   './src/water-rule-engine.js'+V,
