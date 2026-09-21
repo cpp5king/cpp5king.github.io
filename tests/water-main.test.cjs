@@ -20,7 +20,7 @@ test('水污主流程依序開啟節點且道路側溝仍保留未知',async()=>
   const facts=plain(env.root.DraftEngine.normalize(t,view.read()));
   assert.equal(facts.waterShowDitchDetails,'yes');
   assert.equal(facts.waterRuleStatus,'insufficient');
-  assert.match(facts.waterAssessmentText,/事證不足/);
+  assert.match(facts.waterAssessmentText,/尚有要件待確認/);
   assert.match(facts.waterNextChecksText,/道路側溝排水功能/);
   assert.equal(facts.waterShowPermit,'no');
 });
@@ -50,8 +50,8 @@ test('4.0-dev3 地面水體確認後平行開啟 §7，且§7不受§14許可狀
   const t=env.config.templates.find(x=>x.id==='water-main');
   const facts=plain(env.root.DraftEngine.normalize(t,{waterSubjectType:'business',waterSubjectConfirmed:'yes',waterWastewaterStatus:'yes',waterActualDischarge:'yes',waterDestination:'surfaceWater',waterSurfaceWaterConfirmed:'yes',waterDischargePermit:'valid',waterSampleTaken:'no'}));
   assert.equal(facts.waterShowArticle7,'yes');
-  assert.match(facts.waterArticle7Text,/事證不足/);
-  assert.match(facts.waterArticle14Text,/目前不成立/);
+  assert.match(facts.waterArticle7Text,/尚有要件待確認/);
+  assert.match(facts.waterArticle14Text,/目前不支持/);
 });
 
 test('4.0-dev3 污水下水道系統可進§7與§18-1，但不顯示事業§14區塊',async()=>{
@@ -70,5 +70,5 @@ test('4.0-dev3 §18-1 詳細結果只展開已走到的異常態樣',async()=>{
   assert.match(facts.waterArticle181Text,/繞流排放/);
   assert.match(facts.waterArticle181Text,/違法稀釋/);
   assert.match(facts.waterArticle181Text,/處理設施功能/);
-  assert.match(facts.waterArticle181Text,/構成要件完整/);
+  assert.match(facts.waterArticle181Text,/構成要件事實已完整/);
 });
