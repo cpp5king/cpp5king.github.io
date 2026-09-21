@@ -40,6 +40,39 @@
     return rules[ruleKey]||null;
   }
 
+
+  function adaptedFactValue(adapter,facts){
+    if(!adapter)return 'unknown';
+    if(adapter.kind==='subjectSet'){
+      const type=facts.subjectType||'';
+      if(type==='business')return facts[adapter.businessConfirmationFact]||'unknown';
+      if((adapter.allowed||[]).includes(type))return 'yes';
+      if(type&&type!=='unknown')return 'no';
+      return 'unknown';
+    }
+    if(adapter.kind==='matterSet'){
+      const type=facts.matterType||'';
+      if(type==='wastewater'){
+        if(adapter.wastewaterValueFrom)return facts[adapter.wastewaterValueFrom]||'unknown';
+        if(adapter.wastewaterValue)return adapter.wastewaterValue;
+        return 'unknown';
+      }
+      if((adapter.allowed||[]).includes(type))return 'yes';
+      if(type&&type!=='unknown')return 'no';
+      return 'unknown';
+    }
+    return 'unknown';
+  }
+
+  function adaptFacts(facts={}){
+    const out={...facts};
+    const adapters=root.WATER_RULE_PACK?.factAdapters||{};
+    Object.entries(adapters).forEach(([factId,adapter])=>{
+      out[factId]=adaptedFactValue(adapter,facts);
+    });
+    return out;
+  }
+
   function applyVersionGate(result,context={}){
     const version=context.version;
     if(!version||version.status==='resolved'||result.status==='notApplicable')return result;
@@ -56,7 +89,7 @@
     const rule=getRule(ruleKey,scope);
     if(!rule)return {ruleId:ruleKey,status:'ruleMissing',missingFacts:[],failedFacts:[],notApplicableFacts:[],nextChecks:[]};
     if(!root.WaterRuleEngine?.evaluate)throw new Error('WaterRuleEngine is required before WaterLaw.');
-    return applyVersionGate(root.WaterRuleEngine.evaluate(rule,facts||{}),context);
+    return applyVersionGate(root.WaterRuleEngine.evaluate(rule,adaptFacts(facts||{})),context);
   }
 
   function evaluateMany(ruleKeys,facts,scope,context={}){
@@ -97,6 +130,7 @@
   }
 
   function visibility(input={},facts={}){
+    facts=adaptFacts(facts);
     const wastewaterPath=facts.matterType==='wastewater'||(!facts.matterType&&!!input.waterWastewaterStatus);
     const out={};
 
@@ -244,7 +278,8 @@
       pendingGuidance:pack.pendingGuidance||{},
       coreRelations:pack.coreRelations||{},
       corePresentation:pack.corePresentation||{},
-      coreBindings:pack.coreBindings||{}
+      coreBindings:pack.coreBindings||{},
+      factAdapters:pack.factAdapters||{}
     });
     const actual=fnv1a32(payload);
     return {ok:expected.algorithm==='fnv1a32-json'&&actual===expected.value,algorithm:expected.algorithm,expected:expected.value,actual};
@@ -272,6 +307,7 @@
     evaluate,
     evaluateMany,
     evaluateBindings,
+    adaptFacts,
     direction,
     pending,
     relation,
