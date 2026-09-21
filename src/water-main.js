@@ -11,7 +11,7 @@
   }
 
   function evaluateRules(facts){
-    const evalRule=id=>root.WaterRuleEngine.evaluate(root.WATER_RULES[id],facts);
+    const evalRule=id=>root.WaterLaw.evaluate(id,facts,'core');
     return {
       r13:evalRule('article13Plan'),
       r14:evalRule('article14NoPermit'),
