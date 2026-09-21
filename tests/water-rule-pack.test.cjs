@@ -82,4 +82,19 @@ test('version-aware V2 assessment suppresses law direction until version resolve
   ok(known.laws.some(x=>x.law==='水污染防治法第14條第1項'),'resolved version should restore law direction');
 });
 
+test('Rule Pack fact adapters override legacy legal-eligibility aliases',()=>{
+  const adapted=context.window.WaterLaw.adaptFacts({
+    subjectType:'sewerSystem',
+    subjectIsBusiness:'no',
+    matterType:'garbage',
+    wastewaterConfirmed:'no',
+    article181SubjectEligible:'no',
+    article7SubjectEligible:'no',
+    article30MatterEligible:'no'
+  });
+  ok(adapted.article181SubjectEligible==='yes','sewer should be eligible for 18-1 adapter');
+  ok(adapted.article7SubjectEligible==='yes','sewer should be eligible for article 7 adapter');
+  ok(adapted.article30MatterEligible==='yes','garbage should be eligible matter for article 30 adapter');
+});
+
 console.log(`water rule pack tests: ${count}/${count} PASS`);
