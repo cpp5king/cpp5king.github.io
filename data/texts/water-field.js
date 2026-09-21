@@ -16,6 +16,8 @@
     standardRulePackVersion:'Water Standard Rule Pack 版本',
     standardLawVersion:'放流水標準適用版本',
     standardRoute:'放流水標準附表路由',
+    localRulePackVersion:'Water Local Rule Pack 版本',
+    localRuleStatus:'地方加嚴標準適用提醒',
     lawVersion:'本案子法版本判定（相容顯示）',
     sourceMode:'案件起點｜目前是否已知污染來源／特定業者？',
     unknownWaterObserved:'到達陳情位置後，是否看到陳情所述異常水體／流水？',
