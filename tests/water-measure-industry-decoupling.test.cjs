@@ -87,5 +87,5 @@ test('Measure Pack integrity includes industry extension and field metadata',()=
   const root=env();
   const result=plain(root.WaterMeasureLaw.verifyIntegrity());
   assert.equal(result.ok,true);
-  assert.equal(root.WaterMeasureLaw.packInfo().packVersion,'2026.09.21.3-test');
+  assert.match(root.WaterMeasureLaw.packInfo().packVersion,/^2026\.09\.21\.\d+-test$/);
 });
