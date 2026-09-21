@@ -23,6 +23,10 @@
       if(!root.WaterReview?.validate)throw new Error('目前版本缺少法規研判快照驗證模組。');
       validated.legalReviews=state.legalReviews.map(review=>root.WaterReview.validate(review));
     }
+    if(Object.prototype.hasOwnProperty.call(state,'waterV2State')){
+      if(!root.WaterV2UI?.validateState)throw new Error('目前版本缺少 Water V2 案件驗證模組。');
+      validated.waterV2State=root.WaterV2UI.validateState(state.waterV2State);
+    }
     return validated;
   }
 
