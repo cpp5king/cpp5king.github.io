@@ -58,3 +58,20 @@ test('Core and Measure integrity cover UI and document metadata',async()=>{
   assert.ok(root.WaterLaw.packInfo().packVersion);
   assert.ok(root.WaterMeasureLaw.packInfo().packVersion);
 });
+
+
+test('compatibility law-version aggregator reads source metadata only from Rule Packs',async()=>{
+  const {root}=await loaded();
+  const measureSource=root.WaterMeasureLaw.packInfo().officialSources[0];
+  const permitSource=root.WaterPermitLaw.packInfo().officialSources[0];
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(root.WaterLawVersions.sources.measures)),
+    {name:measureSource.title,revision:measureSource.revision,sourceId:measureSource.sourceId}
+  );
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(root.WaterLawVersions.sources.permit)),
+    {name:permitSource.title,revision:permitSource.revision,sourceId:permitSource.sourceId}
+  );
+  const source=fs.readFileSync(path.join(ROOT,'src/water-law-versions.js'),'utf8');
+  assert.doesNotMatch(source,/2026-04-20|2026-03-24|FL040734|GL005950/);
+});
