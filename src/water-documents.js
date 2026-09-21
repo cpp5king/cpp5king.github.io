@@ -9,7 +9,7 @@
     source:{manufacturing:'製造製程',operation:'操作過程',naturalResource:'自然資源開發',workEnvironment:'作業環境',domestic:'生活污水',cleaning:'清洗水',cooling:'冷卻水',rain:'雨水',groundwater:'地下水',other:'其他',unknown:'來源尚待確認'},
     yesno:{yes:'是',no:'否',unknown:'尚待確認'}
   };
-  const label=(map,key)=>map==='industry'?(root.WaterMeasureLaw?.industryCatalog?.().industries?.[key]?.label||maps.industry?.[key]||''):maps[map]?.[key]||'';
+  const label=(map,key)=>{if(map==='industry'){const item=root.WaterMeasureLaw?.industryCatalog?.().industries?.[key];return item?.documentLabel||item?.label||maps.industry?.[key]||'';}return maps[map]?.[key]||'';};
   const list=(map,values)=>Array.isArray(values)?values.map(x=>label(map,x)).filter(Boolean).join('、'):'';
   const firstLine=text=>String(text||'').split('\n')[0].trim();
   const rocDate=iso=>{
