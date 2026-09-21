@@ -39,8 +39,8 @@ water-main / water-v2-assessment
 - 檔案：`data/water-rules.js`
 - Facade：`src/water-law.js`
 - Pack ID：`WATER-CORE-TW`
-- 版本：`2026.09.21.2-test`
-- checksum：`c2b9e4aa`
+- 版本：`2026.09.21.4-test`
+- checksum：`579d6184`
 - 法規：水污染防治法
 - 官方來源：FL015486
 
@@ -55,6 +55,7 @@ water-main / water-v2-assessment
 - `water-main.js` 不再手寫母法 rule key 清單。
 - `water-workflow.js` 不再自行決定母法啟動條件。
 - `water-v2-assessment.js` 不再硬編碼主要法條名稱與理由。
+- Core 欄位條號、§19 準用說明、重大污染 3 小時通報提示等法規顯示文字已移入 Rule Pack；UI／assessment 僅保留中性 fallback。
 
 目前完整掛載母法版本：
 
@@ -67,8 +68,8 @@ water-main / water-v2-assessment
 - 檔案：`data/water-measure-rules.js`
 - Facade：`src/water-measure-law.js`
 - Pack ID：`WATER-MEASURE-TW`
-- 版本：`2026.09.21.4-test`
-- checksum：`c71b497f`
+- 版本：`2026.09.21.6-test`
+- checksum：`36264c79`
 - 法規：水污染防治措施及檢測申報管理辦法
 - 官方來源：FL040734
 - 現行修正基準：2026-04-20
@@ -88,6 +89,8 @@ water-main / water-v2-assessment
 `water-industry-v485.js` 現在只保留 UI patch、欄位切換清除與結果拼接；不再保存上述延伸業別法規判斷或門檻字串。
 
 `water-assessment.js` 不再手寫共通水措／業別水措條文清單，改由 `WaterMeasureLaw.assessmentItems()` 取得 active items。
+
+水措 §4／7／8／31／39／40／41／53／65／89-1 等正式欄位 label 已移入 Measure Pack；`data/texts/water-main.js` 只保留中性 fallback。案件敘述之業別名稱亦改讀 Measure catalog，並以 `documentLabel` 保持既有輸出相容。
 
 正式 App Shell 不再直接載入：
 
@@ -124,6 +127,8 @@ Permit Pack 目前接管：
 - 可供比對之 reference state。
 
 `WaterPermitCheck` 保留事實核對流程，但不再自己保存這些法律 metadata。
+
+相容聚合器 `water-law-versions.js` 不再寫死水措／許可修正日期或 sourceId，改由 Measure / Permit Pack 的官方來源 metadata 動態提供。
 
 ## 4. Water Standard Rules
 
@@ -273,7 +278,7 @@ Draft PR：#24 `Refactor water law into independent Rule Pack`
 
 最新 GitHub Actions：
 
-- active tests：301 / 301 PASS
+- active tests：307 / 307 PASS
 - fail：0
 - skipped：0
 - Water Core Rule Pack：10 / 10 PASS
@@ -292,7 +297,7 @@ Draft PR：#24 `Refactor water law into independent Rule Pack`
 4. Standard Pack 再逐步加入正式結構化限值資料；在資料完整前不得自動判超標。
 5. Local Pack 再加入公告範圍／里別／承受水體結構化資料；完成前不得以地址自動認定地方標準。
 6. 逐步將 Core／Permit 等仍屬純顯示用途的 §條號文字改由各自 Rule Pack metadata 提供；不改事實題目本質。
-7. 進一步盤點少數仍存在於整合層的法律顯示／路由字串，持續避免規則回流 UI。
+7. 維持防退化測試：Rule Pack 外的 UI／assessment／文件整合層不得重新出現可變條號、法定期限或法規數值門檻。
 
 ## 上線原則
 
