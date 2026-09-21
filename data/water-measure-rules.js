@@ -11,6 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'08d4196d'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
