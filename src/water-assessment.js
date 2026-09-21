@@ -1,136 +1,74 @@
 (function(root){
   'use strict';
-  const statusLabel={established:'☑ 構成要件完整',notEstablished:'☒ 目前不成立',insufficient:'? 事證不足',notApplicable:'— 不適用'};
+  const statusLabel={
+    established:'☑ 構成要件事實已完整',
+    notEstablished:'☒ 目前不支持',
+    insufficient:'? 尚有要件待確認',
+    notApplicable:'— 本案不適用'
+  };
+
   function ruleLines(rule,result){
-    return rule.elements.map(element=>{
+    return root.WaterLaw.ruleElements(rule).map(element=>{
       if(result.satisfiedFacts.includes(element.id))return '☑ '+element.label;
       if(result.failedFacts.includes(element.id))return '☒ '+element.label;
       if(result.notApplicableFacts.includes(element.id))return '— '+element.label;
       return '? '+element.label;
     }).join('\n');
   }
+
   function missingText(result){
     const parts=[];
-    if(result.failedLabels.length)parts.push(...result.failedLabels.map(x=>'不成立：'+x));
+    if(result.failedLabels.length)parts.push(...result.failedLabels.map(x=>'目前不支持：'+x));
     if(result.missingLabels.length)parts.push(...result.missingLabels.map(x=>'尚待確認／補證：'+x));
-    if(result.notApplicableLabels.length)parts.push(...result.notApplicableLabels.map(x=>'不適用：'+x));
+    if(result.notApplicableLabels.length)parts.push(...result.notApplicableLabels.map(x=>'本案不適用：'+x));
     return parts.length?parts.join('\n'):'目前無缺漏。';
   }
-  function nextText(result){return result.nextChecks.length?result.nextChecks.map((x,i)=>`${i+1}. ${x}`).join('\n'):'目前無新增查證事項。';}
+
+  function nextText(result){
+    return result.nextChecks.length?result.nextChecks.map((x,i)=>(i+1)+'. '+x).join('\n'):'目前無新增查證事項。';
+  }
+
   function resultBlock(rule,result,assessment){
-    return `${statusLabel[result.status]}\n${assessment}\n\n【構成要件】\n${ruleLines(rule,result)}\n\n【缺漏／不成立】\n${missingText(result)}\n\n【下一步】\n${nextText(result)}`;
+    return statusLabel[result.status]+'\n'+assessment+'\n\n【構成要件】\n'+ruleLines(rule,result)+'\n\n【缺漏／目前不支持】\n'+missingText(result)+'\n\n【下一步】\n'+nextText(result);
   }
-  function assess14(r){
-    if(r.status==='established')return '本案具水污染防治法第14條第1項無許可排放之成立方向。';
-    if(r.status==='notEstablished')return '第14條無許可排放目前不成立。';
-    if(r.status==='notApplicable')return '目前不進入第14條無許可排放判斷。';
-    return '目前事證不足以認定第14條無許可排放。';
+
+  function genericNarrative(r){
+    if(r.status==='established')return '本案具'+r.legalBasis+'之查核方向，構成要件事實目前已完整。';
+    if(r.status==='notEstablished')return r.title+'目前不支持。';
+    if(r.status==='notApplicable')return r.title+'本案不適用。';
+    return r.title+'尚有要件待確認。';
   }
-  function assess7(r){
-    if(r.status==='established')return '本案具水污染防治法第7條第1項放流水超標之成立方向。';
-    if(r.status==='notEstablished')return '依目前已確認事實，第7條放流水超標目前不成立。';
-    if(r.status==='notApplicable')return '目前不屬第7條管制主體。';
-    return '目前事證不足以認定第7條放流水超標。';
+
+  function coreResultBlock(ruleKey,result){
+    const rule=root.WaterLaw.getRule(ruleKey,'core');
+    return resultBlock(rule,result,root.WaterLaw.narrative(ruleKey,result.status));
   }
+
+  function guardedText(ruleKey,input,result){
+    const guard=root.WaterLaw.entryGuard(ruleKey,input);
+    if(guard.action!=='evaluate')return guard.text;
+    return coreResultBlock(ruleKey,result);
+  }
+
+  function groupText(groupKey,input,resultMap){
+    const selected=root.WaterLaw.group(groupKey,input);
+    if(selected.state!=='active')return selected.message||'目前未進入此法規支線。';
+    return selected.ruleKeys.map(ruleKey=>{
+      const result=resultMap[ruleKey];
+      return '【'+root.WaterLaw.getRule(ruleKey,'core').title+'】\n'+coreResultBlock(ruleKey,result);
+    }).join('\n\n');
+  }
+
   function article7Text(input,r7,r59){
-    let assessment=assess7(r7);
-    if(r7.status==='established'&&input.waterFacilityFailureConfirmed==='yes'){
-      if(r59.status==='established')assessment='放流水檢測超標之事實要件已確認，但§59（第59條）六項故障例外條件目前亦完整；故障發生24小時內可能不適用主管機關所定標準，§7違規結論應先排除第59條例外後再定。';
-      else if(r59.status==='insufficient')assessment='放流水檢測超標之事實要件已確認，但業者主張／現場涉及第59條故障例外且條件尚未查清；目前不宜只以超標結果作成終局違規結論。';
+    let assessment=root.WaterLaw.narrative('article7Effluent',r7.status);
+    const rel=root.WaterLaw.relation('article7Effluent');
+    if(rel&&r7.status==='established'&&input[rel.exceptionFact]===rel.exceptionFactValue){
+      if(r59.status==='established')assessment=rel.establishedExceptionText;
+      else if(r59.status==='insufficient')assessment=rel.pendingExceptionText;
     }
-    return resultBlock(root.WATER_RULES.article7Effluent,r7,assessment);
+    return resultBlock(root.WaterLaw.getRule('article7Effluent','core'),r7,assessment);
   }
-  function assess35(r){
-    if(r.status==='established')return '本案已具第35條刑事疑義之核心要件方向；應進一步固定「明知」及虛偽申報／記載證據，不以本助手直接作成刑事責任終局判斷。';
-    if(r.status==='notEstablished')return '依目前事證，第35條刑事疑義之必要要件尚有不成立。';
-    if(r.status==='notApplicable')return '目前不進入第35條刑事疑義判斷。';
-    return '目前事證不足以進一步認定第35條刑事疑義。';
-  }
-  function assess59(r){
-    if(r.status==='established')return '第59條所列六項條件目前均已確認，該處理設施故障於故障發生24小時內「可能」適用標準例外；仍不免除其他獨立違規態樣之檢核。';
-    if(r.status==='notEstablished')return '第59條24小時標準例外目前不具完整適用條件。';
-    return '第59條24小時標準例外尚有必要條件待確認。';
-  }
-  function assess71(r){
-    if(r.status==='established')return '已具第71條後續處理基礎：主管機關應令污染行為人限期清除處理；屆期不為清除處理時，得代為清除並求償必要費用。';
-    if(r.status==='notEstablished')return '目前尚未具第71條污染清除處理之完整啟動事實。';
-    return '第71條後續處理尚待確認污染事件或污染行為人。';
-  }
-  function assessGeneric(r){
-    if(r.status==='established')return `本案具${r.legalBasis}之成立方向。`;
-    if(r.status==='notEstablished')return `${r.title}目前不成立。`;
-    if(r.status==='notApplicable')return `${r.title}目前不適用。`;
-    return `${r.title}目前事證不足。`;
-  }
-  function combined181(input,results){
-    const active=[];
-    if(input.waterActualDischarge==='yes')active.push(results[0]);
-    if(input.waterDilutionObserved==='yes')active.push(results[1]);
-    if(input.waterTreatmentFacilityApplicable==='yes')active.push(results[2]);
-    if(!active.length)return '請依現場情形完成繞流、稀釋及處理設施檢核；未確認事項不會自動認定違規。';
-    return active.map(({rule,result})=>`【${rule.title}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n');
-  }
-  function combined20(input,results){
-    const active=[];
-    if(input.waterDestination==='storage'){
-      active.push(results[0]);
-      if(input.waterStoragePermit==='valid')active.push(results[1]);
-    }
-    if(input.waterDilutionObserved==='yes'){
-      active.push(results[2]);
-      if(input.waterDilutionPermit==='valid')active.push(results[3]);
-    }
-    if(!active.length)return '目前未進入第20條貯留／稀釋支線。';
-    return active.map(({rule,result})=>`【${rule.title}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n');
-  }
-  function combined27(input,results){
-    if(input.waterSevereHazardRiskConfirmed==='no')return '目前已確認不屬第27條所稱嚴重危害之虞；一般放流水超標本身不等於第27條重大污染。';
-    if(!input.waterSevereHazardRiskConfirmed||input.waterSevereHazardRiskConfirmed==='unknown')return '是否具有嚴重危害人體健康、農漁業生產或飲用水水源之虞尚待確認。';
-    return results.map(({rule,result})=>`【${rule.title}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n');
-  }
-  function combined28(input,results){
-    if(input.waterArticle28Scenario==='no')return '目前未發現輸送或貯存設備疏漏態樣；§28設備疏漏支線暫不進入。';
-    if(!input.waterArticle28Scenario||input.waterArticle28Scenario==='unknown')return '是否存在輸送或貯存設備疏漏、溢流或滲漏態樣尚待確認。';
-    if(input.waterLeakCause==='humanDischarge')return '目前較符合人為開閥、私管或主動抽排態樣，§28設備疏漏支線不優先適用；應回查§14、§18-1及實際排放路徑。';
-    const active=[results[0]];
-    if(input.waterLeakPollutedWaterBody==='yes')active.push(results[1],results[2]);
-    return active.map(({rule,result})=>`【${rule.title}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n');
-  }
-  function combined32(input,soil,groundwater){
-    if(input.waterDestination==='soil')return resultBlock(root.WATER_RULES.article32Soil,soil,assessGeneric(soil));
-    if(input.waterDestination==='groundwater')return resultBlock(root.WATER_RULES.article32Groundwater,groundwater,assessGeneric(groundwater));
-    return '目前未進入第32條土壤／地下水體支線。';
-  }
-  function article13Text(input,result){
-    if(input.waterArticle13NewOrChangeConfirmed==='no')return '目前已確認不涉及事業設立或變更，§13本案暫不進入。';
-    if(!input.waterArticle13NewOrChangeConfirmed||input.waterArticle13NewOrChangeConfirmed==='unknown')return '是否涉及§13所稱設立或變更尚待確認。';
-    return resultBlock(root.WATER_RULES.article13Plan,result,assessGeneric(result));
-  }
-  function article18Text(input,result){
-    if(input.waterArticle18SpecificDutyConfirmed==='no')return '目前未另指定其他第18條具體水措義務。4.3 已於下方獨立檢核部分共通水措子法；特定業別、另定施行日項目或尚未建置之細節仍需進一步查核。';
-    if(!input.waterArticle18SpecificDutyConfirmed||input.waterArticle18SpecificDutyConfirmed==='unknown')return '第18條為授權型水措義務。4.3 已接入部分共通子法規則；若本案另涉及特定業別、設備規格、特殊紀錄或其他未建置義務，仍應依當日有效之水措管理規定另行確認。';
-    return resultBlock(root.WATER_RULES.article18Measures,result,assessGeneric(result));
-  }
-  function article22Text(input,result){
-    if(input.waterArticle22ReportingDutyConfirmed==='no')return '目前已確認本案無欲檢核之第22條申報義務。';
-    if(!input.waterArticle22ReportingDutyConfirmed||input.waterArticle22ReportingDutyConfirmed==='unknown')return '申報義務之格式、內容、頻率與方式需依適用規定確認；V1不自行補入子法細節。';
-    return resultBlock(root.WATER_RULES.article22Reporting,result,assessGeneric(result));
-  }
-  function article26Text(input,result){
-    if(input.waterArticle26InspectionBasisConfirmed==='no')return '本次查證基礎尚未建立完整，不宜直接以第26條規避、妨礙或拒絕查證方向判斷。';
-    if(!input.waterArticle26InspectionBasisConfirmed||input.waterArticle26InspectionBasisConfirmed==='unknown')return '請先記錄稽查人員證件出示及具體查證事項，再判斷是否有規避、妨礙或拒絕。';
-    return resultBlock(root.WATER_RULES.article26Obstruction,result,assessGeneric(result));
-  }
-  function article59Text(input,result){
-    if(input.waterFacilityFailureConfirmed==='no')return '目前未確認有廢（污）水處理設施故障，不進入第59條例外。';
-    if(!input.waterFacilityFailureConfirmed||input.waterFacilityFailureConfirmed==='unknown')return '是否確有處理設施故障尚待確認；設備故障本身不等於免責。';
-    return resultBlock(root.WATER_RULES.article59Exception,result,assess59(result));
-  }
-  function article71Text(input,result){
-    if(input.waterSurfaceWaterPollutionEventConfirmed==='no')return '目前未確認地面水體發生污染事件，不進入第71條污染清除後續。';
-    if(!input.waterSurfaceWaterPollutionEventConfirmed||input.waterSurfaceWaterPollutionEventConfirmed==='unknown')return '是否已發生地面水體污染事件尚待確認。';
-    return resultBlock(root.WATER_RULES.article71Cleanup,result,assess71(result));
-  }
+
   function finalConclusion(input,active,r59){
     if(input.waterSevereHazardRiskConfirmed==='yes'){
       return 'D｜重大／緊急污染\n優先控制污染、保護下游、確認緊急應變及3小時通報，並立即固定排放、污染範圍、流向與相關證據；告發研判不得優先於污染控制。';
