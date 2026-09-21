@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'0ed822f2'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'c2b9e4aa'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -847,6 +847,42 @@
   });
 })(typeof window==='undefined'?globalThis:window);
 
+
+(function(root){
+  'use strict';
+  const businessOrSewer=Object.freeze({
+    kind:'subjectSet',
+    allowed:Object.freeze(['business','sewerSystem']),
+    businessConfirmationFact:'subjectIsBusiness'
+  });
+  const businessSewerBuilding=Object.freeze({
+    kind:'subjectSet',
+    allowed:Object.freeze(['business','sewerSystem','buildingSewage']),
+    businessConfirmationFact:'subjectIsBusiness'
+  });
+  const knownPollutants=Object.freeze(['sludge','acidAlkaliWasteLiquid','garbage','constructionWaste','waterFertilizer','otherPollutant']);
+
+  root.WATER_FACT_ADAPTERS=Object.freeze({
+    article7SubjectEligible:businessSewerBuilding,
+    article181SubjectEligible:businessOrSewer,
+    article20SubjectEligible:businessOrSewer,
+    article22SubjectEligible:businessOrSewer,
+    article27SubjectEligible:businessOrSewer,
+    article28SubjectEligible:businessOrSewer,
+    article26TargetEligible:businessSewerBuilding,
+    article28MatterEligible:Object.freeze({
+      kind:'matterSet',
+      allowed:knownPollutants,
+      wastewaterValueFrom:'wastewaterConfirmed'
+    }),
+    article30MatterEligible:Object.freeze({
+      kind:'matterSet',
+      allowed:knownPollutants,
+      wastewaterValue:'no'
+    })
+  });
+})(typeof window==='undefined'?globalThis:window);
+
 (function(root){
   'use strict';
   const meta=root.WATER_RULE_PACK_META;
@@ -862,6 +898,7 @@
     coreRelations:root.WATER_CORE_RELATIONS||{},
     corePresentation:root.WATER_CORE_PRESENTATION||{},
     coreBindings:root.WATER_CORE_BINDINGS||{},
+    factAdapters:root.WATER_FACT_ADAPTERS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
