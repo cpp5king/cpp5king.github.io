@@ -59,7 +59,7 @@
     leakPolluted:'是否已確認疏漏進入並污染水體？',
     severeHazard:'是否有嚴重危害人體健康、農漁業生產或飲用水水源之虞？',
     emergencyAction:'是否已立即止漏、圍堵、回收或採取其他緊急應變？',
-    threeHourNotice:'依法需通報時，是否已於3小時內通知主管機關？',
+    threeHourNotice:'依法需通報時，是否已於法定期限內通知主管機關？',
     sampleTaken:'STEP 8｜排放地面水體時，本次是否已採放流水樣品？',
     sampleRepresentative:'樣品是否可代表本次排放之放流水？',
     sampleBeforeReceivingWater:'採樣位置是否在進入承受水體前？',
