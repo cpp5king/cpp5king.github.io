@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'19135511'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'0ed822f2'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -608,6 +608,7 @@
   });
 
   root.WATER_PENDING_GUIDANCE=Object.freeze({
+    lawVersion:'適用法規版本待確認：請確認行為發生日期及當時有效法規版本。',
     permitUnknown:'{subject}：目前是否具有有效水許可／核准資料。',
     permitTypeMissing:'{subject}：確認目前核對的有效許可／核准類型。',
     permitTypeUnknown:'{subject}：目前許可類型尚無法確認，暫不以許可登記事項差異直接指定第14條或第20條。',
