@@ -13,7 +13,7 @@
     const date=validDate(dateValue);
     if(!date){
       return {date:'',status:'unknown',permitRegime:'unknown',measuresRegime:'unknown',
-        text:'稽查日期尚未填寫，無法自動判定子法施行版本。請先填入稽查日期；程式不以裝置目前日期代替案件日期。'};
+        text:'行為發生日期尚未確認，無法自動判定子法施行版本；適用法規版本待確認。程式不以稽查日期或裝置目前日期代替行為日期。'};
     }
     const permitAfter=date>='2026-10-01';
     const measuresAfter=date>='2026-04-20';
@@ -27,7 +27,7 @@
       ?(deferredAfter
         ?'水措管理：115年4月20日修正版之延後施行時點已屆；仍應依個別條文與附表確認適用。'
         :'水措管理：以115年4月20日修正版中已生效條文為準；另定施行日期之自動監測／附表項目，本版僅提示，不自動認定違規。')
-      :'水措管理：案件日期早於115年4月20日，應回查當時有效版本；本版不以新制回溯判斷。';
+      :'水措管理：行為日期早於115年4月20日，應回查當時有效版本；本版不以新制回溯判斷。';
     return {date,status:'resolved',permitRegime,measuresRegime,text:`${permitText}\n${measuresText}`};
   }
   root.WaterLawVersions={resolve,sources:SOURCES};
