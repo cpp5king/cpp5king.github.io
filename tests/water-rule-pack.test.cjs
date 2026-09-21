@@ -15,6 +15,8 @@ test('single Water Rule Pack loads both legacy and V2 rule contracts',()=>{
   ok(Object.keys(context.window.WATER_V2_RULES||{}).length>=18,'field rules missing');
 });
 
+test('Rule Pack integrity checksum passes',()=>{const r=context.window.WaterLaw.verifyIntegrity();ok(r.ok,'integrity failed');});
+
 test('WaterLaw resolves current mother-law version by behavior date',()=>{
   const r=context.window.WaterLaw.resolveLawVersion('2026-09-21');
   ok(r.status==='resolved','version not resolved');
