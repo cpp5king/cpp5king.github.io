@@ -7,12 +7,18 @@
   function a30Label(v){return ({pesticide:'農藥／肥料',discard:'棄置污染物',kill_aquatic:'捕殺水生物',livestock:'飼養禽畜',other:'其他污染水體行為'})[v]||v;}
   function dedupeLaw(arr){const m=new Map();arr.forEach(x=>{const k=x.law+'|'+x.reason;if(!m.has(k))m.set(k,x)});return [...m.values()];}
 
-  function assess(inspections=[]){
+  function assess(inspections=[],options){
     if(!root.WaterLaw?.evaluate) throw new Error('WaterLaw is required before WaterV2Assessment.');
     if(!root.WaterV2Facts?.fromInspections) throw new Error('WaterV2Facts is required before WaterV2Assessment.');
     const rules=root.WATER_V2_RULES||{};
     const normalized=root.WaterV2Facts.fromInspections(inspections);
     const laws=[],pending=[],evaluations=[];
+    const versionAware=arguments.length>=2;
+    const lawVersion=versionAware?root.WaterLaw.resolveLawVersion(options?.behaviorDate||''):null;
+    if(versionAware&&lawVersion.status!=='resolved'){
+      const message=root.WaterLaw.pending('lawVersion');
+      if(message)pending.push(message);
+    }
 
     normalized.forEach(item=>{
       const f=item.facts;
@@ -20,7 +26,7 @@
       const established=ruleKey=>{
         const rule=rules[ruleKey];
         if(!rule) throw new Error('Missing Water V2 rule: '+ruleKey);
-        const result=root.WaterLaw.evaluate(ruleKey,f,'field');
+        const result=root.WaterLaw.evaluate(ruleKey,f,'field',lawVersion?{version:lawVersion}:{});
         evaluations.push({inspectionId:item.id,ruleKey,...result});
         return result.status==='established';
       };
@@ -118,7 +124,7 @@
       }
     });
 
-    return {laws:dedupeLaw(laws),pending:[...new Set(pending)],evaluations};
+    return {laws:dedupeLaw(laws),pending:[...new Set(pending)],evaluations,lawVersion};
   }
 
   root.WaterV2Assessment=Object.freeze({version:VERSION,provenance:PROVENANCE,assess});
