@@ -40,24 +40,36 @@
     return rules[ruleKey]||null;
   }
 
-  function evaluate(ruleKey,facts,scope){
+  function applyVersionGate(result,context={}){
+    const version=context.version;
+    if(!version||version.status==='resolved'||result.status==='notApplicable')return result;
+    result.baseStatus=result.status;
+    result.status='insufficient';
+    result.versionStatus=version.status;
+    if(!result.missingFacts.includes('applicableLawVersion'))result.missingFacts.unshift('applicableLawVersion');
+    if(!result.missingLabels.includes('適用法規版本待確認'))result.missingLabels.unshift('適用法規版本待確認');
+    if(!result.nextChecks.includes('確認行為發生日期及當時有效法規版本'))result.nextChecks.unshift('確認行為發生日期及當時有效法規版本');
+    return result;
+  }
+
+  function evaluate(ruleKey,facts,scope,context={}){
     const rule=getRule(ruleKey,scope);
     if(!rule)return {ruleId:ruleKey,status:'ruleMissing',missingFacts:[],failedFacts:[],notApplicableFacts:[],nextChecks:[]};
     if(!root.WaterRuleEngine?.evaluate)throw new Error('WaterRuleEngine is required before WaterLaw.');
-    return root.WaterRuleEngine.evaluate(rule,facts||{});
+    return applyVersionGate(root.WaterRuleEngine.evaluate(rule,facts||{}),context);
   }
 
-  function evaluateMany(ruleKeys,facts,scope){
+  function evaluateMany(ruleKeys,facts,scope,context={}){
     const out={};
-    (ruleKeys||[]).forEach(key=>{out[key]=evaluate(key,facts,scope);});
+    (ruleKeys||[]).forEach(key=>{out[key]=evaluate(key,facts,scope,context);});
     return out;
   }
 
-  function evaluateBindings(bindingName,facts){
+  function evaluateBindings(bindingName,facts,context={}){
     const pack=root.WATER_RULE_PACK||{};
     const bindings=bindingName==='core'?(pack.coreBindings||{}):{};
     const out={};
-    Object.entries(bindings).forEach(([alias,ruleKey])=>{out[alias]=evaluate(ruleKey,facts,bindingName);});
+    Object.entries(bindings).forEach(([alias,ruleKey])=>{out[alias]=evaluate(ruleKey,facts,bindingName,context);});
     return out;
   }
 
