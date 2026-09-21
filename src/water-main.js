@@ -11,33 +11,8 @@
   }
 
   function evaluateRules(facts){
-    const evalRule=id=>root.WaterLaw.evaluate(id,facts,'core');
-    return {
-      r13:evalRule('article13Plan'),
-      r14:evalRule('article14NoPermit'),
-      r7:evalRule('article7Effluent'),
-      r18:evalRule('article18Measures'),
-      rb:evalRule('article181Bypass'),
-      rd:evalRule('article181Dilution'),
-      rt:evalRule('article181Treatment'),
-      r20s:evalRule('article20StorageNoPermit'),
-      r20sm:evalRule('article20StorageMismatch'),
-      r20d:evalRule('article20DilutionNoPermit'),
-      r20dm:evalRule('article20DilutionMismatch'),
-      r22:evalRule('article22Reporting'),
-      r35:evalRule('article35FalseReporting'),
-      r26:evalRule('article26Obstruction'),
-      r27e:evalRule('article27Emergency'),
-      r27n:evalRule('article27Notice'),
-      r28p:evalRule('article28Prevention'),
-      r28e:evalRule('article28Emergency'),
-      r28n:evalRule('article28Notice'),
-      r30:evalRule('article30Dumping'),
-      r32s:evalRule('article32Soil'),
-      r32g:evalRule('article32Groundwater'),
-      r59:evalRule('article59Exception'),
-      r71:evalRule('article71Cleanup')
-    };
+    if(!root.WaterLaw?.evaluateBindings)throw new Error('WaterLaw core bindings are required before water-main.');
+    return root.WaterLaw.evaluateBindings('core',facts);
   }
 
   function evaluateSublaw(facts){
