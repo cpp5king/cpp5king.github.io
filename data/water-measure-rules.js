@@ -170,7 +170,7 @@
     mining:{label:'採礦業',articles:['9']},
     stoneExtraction:{label:'土石採取業',articles:['9']},
     stoneProcessing:{label:'土石加工業',articles:['9']},
-    readyMix:{label:'水泥業（本辦法第9條所稱預拌混凝土）',articles:['9']},
+    readyMix:{label:'水泥業（本辦法第9條所稱預拌混凝土）',documentLabel:'預拌混凝土（第9條所稱水泥業）',articles:['9']},
     earthworkDump:{label:'土石方堆（棄）置場',articles:['9']},
     construction:{label:'營建工地',articles:['9','10','49-3']},
     shipDismantling:{label:'船舶解體業',articles:['45']},
@@ -186,7 +186,7 @@
     electroplating:{label:'電鍍業',articles:['49-9']},
     metalSurface:{label:'金屬表面處理業',articles:['49-9']},
     other:{label:'其他事業',articles:[]},
-    unknown:{label:'尚待確認',articles:[]}
+    unknown:{label:'尚待確認',documentLabel:'業別尚待確認',articles:[]}
   });
   const specialOperations=Object.freeze({
     organicGroundwaterPollutant:{label:'貯存／輸送地下水污染管制標準有機污染物',articles:['49-1']},
