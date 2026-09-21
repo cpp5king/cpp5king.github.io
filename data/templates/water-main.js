@@ -30,6 +30,7 @@
       computed('waterCoreLawVersionText',T.main.coreLawVersion,{display:true}),
       computed('waterMeasureRulePackVersionText',T.main.measureRulePackVersion,{display:true}),
       computed('waterMeasureLawVersionText',T.main.measureLawVersion,{display:true}),
+      computed('waterPermitRulePackVersionText',T.main.permitRulePackVersion,{display:true}),
       computed('waterPermitLawVersionText',T.main.permitLawVersion,{display:true}),
       computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
