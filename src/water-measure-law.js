@@ -100,6 +100,20 @@
     return Object.entries(industries).map(([id,item])=>({id,label:item.label,value:item.label}));
   }
 
+  function industryFieldDefinitions(){
+    const pack=root.WATER_MEASURE_RULE_PACK||{};
+    const optionSets=pack.industryFieldOptions||{};
+    const clone=value=>JSON.parse(JSON.stringify(value));
+    return (pack.industryFields||[]).map(definition=>{
+      const field=clone(definition);
+      if(field.type==='select'&&field.optionSet){
+        field.options=clone(optionSets[field.optionSet]||[]);
+        delete field.optionSet;
+      }
+      return field;
+    });
+  }
+
   function industryGuidance(input={}){
     const ext=industryExtensions();
     const type=input.waterIndustryType||'';
@@ -256,7 +270,9 @@
       commonRules:pack.commonRules||{},
       industryRules:pack.industryRules||{},
       industryCatalog:pack.industryCatalog||{},
-      industryExtensions:pack.industryExtensions||{}
+      industryExtensions:pack.industryExtensions||{},
+      industryFields:pack.industryFields||[],
+      industryFieldOptions:pack.industryFieldOptions||{}
     });
     const actual=fnv1a32(payload);
     return {
@@ -277,6 +293,7 @@
     industryExtensions,
     industryGroups,
     industryOptions,
+    industryFieldDefinitions,
     industryGuidance,
     evaluateIndustryExtensions,
     packInfo,
