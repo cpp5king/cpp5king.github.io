@@ -8,7 +8,7 @@
   function dedupeLaw(arr){const m=new Map();arr.forEach(x=>{const k=x.law+'|'+x.reason;if(!m.has(k))m.set(k,x)});return [...m.values()];}
 
   function assess(inspections=[]){
-    if(!root.WaterRuleEngine?.evaluate) throw new Error('WaterRuleEngine is required before WaterV2Assessment.');
+    if(!root.WaterLaw?.evaluate) throw new Error('WaterLaw is required before WaterV2Assessment.');
     if(!root.WaterV2Facts?.fromInspections) throw new Error('WaterV2Facts is required before WaterV2Assessment.');
     const rules=root.WATER_V2_RULES||{};
     const normalized=root.WaterV2Facts.fromInspections(inspections);
@@ -23,7 +23,7 @@
       const established=ruleKey=>{
         const rule=rules[ruleKey];
         if(!rule) throw new Error('Missing Water V2 rule: '+ruleKey);
-        const result=root.WaterRuleEngine.evaluate(rule,f);
+        const result=root.WaterLaw.evaluate(ruleKey,f,'field');
         evaluations.push({inspectionId:item.id,ruleKey,...result});
         return result.status==='established';
       };
