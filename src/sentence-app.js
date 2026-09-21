@@ -43,6 +43,9 @@
     function exportCase(){
       const state=session.snapshot();
       if(!state.templateId){window.alert?.('目前沒有可匯出的案件。');return;}
+      if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.()&&root.WaterV2UI?.snapshot){
+        state.waterV2State=root.WaterV2UI.snapshot();
+      }
       const text=root.CaseFile.serialize(state,root.INSPECTION_APP_META);
       const blob=new Blob([text],{type:'application/json;charset=utf-8'});
       const url=URL.createObjectURL(blob);
@@ -53,7 +56,12 @@
       try{
         if(hasInput()&&!window.confirm('匯入案件將取代目前輸入及草稿，是否繼續？'))return;
         const parsed=root.CaseFile.parse(await file.text(),config);
-        session.restore(parsed.state); render();
+        session.restore(parsed.state);
+        if(root.WaterV2UI){
+          if(parsed.state.waterV2State&&root.WaterV2UI.restore)root.WaterV2UI.restore(parsed.state.waterV2State);
+          else root.WaterV2UI.reset?.();
+        }
+        render();
       }catch(error){window.alert?.('無法匯入案件：'+error.message);}
     });
     function render() {
