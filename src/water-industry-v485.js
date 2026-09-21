@@ -2,9 +2,7 @@
   'use strict';
   const VERSION='4.8.5';
   const MISSING='尚待確認';
-  const article9Types=new Set(['mining','stoneExtraction','stoneProcessing','readyMix','earthworkDump','construction']);
-  const highTechTypes=new Set(['semiconductor','optoelectronics','pcb','electroplating','metalSurface']);
-  const foodHotelTypes=new Set(['restaurant','touristHotel']);
+  if(!root.WaterMeasureLaw)throw new Error('WaterMeasureLaw is required before water-industry-v485.');
   const triOptions=[
     {id:'yes',label:'是，已確認',value:'是，已確認'},
     {id:'no',label:'否，已確認不是／不符合',value:'否，已確認不是／不符合'},
@@ -24,14 +22,7 @@
     id,label,type:'checklist',missing:MISSING,separator:'、',showWhen,
     items:items.map(item=>({id:item.id,label:item.label,...(item.exclusive?{exclusive:true}:{})}))
   });
-  const industryOptions=[
-    option('construction','營建工地'),option('readyMix','水泥業（本辦法第9條所稱預拌混凝土）'),
-    option('stoneProcessing','土石加工業'),option('stoneExtraction','土石採取業'),option('mining','採礦業'),option('earthworkDump','土石方堆（棄）置場'),
-    option('shipDismantling','船舶解體業'),option('livestock','畜牧業'),option('waterworks','自來水廠'),option('restaurant','餐飲業'),option('touristHotel','觀光旅館（飯店）'),
-    option('dialysisClinic','洗腎診所'),option('coalPower','使用燃煤之發電廠'),option('semiconductor','晶圓製造及半導體製造業'),
-    option('optoelectronics','光電材料及元件製造業'),option('pcb','印刷電路板製造業'),option('electroplating','電鍍業'),option('metalSurface','金屬表面處理業'),
-    option('other','其他事業'),option('unknown','尚待確認')
-  ];
+  const industryOptions=root.WaterMeasureLaw.industryOptions();
 
   const newFieldIds=[
     'waterConstructionVisibleSedimentFound','waterConstructionSedimentCleanedCompliant','waterConstructionWasteOilFound','waterConstructionWasteOilHandledCompliant','waterConstructionCleanupRecordsCompliant',
@@ -152,7 +143,8 @@
       const result=baseWorkflowApply(input,facts,out);
       result.waterShowIndustryChoice=facts.subjectIsBusiness==='yes'?'yes':'no';
       result.waterShowIndustry=result.waterShowIndustryChoice==='yes'&&!!input.waterIndustryType?'yes':'no';
-      result.waterShowIndustryArticle9=result.waterShowIndustry==='yes'&&article9Types.has(input.waterIndustryType)?'yes':'no';
+      const guidance=root.WaterMeasureLaw.industryGuidance(input);
+      result.waterShowIndustryArticle9=result.waterShowIndustry==='yes'&&guidance.isArticle9?'yes':'no';
       result.waterShowIndustryConstruction=result.waterShowIndustry==='yes'&&input.waterIndustryType==='construction'?'yes':'no';
       result.waterShowIndustryLivestock=result.waterShowIndustry==='yes'&&input.waterIndustryType==='livestock'?'yes':'no';
       result.waterShowIndustryLivestockFertilizer=result.waterShowIndustryLivestock==='yes'&&input.waterLivestockFertilizerUse==='yes'?'yes':'no';
@@ -160,97 +152,15 @@
       result.waterSpecialOrganic=ops.includes('organicGroundwaterPollutant')?'yes':'no';
       result.waterSpecialResidual=ops.includes('constructionResidualReceiving')?'yes':'no';
       result.waterSpecialBat=ops.includes('batPermitReview')?'yes':'no';
-      if(highTechTypes.has(input.waterIndustryType)){
-        result.waterHighTechRequiredStreamsText=['semiconductor','optoelectronics','pcb'].includes(input.waterIndustryType)
-          ?'§49-9：研磨／切割、含氟、TMAH有機、含氰、含鉻及含銅作業廢水，於觸發條件成立時應分流收集處理。'
-          :'§49-9：含氰及含鉻作業廢水，於觸發條件成立時應分流收集處理。';
-      }else result.waterHighTechRequiredStreamsText='';
+      result.waterHighTechRequiredStreamsText=guidance.highTechRequiredStreamsText||'';
       return result;
     };
     root.WaterWorkflow.__industry485=true;
   }
 
-  function state(value){return value==='yes'?'ok':value==='no'?'bad':value==='unknown'||!value?'missing':'missing';}
-  function icon(s){return s==='ok'?'☑':s==='bad'?'⚠':s==='na'?'—':'?';}
   function collect(input,out){
-    const sections=[],overview=[],missing=[],concerns=[];
-    const lawReady=out.sublawVersionResolved==='yes';
-    const type=input.waterIndustryType||'';
-    const add=(basis,title,checks)=>{
-      if(!lawReady){sections.push(`【${basis} ${title}】\n? 本案適用之子法版本尚待確認；先保留現場事實，不直接作違規判斷。`);overview.push(`${basis} ${title}：? 版本待確認`);missing.push(`${basis} ${title}之適用版本`);return;}
-      const lines=[];let hasBad=false,hasMissing=false;
-      for(const [field,label,mode] of checks){
-        const value=input[field];
-        if(mode==='trigger'){
-          if(value==='no'){lines.push(`— ${label}：未觸發`);continue;}
-          if(value==='yes'){lines.push(`☑ ${label}：已觸發`);continue;}
-          lines.push(`? ${label}：待確認`);hasMissing=true;missing.push(label);continue;
-        }
-        const s=state(value);lines.push(`${icon(s)} ${label}：${s==='ok'?'已確認符合':s==='bad'?'疑似不符':'待確認'}`);
-        if(s==='bad'){hasBad=true;concerns.push(`${basis} ${label}`);} if(s==='missing'){hasMissing=true;missing.push(label);}
-      }
-      const status=hasBad?'⚠ 疑似不符':hasMissing?'? 待確認':'☑ 已完成';
-      sections.push(`【${basis} ${title}】\n${lines.join('\n')}`);overview.push(`${basis} ${title}：${status}`);
-    };
-
-    if(type==='construction'){
-      const checks=[];
-      checks.push(['waterConstructionVisibleSedimentFound','可見沉積污泥','trigger']);
-      if(input.waterConstructionVisibleSedimentFound==='yes')checks.push(['waterConstructionSedimentCleanedCompliant','沉積污泥清除']);
-      checks.push(['waterConstructionWasteOilFound','施工維修廢油棄置／溢洩','trigger']);
-      if(input.waterConstructionWasteOilFound==='yes')checks.push(['waterConstructionWasteOilHandledCompliant','廢油收集處理']);
-      checks.push(['waterConstructionCleanupRecordsCompliant','清除／收集處理紀錄與證明']);
-      add('§49-3','營建工地沉積污泥／廢油',checks);
-    }
-    if(type==='shipDismantling')add('§45','船舶解體業',[['waterShipContainmentCompliant','截流或核准替代防堵設施'],['waterShipOilBoomCompliant','浮油攔除設備'],['waterShipReceivingFacilitiesCompliant','污染物收受設施']]);
-    if(type==='livestock'){
-      if(input.waterLivestockFishIntegratedUse==='yes')add('§46','漁牧綜合經營',[['waterLivestockFishDailyVolumeCompliant','每公頃每日廢水量'],['waterLivestockFishStockingCompliant','魚池承受豬隻廢水量'],['waterLivestockFishDOCompliant','魚池溶氧'],['waterLivestockFishFreeboardCompliant','魚池出水高程／池頂距離'],['waterLivestockFishRecordsCompliant','三年紀錄'],['waterLivestockFishNoticeCompliant','排放前三日通知']]);
-      else if(input.waterLivestockFishIntegratedUse==='unknown'||!input.waterLivestockFishIntegratedUse){overview.push('§46 漁牧綜合經營：? 是否適用待確認');missing.push('是否採漁牧綜合經營');}
-      if(input.waterLivestockPigCattleResourceApplicable==='yes')add('§46-1','畜牧糞尿資源化',[['waterLivestockResourceMeasureApproved','依法核准之資源化措施'],['waterLivestockResourceRatioCompliant','資源化處理比率']]);
-      else if(input.waterLivestockPigCattleResourceApplicable==='unknown'||!input.waterLivestockPigCattleResourceApplicable){overview.push('§46-1 畜牧糞尿資源化：? 是否適用待確認');missing.push('是否飼養豬隻或牛隻');}
-      if(input.waterLivestockSmallPigPlanApplicable==='yes')add('§49-5～49-7','20至未滿200頭養豬場管理計畫',[['waterLivestockSmallPigPlanApproved','廢（污）水管理計畫核准'],['waterLivestockSmallPigPlanOperationCompliant','依核准計畫運作']]);
-      else if(input.waterLivestockSmallPigPlanApplicable==='unknown'||!input.waterLivestockSmallPigPlanApplicable){overview.push('§49-5～49-7 小型養豬場：? 是否適用待確認');missing.push('是否飼養豬隻20頭以上未滿200頭');}
-      if(input.waterLivestockFertilizerUse==='yes'&&input.waterLivestockFertilizerPauseCondition==='yes')add('§49-10、§70-6、§70-9','沼液沼渣暫停施灌',[['waterLivestockFertilizerPauseCompliant','應暫停期間確實停止施灌']]);
-    }
-    if(type==='waterworks'&&input.waterWaterworksEmergencyDischargeUsed==='yes')add('§47','自來水廠緊急直接排放',[['waterWaterworksEmergencyConditionsMet','緊急直接排放法定條件'],['waterWaterworksEmergencyRegistered','應變措施納入核准文件'],['waterWaterworksBasinsEmptied','沉澱池／污泥濃縮池先淨空'],['waterWaterworksNoticeCompliant','下游通知及主管機關通報'],['waterWaterworksDailyMonitoringCompliant','按日檢測與紀錄']]);
-    else if(type==='waterworks'&&(input.waterWaterworksEmergencyDischargeUsed==='unknown'||!input.waterWaterworksEmergencyDischargeUsed)){overview.push('§47 自來水廠緊急直接排放：? 本次是否使用待確認');missing.push('本次是否使用§47緊急直接排放');}
-    if(foodHotelTypes.has(type)){
-      if(input.waterFoodServiceProvided==='yes')add('§48、§49','餐飲廢水油脂截留',[['waterGreaseTrapPresent','油脂截留設施'],['waterGreaseTrapMaintenanceRecordsCompliant','清理維護及三年紀錄']]);
-      else if(input.waterFoodServiceProvided==='unknown'||!input.waterFoodServiceProvided){overview.push('§48、§49 餐飲服務：? 是否提供餐飲服務待確認');missing.push('是否提供餐飲服務');}
-      if(input.waterHotSpringServiceProvided==='yes'){
-        const checks=[['waterHotSpringSeparatedCollectionCompliant','單純泡湯廢水分流收集處理']];
-        if(input.waterHotSpringMudSpring==='no')checks.push(['waterHotSpringFiltersCompliant','毛髮／懸浮固體過濾設施']);
-        else if(input.waterHotSpringMudSpring==='unknown'||!input.waterHotSpringMudSpring)missing.push('溫泉是否屬泥漿泉質');
-        checks.push(['waterHotSpringMaintenanceRecordsCompliant','設施清理維護及三年紀錄']);
-        add('§48、§49','溫泉泡湯廢水',checks);
-      }else if(input.waterHotSpringServiceProvided==='unknown'||!input.waterHotSpringServiceProvided){overview.push('§48、§49 溫泉泡湯服務：? 是否提供待確認');missing.push('是否提供溫泉泡湯服務');}
-    }
-    if(type==='dialysisClinic')add('§49-4','洗腎診所',[['waterDialysisManagementPlanApproved','營運前廢（污）水管理計畫核准'],['waterDialysisOperationMatchesPlan','依核准管理計畫實施']]);
-    if(type==='coalPower'){
-      add('§49-8','燃煤發電廠汞管理',[['waterCoalMercuryRecordsCompliant','燃煤來源／總汞／用量紀錄'],['waterCoalMercuryReportingCompliant','半年網路申報']]);
-      if(input.waterCoalMercuryThresholdExceeded==='yes')add('§49-8','汞總量管理計畫',[['waterCoalMercuryPlanApproved','汞總量管理計畫核准'],['waterCoalMercuryPlanImplemented','依核准計畫執行']]);
-      else if(input.waterCoalMercuryThresholdExceeded==='unknown'||!input.waterCoalMercuryThresholdExceeded){overview.push('§49-8 汞總量管理門檻：? 待確認');missing.push('燃煤總汞是否達管理計畫門檻');}
-    }
-    if(highTechTypes.has(type)){
-      if(input.waterHighTech49_9Trigger==='yes')add('§49-9','特定製程廢水分流',[['waterHighTechSeparatedCollectionCompliant','應分流作業廢水之分流收集處理']]);
-      else if(input.waterHighTech49_9Trigger==='unknown'||!input.waterHighTech49_9Trigger){overview.push('§49-9 特定製程廢水分流：? 觸發條件待確認');missing.push('是否符合§49-9分流觸發條件');}
-    }
-
-    const ops=Array.isArray(input.waterSpecialOperationTypes)?input.waterSpecialOperationTypes:[];
-    if(ops.includes('organicGroundwaterPollutant'))add('§49-1','有機地下水污染物貯存／輸送',[['waterOrganicLeakPreventionCompliant','防滲漏材質與防範'],['waterOrganicInspectionRecordsCompliant','巡查檢視與三年紀錄']]);
-    if(ops.includes('constructionResidualReceiving'))add('§49-2','特定營建剩餘土石方收容處理',[['waterResidualDailyRecordsCompliant','每日車輛／土質／收容量／處理量紀錄']]);
-    if(ops.includes('batPermitReview')){
-      if(!lawReady){overview.push('§49-12 最佳可行控制技術：? 版本待確認');missing.push('§49-12適用版本');}
-      else if(['application','change','extension'].includes(input.waterBatPermitActivity))add('§49-12','附表五最佳可行控制技術（許可審查提醒）',[['waterBatEvaluationConfirmed','優先評估附表五最佳可行控制技術']]);
-      else if(input.waterBatPermitActivity==='notCurrent'){overview.push('§49-12 最佳可行控制技術：— 本次非申請／變更／展延審查');}
-      else {overview.push('§49-12 最佳可行控制技術：? 審查情境待確認');missing.push('本次是否屬申請／變更／展延');}
-    }
-    if(type==='unknown'){overview.unshift('業別：? 尚待確認；不直接套用業別專屬條文。');missing.push('實際業別');}
-    if(type==='other')overview.unshift('業別：其他事業；目前無匹配之業別專屬包，仍適用一般水污核心及跨業別特殊作業檢查。');
-    if(!ops.length){overview.push('跨業別特殊作業：? 尚未確認');missing.push('是否涉及§49-1、§49-2或§49-12特殊作業');}
-    else if(ops.includes('unknown')){overview.push('跨業別特殊作業：? 尚待確認');missing.push('跨業別特殊作業適用性');}
-    else if(ops.includes('none'))overview.push('跨業別特殊作業：— 已確認均未涉及');
-    return {sections,overview,missing:[...new Set(missing)],concerns:[...new Set(concerns)]};
+    if(!root.WaterMeasureLaw?.evaluateIndustryExtensions)throw new Error('WaterMeasureLaw industry extensions are required before water-industry-v485.');
+    return root.WaterMeasureLaw.evaluateIndustryExtensions(input,{lawReady:out.sublawVersionResolved==='yes'});
   }
 
   const baseAssessmentApply=root.WaterAssessment?.apply;
@@ -276,7 +186,7 @@
       if(extra.concerns.length){
         result.waterLiveDecisionText=[String(result.waterLiveDecisionText||'').trim(),'⚠ 特定業別附加檢查發現疑似不符合事項，應依適用條文與現場證據再確認。'].filter(Boolean).join('\n');
         if(/^A｜/.test(String(result.waterFinalConclusionText||''))){
-          result.waterFinalConclusionText='C｜事證不足\n特定業別附加檢查發現疑似不符合事項；目前先保留為待補強之法規／事證支線，不以本附加檢查單獨作成終局違規結論。';
+          result.waterFinalConclusionText='C｜尚有要件待確認\n特定業別附加檢查發現疑似不符合事項；目前先保留為待補強之法規／事證支線，不以本附加檢查單獨作成終局違規結論。';
         }
       }
       return result;
