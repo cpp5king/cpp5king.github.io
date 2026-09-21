@@ -1,6 +1,5 @@
 (function(root){
   'use strict';
-  const article9Types=new Set(['mining','stoneExtraction','stoneProcessing','readyMix','earthworkDump','construction']);
   const tri=v=>v==='yes'?'yes':v==='no'?'no':'unknown';
   const inverse=v=>v==='yes'?'no':v==='no'?'yes':'unknown';
   const complianceViolation=v=>v==='yes'?'no':v==='no'?'yes':'unknown';
@@ -12,6 +11,7 @@
   }
   function facts(input,facts){
     const type=input.waterIndustryType||'';
+    const article9Types=new Set(root.WaterMeasureLaw?.industryGroups?.().article9Types||[]);
     return Object.assign({},facts,{
       industryType:type,
       industryArticle9Applicable:type? (article9Types.has(type)?'yes':'no'):'unknown',
@@ -38,5 +38,5 @@
     return {facts:merged,results:root.WaterMeasureLaw.evaluateAll(merged,'industry',context)};
   }
 
-  root.WaterIndustry={evaluate,article9Types};
+  root.WaterIndustry={evaluate};
 })(typeof window==='undefined'?globalThis:window);
