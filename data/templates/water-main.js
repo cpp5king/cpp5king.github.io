@@ -26,8 +26,11 @@
       computed('waterShowSublawCore'),computed('waterShowSublawRainException'),computed('waterShowSublawRunoff'),computed('waterShowSublawOutsource'),computed('waterShowSublawStorage'),computed('waterShowSublawReuse'),computed('waterShowSublawOutlet'),computed('waterShowSublawOutletMixing'),computed('waterShowSublawMeter'),computed('waterShowSublawReporting'),
       computed('waterLiveDecisionText','案件研判摘要',{display:true,className:'live-assessment'}),
       computed('waterLiveMissingText','尚缺關鍵事證',{display:true,className:'live-assessment'}),
+      computed('waterRulePackVersionText',T.main.rulePackVersion,{display:true}),
+      computed('waterCoreLawVersionText',T.main.coreLawVersion,{display:true}),
       computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
+      field('waterBehaviorDate',T.main.behaviorDate,'date',{format:'iso'}),
       field('waterInspectionDate',T.main.inspectionDate,'date',{format:'iso'}),
       select('waterSubjectType',T.main.subjectType,[['business','水污法事業'],['sewerSystem','污水下水道系統'],['buildingSewage','建築物污水處理設施'],['nonBusiness','一般民眾／其他非事業'],['unknown','尚未確認']]),
       select('waterSubjectConfirmed',T.main.subjectConfirmed,tri,{showWhen:when('waterShowSubjectConfirmed')}),
