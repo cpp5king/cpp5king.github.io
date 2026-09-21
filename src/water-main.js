@@ -48,7 +48,7 @@
     const sublaw=evaluateSublaw(facts,measureVersion);
     const industry=root.WaterIndustry.evaluate(out,facts,measureVersion);
     root.WaterWorkflow.apply(input,facts,out);
-    root.WaterAssessment.apply(input,facts,out,lawVersion,results,sublaw,industry);
+    root.WaterAssessment.apply(input,facts,out,measureVersion,results,sublaw,industry);
     const docs=root.WaterDocuments.build(out,facts);
     out.waterRecordDraftText=docs.recordText;
     out.waterReplyDraftText=docs.replyText;
