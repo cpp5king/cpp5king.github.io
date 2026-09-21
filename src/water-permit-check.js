@@ -83,7 +83,7 @@
     out.waterShowLegacySublawApprovedMeasures=bool(subjectEligible&&!out.waterPermitCheckMode);
     out.waterShowLegacySublawOperationMatches=bool(out.waterShowLegacySublawApprovedMeasures==='yes'&&out.waterSublawApprovedMeasuresConfirmed==='yes');
 
-    // 4.8 以新差異檢核模組提供管理辦法§4所需事實；舊案件未選新模式時保留舊欄位語意。
+    // 4.8 以新差異檢核模組提供核准內容差異所需事實；舊案件未選新模式時保留舊欄位語意。
     if(out.waterPermitCheckMode){
       if(out.waterPermitLegalComparisonActive==='yes'){
         out.waterSublawApprovedMeasuresConfirmed='yes';
