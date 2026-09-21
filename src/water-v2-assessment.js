@@ -15,6 +15,7 @@
     const laws=[],pending=[],evaluations=[];
     const versionAware=arguments.length>=2;
     const lawVersion=versionAware?root.WaterLaw.resolveLawVersion(options?.behaviorDate||''):null;
+    const versionResolved=!lawVersion||lawVersion.status==='resolved';
     if(versionAware&&lawVersion.status!=='resolved'){
       const message=root.WaterLaw.pending('lawVersion');
       if(message)pending.push(message);
@@ -28,11 +29,11 @@
         if(!rule) throw new Error('Missing Water V2 rule: '+ruleKey);
         const result=root.WaterLaw.evaluate(ruleKey,f,'field',lawVersion?{version:lawVersion}:{});
         evaluations.push({inspectionId:item.id,ruleKey,...result});
-        return result.status==='established';
+        return result.status==='established'||(!versionResolved&&result.baseStatus==='established');
       };
       const pushDirection=(ruleKey,context={})=>{
         const d=root.WaterLaw.direction(ruleKey,{subjectType:item.subjectType,...context});
-        if(d)laws.push(d);
+        if(d&&versionResolved)laws.push(d);
       };
       const addPending=(key,context={})=>{
         const value=root.WaterLaw.pending(key,{subject:subjectName,...context});
