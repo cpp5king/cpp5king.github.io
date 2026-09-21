@@ -87,6 +87,144 @@
     return root.WATER_MEASURE_RULE_PACK?.industryCatalog||{};
   }
 
+  function industryExtensions(){
+    return root.WATER_MEASURE_RULE_PACK?.industryExtensions||{};
+  }
+
+  function industryGroups(){
+    return industryExtensions().groups||{};
+  }
+
+  function industryOptions(){
+    const industries=industryCatalog().industries||{};
+    return Object.entries(industries).map(([id,item])=>({id,label:item.label,value:item.label}));
+  }
+
+  function industryGuidance(input={}){
+    const ext=industryExtensions();
+    const type=input.waterIndustryType||'';
+    return {
+      highTechRequiredStreamsText:ext.highTechRequiredStreams?.[type]||'',
+      isArticle9:(ext.groups?.article9Types||[]).includes(type),
+      isHighTech:(ext.groups?.highTechTypes||[]).includes(type),
+      isFoodHotel:(ext.groups?.foodHotelTypes||[]).includes(type)
+    };
+  }
+
+  function extensionState(value){
+    if(value==='yes')return 'ok';
+    if(value==='no')return 'bad';
+    return 'missing';
+  }
+
+  function extensionIcon(status){
+    return status==='ok'?'☑':status==='bad'?'⚠':status==='na'?'—':'?';
+  }
+
+  function evaluateIndustryExtensions(input={},context={}){
+    const ext=industryExtensions();
+    const defs=ext.checks||{};
+    const messages=ext.messages||{};
+    const groups=ext.groups||{};
+    const sections=[],overview=[],missing=[],concerns=[];
+    const lawReady=context.version
+      ?context.version.status==='resolved'
+      :(context.lawReady!==undefined?!!context.lawReady:input.sublawVersionResolved==='yes');
+    const type=input.waterIndustryType||'';
+
+    const add=(definition,checksOverride)=>{
+      if(!definition)return;
+      const basis=definition.basis||'';
+      const title=definition.title||'';
+      const checks=checksOverride||definition.checks||[];
+      if(!lawReady){
+        sections.push('【'+basis+' '+title+'】\n? 本案適用之子法版本尚待確認；先保留現場事實，不直接作違規判斷。');
+        overview.push(basis+' '+title+'：? 版本待確認');
+        missing.push(basis+' '+title+'之適用版本');
+        return;
+      }
+      const lines=[];let hasBad=false,hasMissing=false;
+      for(const item of checks){
+        const field=item[0],label=item[1],mode=item[2]||'normal';
+        if(mode.startsWith('conditional:')){
+          const [,conditionField,expected]=mode.split(':');
+          if(input[conditionField]!==expected)continue;
+        }
+        const value=input[field];
+        if(mode==='trigger'){
+          if(value==='no'){lines.push('— '+label+'：未觸發');continue;}
+          if(value==='yes'){lines.push('☑ '+label+'：已觸發');continue;}
+          lines.push('? '+label+'：待確認');hasMissing=true;missing.push(label);continue;
+        }
+        const status=extensionState(value);
+        lines.push(extensionIcon(status)+' '+label+'：'+(status==='ok'?'已確認符合':status==='bad'?'疑似不符':'待確認'));
+        if(status==='bad'){hasBad=true;concerns.push(basis+' '+label);}
+        if(status==='missing'){hasMissing=true;missing.push(label);}
+      }
+      for(const extra of definition.extraPending||[]){
+        const value=input[extra.field];
+        if(!value||value==='unknown'){hasMissing=true;missing.push(extra.whenMissing);}
+      }
+      const status=hasBad?'⚠ 疑似不符':hasMissing?'? 待確認':'☑ 已完成';
+      sections.push('【'+basis+' '+title+'】\n'+lines.join('\n'));
+      overview.push(basis+' '+title+'：'+status);
+    };
+
+    const trigger=(definition,pendingOverview)=>{
+      const value=input[definition.triggerField];
+      if(value==='yes'){add(definition);return true;}
+      if(value==='no')return false;
+      overview.push(pendingOverview||definition.basis+' '+definition.title+'：? 是否適用待確認');
+      if(definition.pendingLabel)missing.push(definition.pendingLabel);
+      return false;
+    };
+
+    if(type==='construction')add(defs.construction493);
+    if(type==='shipDismantling')add(defs.ship45);
+    if(type==='livestock'){
+      trigger(defs.livestock46,'§46 漁牧綜合經營：? 是否適用待確認');
+      trigger(defs.livestock461,'§46-1 畜牧糞尿資源化：? 是否適用待確認');
+      trigger(defs.livestock4957,'§49-5～49-7 小型養豬場：? 是否適用待確認');
+      if(input.waterLivestockFertilizerUse==='yes'&&input.waterLivestockFertilizerPauseCondition==='yes')add(defs.livestockPause);
+    }
+    if(type==='waterworks')trigger(defs.waterworks47,'§47 自來水廠緊急直接排放：? 本次是否使用待確認');
+    if((groups.foodHotelTypes||[]).includes(type)){
+      trigger(defs.food48,'§48、§49 餐飲服務：? 是否提供餐飲服務待確認');
+      trigger(defs.hotSpring48,'§48、§49 溫泉泡湯服務：? 是否提供待確認');
+    }
+    if(type==='dialysisClinic')add(defs.dialysis494);
+    if(type==='coalPower'){
+      add(defs.coal498);
+      trigger(defs.coal498Plan,'§49-8 汞總量管理門檻：? 待確認');
+    }
+    if((groups.highTechTypes||[]).includes(type)){
+      trigger(defs.highTech499,'§49-9 特定製程廢水分流：? 觸發條件待確認');
+    }
+
+    const ops=Array.isArray(input.waterSpecialOperationTypes)?input.waterSpecialOperationTypes:[];
+    if(ops.includes('organicGroundwaterPollutant'))add(defs.special491);
+    if(ops.includes('constructionResidualReceiving'))add(defs.special492);
+    if(ops.includes('batPermitReview')){
+      if(!lawReady){overview.push(messages.batVersionPending);missing.push(messages.batVersionMissing);}
+      else if(['application','change','extension'].includes(input.waterBatPermitActivity))add(defs.special4912);
+      else if(input.waterBatPermitActivity==='notCurrent')overview.push(messages.batNotCurrent);
+      else {overview.push(messages.batActivityPending);missing.push(messages.batActivityMissing);}
+    }
+
+    if(type==='unknown'){overview.unshift(messages.unknownIndustry);missing.push('實際業別');}
+    if(type==='other')overview.unshift(messages.otherIndustry);
+    if(!ops.length){overview.push(messages.specialUnset);missing.push(messages.specialMissing);}
+    else if(ops.includes('unknown')){overview.push(messages.specialUnknown);missing.push(messages.specialUnknownMissing);}
+    else if(ops.includes('none'))overview.push(messages.specialNone);
+
+    return {
+      sections,
+      overview,
+      missing:[...new Set(missing.filter(Boolean))],
+      concerns:[...new Set(concerns.filter(Boolean))]
+    };
+  }
+
   function packInfo(){
     const pack=root.WATER_MEASURE_RULE_PACK;
     if(!pack)return null;
@@ -117,7 +255,8 @@
     const payload=JSON.stringify({
       commonRules:pack.commonRules||{},
       industryRules:pack.industryRules||{},
-      industryCatalog:pack.industryCatalog||{}
+      industryCatalog:pack.industryCatalog||{},
+      industryExtensions:pack.industryExtensions||{}
     });
     const actual=fnv1a32(payload);
     return {
@@ -135,6 +274,11 @@
     evaluate,
     evaluateAll,
     industryCatalog,
+    industryExtensions,
+    industryGroups,
+    industryOptions,
+    industryGuidance,
+    evaluateIndustryExtensions,
     packInfo,
     verifyIntegrity
   });
