@@ -198,6 +198,113 @@
 
 (function(root){
   'use strict';
+  const freezeChecks=items=>Object.freeze(items.map(item=>Object.freeze(item)));
+  root.WATER_MEASURE_INDUSTRY_EXTENSIONS=Object.freeze({
+    groups:Object.freeze({
+      article9Types:Object.freeze(['mining','stoneExtraction','stoneProcessing','readyMix','earthworkDump','construction']),
+      highTechTypes:Object.freeze(['semiconductor','optoelectronics','pcb','electroplating','metalSurface']),
+      foodHotelTypes:Object.freeze(['restaurant','touristHotel'])
+    }),
+    highTechRequiredStreams:Object.freeze({
+      semiconductor:'§49-9：研磨／切割、含氟、TMAH有機、含氰、含鉻及含銅作業廢水，於觸發條件成立時應分流收集處理。',
+      optoelectronics:'§49-9：研磨／切割、含氟、TMAH有機、含氰、含鉻及含銅作業廢水，於觸發條件成立時應分流收集處理。',
+      pcb:'§49-9：研磨／切割、含氟、TMAH有機、含氰、含鉻及含銅作業廢水，於觸發條件成立時應分流收集處理。',
+      electroplating:'§49-9：含氰及含鉻作業廢水，於觸發條件成立時應分流收集處理。',
+      metalSurface:'§49-9：含氰及含鉻作業廢水，於觸發條件成立時應分流收集處理。'
+    }),
+    checks:Object.freeze({
+      construction493:Object.freeze({basis:'§49-3',title:'營建工地沉積污泥／廢油',checks:freezeChecks([
+        ['waterConstructionVisibleSedimentFound','可見沉積污泥','trigger'],
+        ['waterConstructionSedimentCleanedCompliant','沉積污泥清除','conditional:waterConstructionVisibleSedimentFound:yes'],
+        ['waterConstructionWasteOilFound','施工維修廢油棄置／溢洩','trigger'],
+        ['waterConstructionWasteOilHandledCompliant','廢油收集處理','conditional:waterConstructionWasteOilFound:yes'],
+        ['waterConstructionCleanupRecordsCompliant','清除／收集處理紀錄與證明','normal']
+      ])}),
+      ship45:Object.freeze({basis:'§45',title:'船舶解體業',checks:freezeChecks([
+        ['waterShipContainmentCompliant','截流或核准替代防堵設施','normal'],
+        ['waterShipOilBoomCompliant','浮油攔除設備','normal'],
+        ['waterShipReceivingFacilitiesCompliant','污染物收受設施','normal']
+      ])}),
+      livestock46:Object.freeze({basis:'§46',title:'漁牧綜合經營',triggerField:'waterLivestockFishIntegratedUse',pendingLabel:'是否採漁牧綜合經營',checks:freezeChecks([
+        ['waterLivestockFishDailyVolumeCompliant','每公頃每日廢水量','normal'],
+        ['waterLivestockFishStockingCompliant','魚池承受豬隻廢水量','normal'],
+        ['waterLivestockFishDOCompliant','魚池溶氧','normal'],
+        ['waterLivestockFishFreeboardCompliant','魚池出水高程／池頂距離','normal'],
+        ['waterLivestockFishRecordsCompliant','三年紀錄','normal'],
+        ['waterLivestockFishNoticeCompliant','排放前三日通知','normal']
+      ])}),
+      livestock461:Object.freeze({basis:'§46-1',title:'畜牧糞尿資源化',triggerField:'waterLivestockPigCattleResourceApplicable',pendingLabel:'是否飼養豬隻或牛隻',checks:freezeChecks([
+        ['waterLivestockResourceMeasureApproved','依法核准之資源化措施','normal'],
+        ['waterLivestockResourceRatioCompliant','資源化處理比率','normal']
+      ])}),
+      livestock4957:Object.freeze({basis:'§49-5～49-7',title:'20至未滿200頭養豬場管理計畫',triggerField:'waterLivestockSmallPigPlanApplicable',pendingLabel:'是否飼養豬隻20頭以上未滿200頭',checks:freezeChecks([
+        ['waterLivestockSmallPigPlanApproved','廢（污）水管理計畫核准','normal'],
+        ['waterLivestockSmallPigPlanOperationCompliant','依核准計畫運作','normal']
+      ])}),
+      livestockPause:Object.freeze({basis:'§49-10、§70-6、§70-9',title:'沼液沼渣暫停施灌',checks:freezeChecks([
+        ['waterLivestockFertilizerPauseCompliant','應暫停期間確實停止施灌','normal']
+      ])}),
+      waterworks47:Object.freeze({basis:'§47',title:'自來水廠緊急直接排放',triggerField:'waterWaterworksEmergencyDischargeUsed',pendingLabel:'本次是否使用§47緊急直接排放',checks:freezeChecks([
+        ['waterWaterworksEmergencyConditionsMet','緊急直接排放法定條件','normal'],
+        ['waterWaterworksEmergencyRegistered','應變措施納入核准文件','normal'],
+        ['waterWaterworksBasinsEmptied','沉澱池／污泥濃縮池先淨空','normal'],
+        ['waterWaterworksNoticeCompliant','下游通知及主管機關通報','normal'],
+        ['waterWaterworksDailyMonitoringCompliant','按日檢測與紀錄','normal']
+      ])}),
+      food48:Object.freeze({basis:'§48、§49',title:'餐飲廢水油脂截留',triggerField:'waterFoodServiceProvided',pendingLabel:'是否提供餐飲服務',checks:freezeChecks([
+        ['waterGreaseTrapPresent','油脂截留設施','normal'],
+        ['waterGreaseTrapMaintenanceRecordsCompliant','清理維護及三年紀錄','normal']
+      ])}),
+      hotSpring48:Object.freeze({basis:'§48、§49',title:'溫泉泡湯廢水',triggerField:'waterHotSpringServiceProvided',pendingLabel:'是否提供溫泉泡湯服務',checks:freezeChecks([
+        ['waterHotSpringSeparatedCollectionCompliant','單純泡湯廢水分流收集處理','normal'],
+        ['waterHotSpringFiltersCompliant','毛髮／懸浮固體過濾設施','conditional:waterHotSpringMudSpring:no'],
+        ['waterHotSpringMaintenanceRecordsCompliant','設施清理維護及三年紀錄','normal']
+      ]),extraPending:Object.freeze([{field:'waterHotSpringMudSpring',whenMissing:'溫泉是否屬泥漿泉質'}])}),
+      dialysis494:Object.freeze({basis:'§49-4',title:'洗腎診所',checks:freezeChecks([
+        ['waterDialysisManagementPlanApproved','營運前廢（污）水管理計畫核准','normal'],
+        ['waterDialysisOperationMatchesPlan','依核准管理計畫實施','normal']
+      ])}),
+      coal498:Object.freeze({basis:'§49-8',title:'燃煤發電廠汞管理',checks:freezeChecks([
+        ['waterCoalMercuryRecordsCompliant','燃煤來源／總汞／用量紀錄','normal'],
+        ['waterCoalMercuryReportingCompliant','半年網路申報','normal']
+      ])}),
+      coal498Plan:Object.freeze({basis:'§49-8',title:'汞總量管理計畫',triggerField:'waterCoalMercuryThresholdExceeded',pendingLabel:'燃煤總汞是否達管理計畫門檻',checks:freezeChecks([
+        ['waterCoalMercuryPlanApproved','汞總量管理計畫核准','normal'],
+        ['waterCoalMercuryPlanImplemented','依核准計畫執行','normal']
+      ])}),
+      highTech499:Object.freeze({basis:'§49-9',title:'特定製程廢水分流',triggerField:'waterHighTech49_9Trigger',pendingLabel:'是否符合§49-9分流觸發條件',checks:freezeChecks([
+        ['waterHighTechSeparatedCollectionCompliant','應分流作業廢水之分流收集處理','normal']
+      ])}),
+      special491:Object.freeze({basis:'§49-1',title:'有機地下水污染物貯存／輸送',checks:freezeChecks([
+        ['waterOrganicLeakPreventionCompliant','防滲漏材質與防範','normal'],
+        ['waterOrganicInspectionRecordsCompliant','巡查檢視與三年紀錄','normal']
+      ])}),
+      special492:Object.freeze({basis:'§49-2',title:'特定營建剩餘土石方收容處理',checks:freezeChecks([
+        ['waterResidualDailyRecordsCompliant','每日車輛／土質／收容量／處理量紀錄','normal']
+      ])}),
+      special4912:Object.freeze({basis:'§49-12',title:'附表五最佳可行控制技術（許可審查提醒）',checks:freezeChecks([
+        ['waterBatEvaluationConfirmed','優先評估附表五最佳可行控制技術','normal']
+      ])})
+    }),
+    messages:Object.freeze({
+      unknownIndustry:'業別：? 尚待確認；不直接套用業別專屬條文。',
+      otherIndustry:'業別：其他事業；目前無匹配之業別專屬包，仍適用一般水污核心及跨業別特殊作業檢查。',
+      specialUnset:'跨業別特殊作業：? 尚未確認',
+      specialUnknown:'跨業別特殊作業：? 尚待確認',
+      specialNone:'跨業別特殊作業：— 已確認均未涉及',
+      specialMissing:'是否涉及§49-1、§49-2或§49-12特殊作業',
+      specialUnknownMissing:'跨業別特殊作業適用性',
+      batVersionPending:'§49-12 最佳可行控制技術：? 版本待確認',
+      batVersionMissing:'§49-12適用版本',
+      batNotCurrent:'§49-12 最佳可行控制技術：— 本次非申請／變更／展延審查',
+      batActivityPending:'§49-12 最佳可行控制技術：? 審查情境待確認',
+      batActivityMissing:'本次是否屬申請／變更／展延'
+    })
+  });
+})(typeof window==='undefined'?globalThis:window);
+
+(function(root){
+  'use strict';
   const meta=root.WATER_MEASURE_RULE_PACK_META;
   root.WATER_MEASURE_RULE_PACK=Object.freeze({
     meta,
@@ -207,6 +314,7 @@
     commonRules:root.WATER_SUBLAW_RULES||{},
     industryRules:root.WATER_INDUSTRY_RULES||{},
     industryCatalog:root.WATER_INDUSTRY_CATALOG_V485||{},
+    industryExtensions:root.WATER_MEASURE_INDUSTRY_EXTENSIONS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
