@@ -5,6 +5,8 @@
   function apply(input,facts,out={}){
     const wastewaterPath=facts.matterType==='wastewater'||(!facts.matterType&&!!input.waterWastewaterStatus);
     out.waterNoDrafts=input.waterInvestigationComplete==='yes'?'no':'yes';
+
+    // Fact-flow visibility remains here. Core-law visibility is delegated to WaterLaw.
     out.waterShowSubjectConfirmed=bool(input.waterSubjectType==='business');
     out.waterShowIndustryChoice=bool(facts.subjectIsBusiness==='yes');
     out.waterShowIndustry=bool(out.waterShowIndustryChoice==='yes'&&(input.waterIndustryCheckMode==='check'||(!input.waterIndustryCheckMode&&!!input.waterIndustryType)));
@@ -12,58 +14,20 @@
     out.waterShowIndustryConstruction=bool(out.waterShowIndustry==='yes'&&input.waterIndustryType==='construction');
     out.waterShowIndustryLivestock=bool(out.waterShowIndustry==='yes'&&input.waterIndustryType==='livestock');
     out.waterShowIndustryLivestockFertilizer=bool(out.waterShowIndustryLivestock==='yes'&&input.waterLivestockFertilizerUse==='yes');
-    out.waterShowArticle13Details=bool(facts.subjectIsBusiness==='yes'&&input.waterArticle13NewOrChangeConfirmed==='yes');
+
     out.waterShowMatterType=bool(!!input.waterSubjectType);
     out.waterShowWastewater=bool(wastewaterPath);
-    out.waterShowArticle14=bool(input.waterSubjectType==='business'&&wastewaterPath);
     out.waterShowDischarge=bool(out.waterShowWastewater==='yes'&&facts.wastewaterConfirmed==='yes');
     out.waterShowDestination=bool(out.waterShowWastewater==='yes'&&facts.wastewaterConfirmed==='yes');
     out.waterShowSurfaceDetails=bool(out.waterShowDestination==='yes'&&input.waterDestination==='surfaceWater');
     out.waterShowDitchDetails=bool(out.waterShowSurfaceDetails==='yes'&&input.waterSurfaceType==='roadsideDitch');
     out.waterShowPermit=bool(facts.subjectIsBusiness==='yes'&&facts.actualDischargeConfirmed==='yes'&&facts.surfaceWaterConfirmed==='yes');
 
-    out.waterShowStorageDetails=bool(facts.article20SubjectEligible==='yes'&&facts.wastewaterConfirmed==='yes'&&input.waterDestination==='storage');
-    out.waterShowStorageMismatch=bool(out.waterShowStorageDetails==='yes'&&input.waterStorageActivityConfirmed==='yes'&&input.waterStoragePermit==='valid');
-
-    out.waterShowArticle7=bool(facts.article7SubjectEligible==='yes'&&facts.wastewaterConfirmed==='yes'&&facts.actualDischargeConfirmed==='yes'&&facts.surfaceWaterConfirmed==='yes');
-    out.waterShowSampleDetails=bool(out.waterShowArticle7==='yes'&&input.waterSampleTaken==='yes');
-    out.waterShowLabDetails=bool(out.waterShowSampleDetails==='yes'&&input.waterSampleRepresentative==='yes'&&input.waterSampleBeforeReceivingWater==='yes'&&input.waterApplicableStandardConfirmed==='yes');
-    out.waterShowEffluentResult=bool(out.waterShowLabDetails==='yes'&&input.waterLabResultAvailable==='yes');
-
-    out.waterShowArticle181=bool(facts.article181SubjectEligible==='yes'&&facts.wastewaterConfirmed==='yes');
-    out.waterShowBypassRoute=bool(out.waterShowArticle181==='yes'&&facts.actualDischargeConfirmed==='yes');
-    out.waterShowBypassQuestion=bool(out.waterShowBypassRoute==='yes'&&input.waterApprovedRouteConfirmed==='yes'&&input.waterActualRouteConfirmed==='yes');
-    out.waterShowBypassEmergency=bool(out.waterShowBypassQuestion==='yes'&&input.waterBypassConfirmed==='yes');
-    out.waterShowDilutionDetails=bool(out.waterShowArticle181==='yes'&&input.waterDilutionObserved==='yes');
-    out.waterShowDilutionMismatch=bool(out.waterShowDilutionDetails==='yes'&&input.waterDilutionPermit==='valid');
-    out.waterShowDilutionEmergency=bool(out.waterShowDilutionDetails==='yes'&&input.waterRequiresTreatmentToMeetStandard==='yes'&&input.waterMixedWithNoTreatmentNeededWater==='yes'&&['none','expired','unknown'].includes(input.waterDilutionPermit));
-    out.waterShowTreatmentDetails=bool(out.waterShowArticle181==='yes'&&input.waterTreatmentFacilityApplicable==='yes');
-    out.waterShowArticle18Noncompliance=bool(facts.subjectIsBusiness==='yes'&&input.waterArticle18SpecificDutyConfirmed==='yes');
-
-    out.waterShowArticle28=bool(facts.article28SubjectEligible==='yes'&&facts.article28MatterEligible==='yes');
-    out.waterShowArticle28Details=bool(out.waterShowArticle28==='yes'&&input.waterArticle28Scenario==='yes');
-    out.waterShowArticle28LeakChecks=bool(out.waterShowArticle28Details==='yes'&&!!input.waterLeakCause&&input.waterLeakCause!=='humanDischarge');
-    out.waterShowArticle28Prevention=bool(out.waterShowArticle28LeakChecks==='yes'&&input.waterLeakRiskToWaterBodyConfirmed==='yes');
-    out.waterShowArticle28Emergency=bool(out.waterShowArticle28LeakChecks==='yes'&&input.waterLeakPollutedWaterBody==='yes');
-
-    out.waterShowArticle27=bool(facts.article27SubjectEligible==='yes'&&facts.wastewaterConfirmed==='yes'&&facts.actualDischargeConfirmed==='yes');
-    out.waterShowArticle27Actions=bool((out.waterShowArticle27==='yes'&&input.waterSevereHazardRiskConfirmed==='yes')||out.waterShowArticle28Emergency==='yes');
-
-    out.waterShowArticle32=bool(wastewaterPath&&facts.wastewaterConfirmed==='yes'&&facts.actualDischargeConfirmed==='yes'&&['soil','groundwater'].includes(input.waterDestination));
-    out.waterShowSoilPermit=bool(out.waterShowArticle32==='yes'&&input.waterDestination==='soil');
-    out.waterShowGroundwaterCheck=bool(out.waterShowArticle32==='yes'&&input.waterDestination==='groundwater');
-
-    out.waterShowArticle30=bool(facts.article30MatterEligible==='yes');
-    out.waterShowArticle30Details=bool(out.waterShowArticle30==='yes'&&input.waterDumpingConfirmed==='yes');
-
-    out.waterShowReportingNoncompliance=bool(facts.article22SubjectEligible==='yes'&&input.waterArticle22ReportingDutyConfirmed==='yes');
-    out.waterShowReportedMismatch=bool(out.waterShowReportingNoncompliance==='yes');
-    out.waterShowFalseDetails=bool(out.waterShowReportedMismatch==='yes'&&input.waterReportedDataMismatch==='yes');
-    out.waterShowArticle26Obstruction=bool(facts.article26TargetEligible==='yes'&&input.waterArticle26InspectionBasisConfirmed==='yes');
-    out.waterShowArticle59Details=bool(out.waterShowArticle181==='yes'&&input.waterFacilityFailureConfirmed==='yes');
-    out.waterShowPolluter=bool(input.waterSurfaceWaterPollutionEventConfirmed==='yes');
+    if(!root.WaterLaw?.visibility)throw new Error('WaterLaw visibility is required before WaterWorkflow.');
+    Object.assign(out,root.WaterLaw.visibility(input,facts));
     out.waterShowAssessment=bool(!!input.waterSubjectType);
 
+    // Sublaw / industry packs are intentionally still separate from Water Core Rules.
     out.waterShowSublawCore=bool(facts.sublawSubjectEligible==='yes');
     out.waterShowSublawRainException=bool(out.waterShowSublawCore==='yes'&&input.waterSublawWastewaterRainwaterCombined==='yes');
     out.waterShowSublawRunoff=bool(out.waterShowSublawCore==='yes'&&input.waterSublawRunoffArticle8Applicable==='yes');
@@ -225,7 +189,7 @@
       return '若正在排放，先固定排放口、水流、流向與持續時間，再確認出口與許可／水措是否一致。';
     }
     if(step===14){
-      if(input.waterLeakCause==='humanDischarge')return '目前較像人為開閥、私管或主動抽排，不要硬套設備疏漏；固定操作、閥門、管線及排放路徑後交由後台§14／§18-1研判。';
+      if(input.waterLeakCause==='humanDischarge')return root.WaterLaw?.relation('humanDischarge')?.guidance||'目前較像人為主動排放；請固定操作、閥門、管線及排放路徑後交由法規層研判。';
       return '區分主動排放與設備事故。槽體／管線破裂、液位故障或溢流，應拍故障點、污染流向、止漏措施並確認是否進入水體。';
     }
     if(step===15)return '採樣前確認樣品能代表該股放流水，並位於進入承受水體前。外觀、泡沫或氣味只能作為查證線索，不能直接取代檢測超標證據。';
