@@ -16,7 +16,8 @@
     sources: [],
     currentInspection: null,
     inspections: [],
-    draftText: ''
+    draftText: '',
+    legalReviews: []
   };
 
   const phenomenaOptions = [
@@ -159,7 +160,7 @@
   }
   function hasData(){
     const p = state.pollutionPoint;
-    return !!(state.caseInfo.behaviorDate || state.caseInfo.inspectionDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection);
+    return !!(state.caseInfo.behaviorDate || state.caseInfo.inspectionDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection || state.legalReviews.length);
   }
   function setView(v){ state.view=v; root.scrollTo?.({top:0,behavior:'smooth'}); render(); }
 
@@ -671,15 +672,41 @@
     return `<div class="screen-summary"><h4>快篩查源輔助</h4>${entries.map(e=>`<div class="source-direction"><strong>${esc(e.location)}</strong>${e.dirs.map(d=>`<div><b>${esc(d.title)}</b>：${esc(d.reason)}</div>`).join('')}</div>`).join('')}<div class="notice warn">快篩相似 ≠ 來源確認；快篩異常 ≠ 法定超標。可能來源方向僅供污染查源參考。</div></div>`;
   }
 
+  function reviewHistoryHtml(){
+    if(!state.legalReviews.length)return '<div class="empty">尚未保留法規研判快照。只有按下「保留本次研判快照」才會新增版本。</div>';
+    return '<div class="summary-list">'+state.legalReviews.slice().reverse().map(review=>{
+      const packs=review.packSnapshot||{};
+      const versions=[packs.core?.packVersion,packs.measure?.packVersion,packs.permit?.packVersion,packs.standard?.packVersion,packs.local?.packVersion].filter(Boolean).join('／');
+      return '<div class="summary-item"><strong>第 '+esc(review.sequence)+' 次研判</strong><br>'
+        +'行為日期：'+esc(review.behaviorDate||'尚未確認')+'<br>'
+        +'Rule Packs：'+esc(versions||'未記錄')+'<br>'
+        +'<span class="muted small">'+esc(review.reviewedAt||'')+'</span></div>';
+    }).join('')+'</div>';
+  }
+
+  function preserveReview(fs,as){
+    if(!root.WaterReview?.captureV2)throw new Error('WaterReview 尚未載入。');
+    const review=root.WaterReview.captureV2({
+      caseInfo:state.caseInfo,
+      factLines:fs,
+      assessment:as,
+      rawState:state,
+      draftText:state.draftText
+    },state.legalReviews.length+1);
+    state.legalReviews.push(review);
+    return review;
+  }
+
   function renderSummary(){
     saveInspection();const fs=facts(), as=lawAssessment();
     $app.innerHTML=`<div class="section-title"><div><h2>整理目前內容</h2><p>不是結案；只把目前已經查到的內容整理出來。</p></div><button class="btn btn-ghost" id="summaryHome">返回水污首頁</button></div>
       <section class="card summary-section"><h3>1｜目前查核事實</h3>${fs.length?`<div class="summary-list">${fs.map(x=>`<div class="summary-item">${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前尚無可整理的查核事實。</div>'}${renderScreeningSummary()}</section>
       <section class="card summary-section"><h3>2｜目前可能法規</h3><div class="notice info">系統只做規則配對，不代表違規成立；最終適用由稽查員判斷。</div>${as.laws.length?`<div class="summary-list">${as.laws.map(x=>`<div class="summary-item"><strong>可能法條：${esc(x.law)}</strong><br><span>${esc(x.reason)}</span></div>`).join('')}</div>`:'<div class="empty">目前沒有足夠的結構化事實產生可能法規。</div>'}</section>
       <section class="card summary-section"><h3>3｜尚待確認</h3>${as.pending.length?`<div class="summary-list">${as.pending.map(x=>`<div class="summary-item">尚待確認：${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前沒有系統列出的尚待確認事項。</div>'}</section>
+      <section class="card summary-section"><h3>4｜法規研判版本</h3><div class="notice info">保留快照會記錄目前事實、法規研判，以及五個 Rule Pack 的版本與完整性資訊。之後重新研判會新增下一筆，不覆寫舊結果。</div>${reviewHistoryHtml()}<div class="btn-row"><button class="btn btn-secondary" id="saveReview">保留本次研判快照</button></div></section>
       <section class="card"><h3>稽查紀錄敘述草稿</h3><p>草稿只寫事實，不自動寫可能法條或違規研判。</p><div class="btn-row"><button class="btn btn-primary" id="makeDraft">產生稽查紀錄敘述草稿</button></div></section>
       <div class="sticky-actions"><button class="btn btn-ghost" id="summaryBack">返回</button><button class="btn btn-secondary" id="backPollution">污染排查</button>${state.currentInspection?'<button class="btn btn-secondary" id="backSubject">對象查核</button>':''}</div>`;
-    document.getElementById('summaryHome').onclick=()=>setView('home');document.getElementById('summaryBack').onclick=()=>setView('home');document.getElementById('backPollution').onclick=()=>setView('pollution');const bs=document.getElementById('backSubject');if(bs)bs.onclick=()=>setView('subject');document.getElementById('makeDraft').onclick=()=>{state.draftText=makeDraftText(fs);setView('draft');};
+    document.getElementById('summaryHome').onclick=()=>setView('home');document.getElementById('summaryBack').onclick=()=>setView('home');document.getElementById('backPollution').onclick=()=>setView('pollution');const bs=document.getElementById('backSubject');if(bs)bs.onclick=()=>setView('subject');document.getElementById('saveReview').onclick=()=>{preserveReview(fs,as);renderSummary();};document.getElementById('makeDraft').onclick=()=>{state.draftText=makeDraftText(fs);setView('draft');};
   }
 
   function makeDraftText(fs){
@@ -703,8 +730,36 @@
     state.currentInspection=null;
     state.inspections=[];
     state.draftText='';
+    state.legalReviews=[];
     if($app) render();
   }
+  const cloneState=value=>JSON.parse(JSON.stringify(value));
+  function validateState(next){
+    if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('Water V2 案件狀態格式無效。');
+    const copy=cloneState(next);
+    if(!copy.caseInfo||typeof copy.caseInfo!=='object'||Array.isArray(copy.caseInfo))throw new Error('Water V2 案件缺少日期資訊。');
+    for(const key of ['traceNodes','sources','inspections','legalReviews'])if(copy[key]!==undefined&&!Array.isArray(copy[key]))throw new Error('Water V2 案件陣列資料格式無效：'+key);
+    copy.legalReviews=(copy.legalReviews||[]).map(review=>{
+      if(!root.WaterReview?.validate)throw new Error('WaterReview 尚未載入。');
+      return root.WaterReview.validate(review);
+    });
+    return copy;
+  }
+  function snapshot(){saveInspection();return cloneState(state);}
+  function restore(next){
+    const copy=validateState(next);
+    state.view=copy.view||'home';
+    state.caseInfo=copy.caseInfo||{behaviorDate:'',inspectionDate:''};
+    state.pollutionPoint=copy.pollutionPoint||{presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
+    state.baseScreening=copy.baseScreening||{status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
+    state.traceNodes=copy.traceNodes||[];
+    state.sources=copy.sources||[];
+    state.currentInspection=copy.currentInspection||null;
+    state.inspections=copy.inspections||[];
+    state.draftText=String(copy.draftText||'');
+    state.legalReviews=copy.legalReviews||[];
+  }
+
   function mount(container){
     if(!container) throw new Error('WaterV2UI mount target is required.');
     $app=container;
@@ -716,6 +771,9 @@
     provenance:PROVENANCE,
     mount,
     hasData,
+    snapshot,
+    restore,
+    validateState,
     reset
   });
 })(window);
