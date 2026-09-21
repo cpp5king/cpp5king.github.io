@@ -4,7 +4,6 @@ const {runtime,plain}=require('./helpers.cjs');
 
 async function loaded485(){
   const env=runtime();
-  env.run('data/rules/water-industry-catalog-v485.js');
   env.run('src/water-industry-v485.js');
   env.run('src/water-industry-v485-final.js');
   await env.root.TemplateLoader.load(env.root.INSPECTION_CONFIG,file=>env.run('data/templates/'+file));
