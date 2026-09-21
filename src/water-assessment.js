@@ -71,12 +71,13 @@
 
   function finalConclusion(input,active,r59){
     if(input.waterSevereHazardRiskConfirmed==='yes'){
-      return 'D｜重大／緊急污染\n優先控制污染、保護下游、確認緊急應變及3小時通報，並立即固定排放、污染範圍、流向與相關證據；告發研判不得優先於污染控制。';
+      return 'D｜重大／緊急污染\n優先控制污染、保護下游、確認緊急應變及3小時通報，並立即固定排放、污染範圍、流向與相關證據；法律研判不得優先於污染控制。';
     }
+    const rel=root.WaterLaw.relation('article7Effluent');
     const adjusted=active.map(item=>{
-      if(item.key==='a7'&&item.result.status==='established'&&input.waterFacilityFailureConfirmed==='yes'){
-        if(r59.status==='established')return {...item,effectiveStatus:'notEstablished',note:'§7超標事實受§59例外影響，需先排除例外'};
-        if(r59.status==='insufficient')return {...item,effectiveStatus:'insufficient',note:'§7超標事實尚待排除§59故障例外'};
+      if(rel&&item.ruleKey==='article7Effluent'&&item.result.status==='established'&&input[rel.exceptionFact]===rel.exceptionFactValue){
+        if(r59.status==='established')return {...item,effectiveStatus:'notEstablished',note:rel.finalEstablishedNote||''};
+        if(r59.status==='insufficient')return {...item,effectiveStatus:'insufficient',note:rel.finalPendingNote||''};
       }
       return {...item,effectiveStatus:item.result.status};
     });
@@ -85,16 +86,16 @@
     if(established.length){
       const lines=established.map(x=>'• '+x.label).join('\n');
       const tail=(input.waterInvestigationComplete==='yes'&&!pending.length)?'':'\n\n尚有其他支線待查時，仍應分別完成構成要件與證據檢核。';
-      return `B｜構成要件完整\n目前至少一項法律問題已具完整成立方向：\n${lines}${tail}`;
+      return 'B｜構成要件事實已完整\n目前至少一項法律方向之構成要件事實已完整：\n'+lines+tail;
     }
     if(pending.length||input.waterInvestigationComplete!=='yes'){
       const labels=pending.map(x=>'• '+x.label).join('\n')||'• 本次案件尚未確認所有必要查證事項均已完成';
       const checks=[];
-      pending.forEach(x=>(x.result.nextChecks||[]).forEach(c=>{if(!checks.includes(c))checks.push(c);}));
-      const next=checks.length?'\n\n建議下一步：\n'+checks.slice(0,8).map((x,i)=>`${i+1}. ${x}`).join('\n'):'';
-      return `C｜事證不足\n目前尚不足以作成違規成立結論。待確認項目：\n${labels}${next}`;
+      pending.forEach(x=>(x.result.nextChecks||[]).forEach(check=>{if(!checks.includes(check))checks.push(check);}));
+      const next=checks.length?'\n\n建議下一步：\n'+checks.slice(0,8).map((x,i)=>(i+1)+'. '+x).join('\n'):'';
+      return 'C｜尚有要件待確認\n目前尚有法律要件或必要事實待確認：\n'+labels+next;
     }
-    return 'A｜本次查無違規事證\n依本次查察所得事證，尚無足資認定違反水污染防治法之事證。此結論僅代表本次查察結果，不表示證明不存在任何違規。';
+    return 'A｜目前不支持\n依本次已完成查證之事實，目前不支持已列法規方向。此狀態僅代表本次查察結果；缺少事實不等於否定事實。';
   }
   const sublawStatusLabel={established:'⚠ 疑似不符合',notEstablished:'✓ 目前未見不符',insufficient:'? 待確認',notApplicable:'— 不適用'};
   function sublawOverview(input,law,items){
@@ -124,8 +125,8 @@
       if(!clean)return;
       const label=clean.split('：')[0]?.trim();
       if(!label)return;
-      if(clean.includes('☑ 構成要件完整')||clean.includes('⚠ 疑似不符合'))established.push(label);
-      if(clean.includes('? 事證不足')||clean.includes('? 待確認')||clean.includes('? 待查子法'))pending.push(label);
+      if(clean.includes('☑ 構成要件事實已完整')||clean.includes('⚠ 疑似不符合'))established.push(label);
+      if(clean.includes('? 尚有要件待確認')||clean.includes('? 待確認')||clean.includes('? 待查子法'))pending.push(label);
     });
     return {established:unique(established),pending:unique(pending)};
   }
@@ -135,16 +136,15 @@
     const {established,pending}=parseOverview(out.waterRulesOverviewText);
     if(final.startsWith('D｜'))return '目前狀態：🔴 重大／緊急污染\n\n優先控制污染、保護下游並完成緊急應變與證據固定。';
     if(established.length){
-      const finalReady=out.waterInvestigationComplete==='yes'&&pending.length===0;
-      const parts=[`目前狀態：🔴 構成要件完整`,`【${finalReady?'違反法規':'目前已具完整要件'}】\n${bullets(established)}`];
+      const parts=['目前狀態：🔴 構成要件事實已完整','【已完整之法律方向】\n'+bullets(established)];
       if(pending.length)parts.push('【另待確認】\n'+bullets(pending));
       return parts.join('\n\n');
     }
     if(pending.length||out.waterInvestigationComplete!=='yes'){
       const involved=pending.length?pending:['案件必要查證事項'];
-      return '目前狀態：🟡 尚在查證\n\n【目前可能涉及】\n'+bullets(involved);
+      return '目前狀態：🟡 尚有要件待確認\n\n【目前可能涉及】\n'+bullets(involved);
     }
-    return '目前狀態：🟢 本次查無違規事證\n\n依本次已完成查證之事實，尚無足資認定違反水污染防治法之事證。';
+    return '目前狀態：🟢 目前不支持\n\n依本次已完成查證之事實，目前不支持已列法規方向；缺少事實不等於否定事實。';
   }
   function liveMissing(out){
     const {pending}=parseOverview(out.waterRulesOverviewText);
@@ -198,7 +198,7 @@
         industryItems.push(['ind70o','畜牧§70-1 依計畫運作',root.WATER_INDUSTRY_RULES.livestockFertilizerOperation,ir.livestockFertilizerOperation]);
       }
     }
-    out.waterIndustryOverviewText=industryItems.length?industryItems.map(([,label,rule,result])=>`【${label}】\n${resultBlock(rule,result,assessGeneric(result))}`).join('\n\n'):'目前未進入特定業別子法支線。';
+    out.waterIndustryOverviewText=industryItems.length?industryItems.map(([,label,rule,result])=>`【${label}】\n${resultBlock(rule,result,genericNarrative(result))}`).join('\n\n'):'目前未進入特定業別子法支線。';
 
     const summaries=[];
     if(facts.subjectIsBusiness==='yes')summaries.push(`§13 水措計畫：${input.waterArticle13NewOrChangeConfirmed==='yes'?statusLabel[r13.status]:(input.waterArticle13NewOrChangeConfirmed==='no'?'— 未進入':'? 待確認')}`);
