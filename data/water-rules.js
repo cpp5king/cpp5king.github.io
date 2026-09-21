@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'329f7eb8'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'8678cde4'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -645,6 +645,174 @@
   });
 })(typeof window==='undefined'?globalThis:window);
 
+
+(function(root){
+  'use strict';
+  root.WATER_CORE_PRESENTATION=Object.freeze({
+    narratives:Object.freeze({
+      article14NoPermit:Object.freeze({
+        established:'本案具水污染防治法第14條第1項無許可排放之成立方向。',
+        notEstablished:'第14條無許可排放目前不成立。',
+        notApplicable:'目前不進入第14條無許可排放判斷。',
+        insufficient:'目前事證不足以認定第14條無許可排放。'
+      }),
+      article7Effluent:Object.freeze({
+        established:'本案具水污染防治法第7條第1項放流水超標之成立方向。',
+        notEstablished:'依目前已確認事實，第7條放流水超標目前不成立。',
+        notApplicable:'目前不屬第7條管制主體。',
+        insufficient:'目前事證不足以認定第7條放流水超標。'
+      }),
+      article35FalseReporting:Object.freeze({
+        established:'本案已具第35條刑事疑義之核心要件方向；應進一步固定「明知」及虛偽申報／記載證據，不以本助手直接作成刑事責任終局判斷。',
+        notEstablished:'依目前事證，第35條刑事疑義之必要要件尚有不成立。',
+        notApplicable:'目前不進入第35條刑事疑義判斷。',
+        insufficient:'目前事證不足以進一步認定第35條刑事疑義。'
+      }),
+      article59Exception:Object.freeze({
+        established:'第59條所列條件目前均已確認，該處理設施故障於法定期間內可能適用標準例外；仍不免除其他獨立法規方向之檢核。',
+        notEstablished:'第59條故障例外目前不具完整適用條件。',
+        notApplicable:'目前不進入第59條故障例外判斷。',
+        insufficient:'第59條故障例外尚有必要條件待確認。'
+      }),
+      article71Cleanup:Object.freeze({
+        established:'已具第71條後續處理基礎：主管機關應令污染行為人限期清除處理；屆期不為清除處理時，得代為清除並求償必要費用。',
+        notEstablished:'目前尚未具第71條污染清除處理之完整啟動事實。',
+        notApplicable:'目前不進入第71條污染清除後續。',
+        insufficient:'第71條後續處理尚待確認污染事件或污染行為人。'
+      })
+    }),
+    guards:Object.freeze({
+      article13Plan:Object.freeze({
+        field:'waterArticle13NewOrChangeConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'目前已確認不涉及事業設立或變更，§13本案暫不進入。',
+        pendingText:'是否涉及§13所稱設立或變更尚待確認。'
+      }),
+      article18Measures:Object.freeze({
+        field:'waterArticle18SpecificDutyConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'目前未另指定其他第18條具體水措義務。共通子法義務另由 Water Measure Rules 處理；特定業別或未建置義務仍需進一步查核。',
+        pendingText:'第18條為授權型水措義務；若本案涉及特定業別、設備規格、特殊紀錄或其他未建置義務，仍應依行為時有效之水措管理規定另行確認。'
+      }),
+      article22Reporting:Object.freeze({
+        field:'waterArticle22ReportingDutyConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'目前已確認本案無欲檢核之第22條申報義務。',
+        pendingText:'申報義務之格式、內容、頻率與方式需依適用規定確認；母法規則包不自行補入子法細節。'
+      }),
+      article26Obstruction:Object.freeze({
+        field:'waterArticle26InspectionBasisConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'本次查證基礎尚未建立完整，不宜直接以第26條規避、妨礙或拒絕查證方向判斷。',
+        pendingText:'請先記錄稽查人員證件出示及具體查證事項，再判斷是否有規避、妨礙或拒絕。'
+      }),
+      article59Exception:Object.freeze({
+        field:'waterFacilityFailureConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'目前未確認有廢（污）水處理設施故障，不進入第59條例外。',
+        pendingText:'是否確有處理設施故障尚待確認；設備故障本身不等於免責。'
+      }),
+      article71Cleanup:Object.freeze({
+        field:'waterSurfaceWaterPollutionEventConfirmed',
+        evaluateValue:'yes',
+        noValue:'no',
+        noText:'目前未確認地面水體發生污染事件，不進入第71條污染清除後續。',
+        pendingText:'是否已發生地面水體污染事件尚待確認。'
+      })
+    }),
+    groups:Object.freeze({
+      article181:Object.freeze({
+        entries:Object.freeze([
+          Object.freeze({ruleKey:'article181Bypass',when:Object.freeze([{field:'waterActualDischarge',equals:'yes'}])}),
+          Object.freeze({ruleKey:'article181Dilution',when:Object.freeze([{field:'waterDilutionObserved',equals:'yes'}])}),
+          Object.freeze({ruleKey:'article181Treatment',when:Object.freeze([{field:'waterTreatmentFacilityApplicable',equals:'yes'}])})
+        ]),
+        emptyText:'請依現場情形完成繞流、稀釋及處理設施檢核；未確認事項不會自動認定違規。'
+      }),
+      article20:Object.freeze({
+        entries:Object.freeze([
+          Object.freeze({ruleKey:'article20StorageNoPermit',when:Object.freeze([{field:'waterDestination',equals:'storage'}])}),
+          Object.freeze({ruleKey:'article20StorageMismatch',when:Object.freeze([{field:'waterDestination',equals:'storage'},{field:'waterStoragePermit',equals:'valid'}])}),
+          Object.freeze({ruleKey:'article20DilutionNoPermit',when:Object.freeze([{field:'waterDilutionObserved',equals:'yes'}])}),
+          Object.freeze({ruleKey:'article20DilutionMismatch',when:Object.freeze([{field:'waterDilutionObserved',equals:'yes'},{field:'waterDilutionPermit',equals:'valid'}])})
+        ]),
+        emptyText:'目前未進入第20條貯留／稀釋支線。'
+      }),
+      article27:Object.freeze({
+        gate:Object.freeze({
+          field:'waterSevereHazardRiskConfirmed',
+          noValue:'no',
+          noText:'目前已確認不屬第27條所稱嚴重危害之虞；一般放流水超標本身不等於第27條重大污染。',
+          pendingValues:Object.freeze(['','unknown']),
+          pendingText:'是否具有嚴重危害人體健康、農漁業生產或飲用水水源之虞尚待確認。'
+        }),
+        entries:Object.freeze([
+          Object.freeze({ruleKey:'article27Emergency'}),
+          Object.freeze({ruleKey:'article27Notice'})
+        ])
+      }),
+      article28:Object.freeze({
+        gate:Object.freeze({
+          field:'waterArticle28Scenario',
+          noValue:'no',
+          noText:'目前未發現輸送或貯存設備疏漏態樣；§28設備疏漏支線暫不進入。',
+          pendingValues:Object.freeze(['','unknown']),
+          pendingText:'是否存在輸送或貯存設備疏漏、溢流或滲漏態樣尚待確認。'
+        }),
+        block:Object.freeze({
+          field:'waterLeakCause',
+          equals:'humanDischarge',
+          relation:'humanDischarge'
+        }),
+        entries:Object.freeze([
+          Object.freeze({ruleKey:'article28Prevention'}),
+          Object.freeze({ruleKey:'article28Emergency',when:Object.freeze([{field:'waterLeakPollutedWaterBody',equals:'yes'}])}),
+          Object.freeze({ruleKey:'article28Notice',when:Object.freeze([{field:'waterLeakPollutedWaterBody',equals:'yes'}])})
+        ])
+      }),
+      article32:Object.freeze({
+        routeField:'waterDestination',
+        routes:Object.freeze({
+          soil:Object.freeze(['article32Soil']),
+          groundwater:Object.freeze(['article32Groundwater'])
+        }),
+        emptyText:'目前未進入第32條土壤／地下水體支線。'
+      })
+    }),
+    summaryLabels:Object.freeze({
+      article13Plan:'§13 水措計畫',
+      article14NoPermit:'§14 排放許可',
+      article7Effluent:'§7 放流水標準',
+      article18Measures:'§18 水污染防治措施',
+      article181Bypass:'§18-1 繞流',
+      article181Dilution:'§18-1 稀釋',
+      article181Treatment:'§18-1 處理設施',
+      article20StorageNoPermit:'§20 貯留',
+      article20StorageMismatch:'§20 貯留登記事項',
+      article20DilutionNoPermit:'§20 稀釋',
+      article20DilutionMismatch:'§20 稀釋登記事項',
+      article22Reporting:'§22 申報',
+      article35FalseReporting:'§35 不實申報／虛偽紀錄',
+      article26Obstruction:'§26 規避／妨礙／拒絕查證',
+      article27Emergency:'§27 緊急應變',
+      article27Notice:'§27 3小時通知',
+      article28Prevention:'§28 維護／防範',
+      article28Emergency:'§28 緊急應變',
+      article28Notice:'§28 3小時通知',
+      article32Soil:'§32 土壤／地下水體',
+      article32Groundwater:'§32 土壤／地下水體',
+      article30Dumping:'§30 污染物棄置',
+      article59Exception:'§59 故障例外',
+      article71Cleanup:'§71 污染清除'
+    })
+  });
+})(typeof window==='undefined'?globalThis:window);
+
 (function(root){
   'use strict';
   const meta=root.WATER_RULE_PACK_META;
@@ -658,6 +826,7 @@
     fieldNavigation:root.WATER_FIELD_NAVIGATION||{},
     pendingGuidance:root.WATER_PENDING_GUIDANCE||{},
     coreRelations:root.WATER_CORE_RELATIONS||{},
+    corePresentation:root.WATER_CORE_PRESENTATION||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
