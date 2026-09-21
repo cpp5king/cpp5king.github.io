@@ -4,7 +4,7 @@
     packId:'WATER-CORE-TW',
     name:'Water Core Rules',
     lawName:'水污染防治法',
-    packVersion:'2026.09.21.1-test',
+    packVersion:'2026.09.21.2-test',
     status:'test',
     createdAt:'2026-09-21',
     updatedAt:'2026-09-21',
