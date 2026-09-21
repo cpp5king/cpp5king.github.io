@@ -29,5 +29,5 @@ test('4.5 畜牧業僅在採沼液沼渣農地肥分時進入70-1支線',async()
 test('4.5 早於115年4月20日的特定業別規則維持待確認，不回溯套新版',async()=>{
   const out=await norm('water-main',{waterInspectionDate:'2026-04-19',waterSubjectType:'business',waterSubjectConfirmed:'yes',waterIndustryType:'construction',waterConstructionReductionPlanApprovedBeforeWork:'no'});
   assert.match(out.waterIndustryOverviewText,/尚有要件待確認/);
-  assert.match(out.waterIndustryOverviewText,/子法施行版本/);
+  assert.match(out.waterIndustryOverviewText,/水措管理辦法版本|適用版本/);
 });
