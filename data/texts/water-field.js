@@ -11,6 +11,7 @@
     coreLawVersion:'母法適用版本',
     measureRulePackVersion:'Water Measure Rule Pack 版本',
     measureLawVersion:'水措管理辦法適用版本',
+    permitRulePackVersion:'Water Permit Rule Pack 版本',
     permitLawVersion:'許可審查辦法適用版本',
     lawVersion:'本案子法版本判定（相容顯示）',
     sourceMode:'案件起點｜目前是否已知污染來源／特定業者？',
