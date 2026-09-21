@@ -29,7 +29,7 @@
       const v=matches[0];
       let text='';
       if(v.regime==='2024-01-11-general')text='許可審查：依行為發生日期適用113年1月11日版本。';
-      else if(v.regime==='2024-01-11-general-with-2026-art57')text='許可審查：115年3月24日至115年9月30日間，原則以113年1月11日版本之一般規則為基礎；115年3月24日修正之第57條自發布日施行。';
+      else if(v.regime==='2024-01-11-general-with-2026-art57')text='許可審查：115年10月1日前（其中115年3月24日至9月30日），原則以113年1月11日版本之一般規則為基礎；115年3月24日修正之第57條自發布日施行。';
       else text='許可審查：依行為發生日期適用115年3月24日修正版（除第57條自發布日施行外，其餘自115年10月1日施行）。';
       return {status:'resolved',date,version:v,regime:v.regime,text};
     }
