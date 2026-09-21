@@ -20,7 +20,7 @@ window.INSPECTION_CONFIG = {
     {
       "id": "waste",
       "title": "廢棄物",
-      "status": "development"
+      "status": "active"
     }
   ],
   "caseTypes": [

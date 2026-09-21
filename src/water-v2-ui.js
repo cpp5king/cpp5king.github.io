@@ -73,6 +73,14 @@
   function screeningRecord(code){
     return {code, reaction:''};
   }
+  const BASIC_SCREENING_CODES=Object.freeze(['COD']);
+  function ensureBasicScreeningRecords(records){
+    BASIC_SCREENING_CODES.forEach(code=>{
+      if(!records.some(r=>screeningAssist().normalizeRecord(r).code===code)) records.push(screeningRecord(code));
+    });
+    return records;
+  }
+  function isBasicScreeningCode(code){return BASIC_SCREENING_CODES.includes(code);}
   function screenScopeId(scope){return String(scope).replace(/[^a-zA-Z0-9_-]/g,'_');}
   function previousScreeningRecords(node){
     if(!node) return [];
@@ -106,14 +114,16 @@
   }
   function screeningRecommendationHtml(scope,records,node=null,meta={}){
     const rec=screeningRecommendationData(scope,node,meta);
-    if(!rec.codes.length){
-      const msg=scope==='base'?'目前沒有足夠的現場情形或行業／製程資訊產生特定建議；可依現場判斷自行選擇。':'目前沒有可沿用的有反應項目或行業／製程建議；可依現場判斷自行選擇。';
-      return `<div class="screen-rec"><div class="screen-rec-title">建議優先快篩</div><div class="muted small">${esc(msg)}</div></div>`;
+    const optionalCodes=rec.codes.filter(code=>!isBasicScreeningCode(code));
+    if(!optionalCodes.length){
+      const msg=scope==='base'?'目前沒有足夠的現場情形或行業／製程資訊產生其他特定建議；可依現場判斷自行選擇。':'目前沒有可沿用的其他有反應項目或行業／製程建議；可依現場判斷自行選擇。';
+      return `<div class="screen-rec"><div class="screen-rec-title">其他建議快篩</div><div class="muted small">${esc(msg)}</div></div>`;
     }
-    return `<div class="screen-rec"><div class="screen-rec-title">綜合建議優先快篩</div><div class="screen-chip-row">${rec.codes.map(code=>{const d=screeningAssist().item(code);const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${code}" ${exists?'disabled':''}>${esc(d?.label||code)}${exists?' ✓':''}</button>`;}).join('')}</div>${rec.reasons.length?`<div class="screen-rec-reasons">${rec.reasons.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div>`:''}</div>`;
+    return `<div class="screen-rec"><div class="screen-rec-title">其他建議快篩</div><div class="screen-chip-row">${optionalCodes.map(code=>{const d=screeningAssist().item(code);const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${code}" ${exists?'disabled':''}>${esc(d?.label||code)}${exists?' ✓':''}</button>`;}).join('')}</div>${rec.reasons.length?`<div class="screen-rec-reasons">${rec.reasons.map(x=>`<div>• ${esc(x)}</div>`).join('')}</div>`:''}</div>`;
   }
   function screeningAllItemsHtml(scope,records){
-    return `<details class="screen-all"><summary>其他可選快篩（目前共 ${screeningAssist().items.length} 項）</summary><div class="screen-chip-row">${screeningAssist().items.map(d=>{const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===d.code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${d.code}" ${exists?'disabled':''}>${esc(d.label)}${exists?' ✓':''}</button>`;}).join('')}</div></details>`;
+    const items=screeningAssist().items.filter(d=>!isBasicScreeningCode(d.code));
+    return `<details class="screen-all"><summary>其他可選快篩（目前共 ${items.length} 項）</summary><div class="screen-chip-row">${items.map(d=>{const exists=records.some(r=>screeningAssist().normalizeRecord(r).code===d.code);return `<button type="button" class="screen-chip ${exists?'selected':''}" data-add-screen-code="${scope}" data-code="${d.code}" ${exists?'disabled':''}>${esc(d.label)}${exists?' ✓':''}</button>`;}).join('')}</div></details>`;
   }
   function screeningDirectionsHtml(records,scope,meta={}){
     const dirs=screeningAssist().sourceDirections(records,{ph:meta.ph??''});
@@ -122,18 +132,23 @@
     return `<div id="${id}" class="screen-directions"><div class="screen-rec-title">可能來源方向</div>${dirs.map(d=>`<div class="source-direction"><strong>${esc(d.title)}</strong><div>${esc(d.reason)}</div><div class="hint">${esc(d.caution)}</div></div>`).join('')}<div class="notice warn">僅供污染查源參考，不代表污染來源、行業別、法定超標或違規成立。</div></div>`;
   }
   function screeningTable(records,scope,meta={},node=null){
+    ensureBasicScreeningRecords(records);
     const normalized=records.map((r,i)=>Object.assign(r,screeningAssist().normalizeRecord(r)));
     const ph=meta.ph??'', temp=meta.temperature??'';
+    const basicRecords=normalized.map((r,i)=>({r,i})).filter(x=>isBasicScreeningCode(x.r.code));
+    const optionalRecords=normalized.map((r,i)=>({r,i})).filter(x=>!isBasicScreeningCode(x.r.code));
     return `<div class="screening-panel">
       ${screeningContextHtml(scope,meta)}
-      ${screeningRecommendationHtml(scope,records,node,meta)}
+      <div class="screen-rec-title">固定基本快篩</div>
       <div class="grid-2 screen-basic">
-        <label class="field"><span class="field-label">pH（固定基本量測）</span><input class="text-input" inputmode="decimal" data-screen-basic="ph" data-scope="${scope}" value="${esc(ph)}" placeholder="例如 7.2"></label>
-        <label class="field"><span class="field-label">水溫（固定基本量測）</span><div class="input-suffix"><input class="text-input" inputmode="decimal" data-screen-basic="temperature" data-scope="${scope}" value="${esc(temp)}" placeholder="例如 26.4"><span>°C</span></div></label>
+        <label class="field"><span class="field-label">pH</span><input class="text-input" inputmode="decimal" data-screen-basic="ph" data-scope="${scope}" value="${esc(ph)}" placeholder="例如 7.2"></label>
+        <label class="field"><span class="field-label">水溫</span><div class="input-suffix"><input class="text-input" inputmode="decimal" data-screen-basic="temperature" data-scope="${scope}" value="${esc(temp)}" placeholder="例如 26.4"><span>°C</span></div></label>
       </div>
-      ${(ph===''||temp==='')?'<div class="notice warn">已進行快篩時，pH 與水溫建議固定記錄。</div>':''}
+      <div class="screen-records screen-basic-records">${basicRecords.map(({r,i})=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact screen-record-basic"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code)}</strong><span class="screen-basic-badge">固定基本快篩</span></div></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>
+      ${(ph===''||temp===''||basicRecords.some(x=>!x.r.reaction))?'<div class="notice warn">進行快篩時，pH、水溫與 COD 為固定基本項目；尚未完成的項目可先保留待補。</div>':''}
+      ${screeningRecommendationHtml(scope,records,node,meta)}
       ${screeningAllItemsHtml(scope,records)}
-      ${normalized.length?`<div class="screen-records">${normalized.map((r,i)=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code||'快篩項目')}</strong></div><button type="button" class="btn btn-danger" data-remove-screen="${scope}" data-index="${i}">刪除</button></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>`:'<div class="empty compact">尚未加入實際快篩項目。</div>'}
+      ${optionalRecords.length?`<div class="screen-records">${optionalRecords.map(({r,i})=>{const d=screeningAssist().item(r.code);return `<article class="screen-record screen-record-compact"><div class="screen-record-head"><div><strong>${esc(d?.label||r.code||'快篩項目')}</strong></div><button type="button" class="btn btn-danger" data-remove-screen="${scope}" data-index="${i}">刪除</button></div><label class="field"><span class="field-label">快篩是否有反應？</span><select class="select-input" data-screen="reaction" data-scope="${scope}" data-index="${i}"><option value="">請選擇</option><option value="yes" ${r.reaction==='yes'?'selected':''}>有反應</option><option value="no" ${r.reaction==='no'?'selected':''}>無反應</option><option value="unclear" ${r.reaction==='unclear'?'selected':''}>無法判讀</option></select></label></article>`;}).join('')}</div>`:'<div class="empty compact">尚未加入其他快篩項目。</div>'}
       ${screeningDirectionsHtml(records,scope,{ph})}
     </div>`;
   }

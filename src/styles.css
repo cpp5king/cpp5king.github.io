@@ -562,3 +562,52 @@ input:focus-visible,select:focus-visible,textarea:focus-visible { border-color:v
     background:#fff;
   }
 }
+
+/* 5.0 module theme identities. Neutral home remains blue; modules carry their own accent. */
+body[data-module="air"]{--module-color:#2e8b57;--module-strong:#236f46;--module-soft:#eaf6ef;--module-text:#1f5f3d;--module-border:#a8d4b9}
+body[data-module="water"]{--module-color:#2f7de1;--module-strong:#2469c2;--module-soft:#edf6ff;--module-text:#173a63;--module-border:#9fc1ea}
+body[data-module="noise"]{--module-color:#7c3aed;--module-strong:#6d28d9;--module-soft:#f3e8ff;--module-text:#4c1d95;--module-border:#c4a7f5}
+body[data-module="waste"]{--module-color:#8b5e3c;--module-strong:#6f472d;--module-soft:#f7efe8;--module-text:#5a3a27;--module-border:#d6b89f}
+
+/* Home category buttons use category identity even before a module is entered. */
+body[data-module="home"] #app .actions button[data-module="air"]{background:linear-gradient(180deg,#3b9968,#2e8b57);border-color:#2e8b57;color:#fff}
+body[data-module="home"] #app .actions button[data-module="water"]{background:linear-gradient(180deg,#438fee,#2f7de1);border-color:#2f7de1;color:#fff}
+body[data-module="home"] #app .actions button[data-module="noise"]{background:linear-gradient(180deg,#8b5cf6,#7c3aed);border-color:#7c3aed;color:#fff}
+body[data-module="home"] #app .actions button[data-module="waste"]{background:linear-gradient(180deg,#9b6b48,#8b5e3c);border-color:#8b5e3c;color:#fff}
+
+body[data-module="air"] h1,body[data-module="air"] h2,body[data-module="air"] h3,
+body[data-module="water"] h1,body[data-module="water"] h2,body[data-module="water"] h3,
+body[data-module="noise"] h1,body[data-module="noise"] h2,body[data-module="noise"] h3,
+body[data-module="waste"] h1,body[data-module="waste"] h2,body[data-module="waste"] h3{color:var(--module-text)}
+
+body[data-module="air"] button:not(.danger):not(.btn-danger),body[data-module="water"] button:not(.danger):not(.btn-danger),body[data-module="noise"] button:not(.danger):not(.btn-danger),body[data-module="waste"] button:not(.danger):not(.btn-danger){border-color:var(--module-color);background:linear-gradient(180deg,color-mix(in srgb,var(--module-color) 88%,white),var(--module-color));color:#fff}
+body[data-module="air"] button.secondary,body[data-module="water"] button.secondary,body[data-module="noise"] button.secondary,body[data-module="waste"] button.secondary,
+body[data-module="air"] .btn.btn-secondary,body[data-module="water"] .btn.btn-secondary,body[data-module="noise"] .btn.btn-secondary,body[data-module="waste"] .btn.btn-secondary,
+body[data-module="air"] .btn.btn-ghost,body[data-module="water"] .btn.btn-ghost,body[data-module="noise"] .btn.btn-ghost,body[data-module="waste"] .btn.btn-ghost{background:#fff;color:var(--module-text);border-color:var(--module-border);box-shadow:none}
+body[data-module="air"] button.secondary:hover,body[data-module="water"] button.secondary:hover,body[data-module="noise"] button.secondary:hover,body[data-module="waste"] button.secondary:hover,
+body[data-module="air"] .btn.btn-secondary:hover,body[data-module="water"] .btn.btn-secondary:hover,body[data-module="noise"] .btn.btn-secondary:hover,body[data-module="waste"] .btn.btn-secondary:hover{background:var(--module-soft)}
+
+body[data-module="air"] input:focus-visible,body[data-module="air"] select:focus-visible,body[data-module="air"] textarea:focus-visible,
+body[data-module="water"] input:focus-visible,body[data-module="water"] select:focus-visible,body[data-module="water"] textarea:focus-visible,
+body[data-module="noise"] input:focus-visible,body[data-module="noise"] select:focus-visible,body[data-module="noise"] textarea:focus-visible,
+body[data-module="waste"] input:focus-visible,body[data-module="waste"] select:focus-visible,body[data-module="waste"] textarea:focus-visible{border-color:var(--module-color);box-shadow:0 0 0 3px color-mix(in srgb,var(--module-color) 16%,transparent);outline:none}
+
+body[data-module="air"] .choice-card[aria-checked="true"],body[data-module="water"] .choice-card[aria-checked="true"],body[data-module="noise"] .choice-card[aria-checked="true"],body[data-module="waste"] .choice-card[aria-checked="true"],
+body[data-module="air"] .card-form .check-choice:has(input:checked),body[data-module="water"] .card-form .check-choice:has(input:checked),body[data-module="noise"] .card-form .check-choice:has(input:checked),body[data-module="waste"] .card-form .check-choice:has(input:checked){background:var(--module-soft);border-color:var(--module-color);color:var(--module-text)}
+
+/* Noise mobile wizard follows purple theme while warning/danger semantics stay unchanged. */
+body[data-module="noise"] .mobile-wizard-brand-mark,
+body[data-module="noise"] .mobile-wizard-brand-mark::before,
+body[data-module="noise"] .mobile-wizard-brand-mark::after,
+body[data-module="noise"] .mobile-wizard-segment[data-state="active"],
+body[data-module="noise"] .mobile-wizard-result-check{background:var(--module-color)}
+body[data-module="noise"] .mobile-wizard-progress,
+body[data-module="noise"] .mobile-wizard-step-icon,
+body[data-module="noise"] .mobile-wizard-title,
+body[data-module="noise"] .mobile-wizard-status-line strong{color:var(--module-text)}
+body[data-module="noise"] .mobile-wizard-step-icon{border-color:var(--module-color);background:var(--module-soft)}
+body[data-module="noise"] .mobile-wizard-help,body[data-module="noise"] .mobile-wizard-status,body[data-module="noise"] .mobile-wizard-result-intro{background:var(--module-soft);border-color:var(--module-border);color:#5c4a76}
+body[data-module="noise"] .mobile-wizard-help-icon{border-color:var(--module-color);color:var(--module-color)}
+body[data-module="noise"] .mobile-wizard-content .single-choice .choice-card[aria-checked="true"]{background:var(--module-soft);border-color:var(--module-color);color:var(--module-text)}
+body[data-module="noise"] .mobile-wizard-nav button:not(.secondary){border-color:var(--module-color);background:linear-gradient(180deg,#8b5cf6,var(--module-color));color:#fff}
+body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module-text);border-color:var(--module-border);background:#fff}

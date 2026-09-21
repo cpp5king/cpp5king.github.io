@@ -165,7 +165,7 @@ test('情境6｜特定業別：半導體§49-9分流題目、法規內容與Meas
   assert.match(out.waterHighTechRequiredStreamsText,/TMAH/);
   assert.match(out.waterIndustryOverviewText,/§49-9/);
   assert.match(out.waterIndustryOverviewText,/已確認符合/);
-  assert.match(out.waterMeasureRulePackVersionText,/2026\.09\.21\.6-test/);
+  assert.match(out.waterMeasureRulePackVersionText,/2026\.09\.21\.6/);
 });
 
 test('情境7｜行為日期不明：不得用稽查日或目前日期代替，法規方向維持版本待確認',()=>{
@@ -203,8 +203,8 @@ test('情境8｜重新研判：第一次結果、Rule Pack版本與輸出快照�
   session.generate();
   const first=plain(session.snapshot().legalReviews[0]);
   assert.equal(first.sequence,1);
-  assert.equal(first.packSnapshot.core.packVersion,'2026.09.21.4-test');
-  assert.equal(first.packSnapshot.measure.packVersion,'2026.09.21.6-test');
+  assert.equal(first.packSnapshot.core.packVersion,'2026.09.21.4');
+  assert.equal(first.packSnapshot.measure.packVersion,'2026.09.21.6');
 
   session.setInputs({
     ...session.snapshot().inputs,

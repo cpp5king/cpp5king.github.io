@@ -39,7 +39,7 @@ water-main / water-v2-assessment
 - 檔案：`data/water-rules.js`
 - Facade：`src/water-law.js`
 - Pack ID：`WATER-CORE-TW`
-- 版本：`2026.09.21.4-test`
+- 版本：`2026.09.21.4`
 - checksum：`579d6184`
 - 法規：水污染防治法
 - 官方來源：FL015486
@@ -68,7 +68,7 @@ water-main / water-v2-assessment
 - 檔案：`data/water-measure-rules.js`
 - Facade：`src/water-measure-law.js`
 - Pack ID：`WATER-MEASURE-TW`
-- 版本：`2026.09.21.6-test`
+- 版本：`2026.09.21.6`
 - checksum：`36264c79`
 - 法規：水污染防治措施及檢測申報管理辦法
 - 官方來源：FL040734
@@ -105,7 +105,7 @@ water-main / water-v2-assessment
 - 檔案：`data/water-permit-rules.js`
 - Facade：`src/water-permit-law.js`
 - Pack ID：`WATER-PERMIT-TW`
-- 版本：`2026.09.21.1-test`
+- 版本：`2026.09.21.1`
 - checksum：`cb981d95`
 - 法規：水污染防治措施計畫及許可申請審查管理辦法
 - 官方來源：GL005950
@@ -135,9 +135,9 @@ Permit Pack 目前接管：
 - 檔案：`data/water-standard-rules.js`
 - Facade：`src/water-standard-law.js`
 - Pack ID：`WATER-STANDARD-TW`
-- 版本：`2026.09.21.1-test`
+- 版本：`2026.09.21.1`
 - checksum：`379aceb7`
-- 狀態：`test-routing-only`
+- 狀態：`routing-only`
 - 法規：放流水標準
 - 官方來源：FL015489
 - 現行修正基準：2024-12-18
@@ -165,9 +165,9 @@ Permit Pack 目前接管：
 - 檔案：`data/water-local-rules.js`
 - Facade：`src/water-local-law.js`
 - Pack ID：`WATER-LOCAL-NTPC`
-- 版本：`2026.09.21.1-test`
+- 版本：`2026.09.21.1`
 - checksum：`13d2c6eb`
-- 狀態：`test-routing-only`
+- 狀態：`routing-only`
 - jurisdiction：新北市
 
 目前收錄地方標準入口：

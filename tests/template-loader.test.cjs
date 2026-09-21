@@ -1,9 +1,9 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { runtime, loaded, plain, fixture } = require('./helpers.cjs');
-test('正確載入大類與類型；空氣污染、水污染與噪音開放', async () => {
+test('正確載入大類與類型；5.0 四大模組均開放', async () => {
   const { config } = await loaded();
-  assert.deepEqual(plain(config.categories.map(item => [item.title, item.status])), [['空氣污染','active'], ['水污染','active'], ['噪音','active'], ['廢棄物','development']]);
+  assert.deepEqual(plain(config.categories.map(item => [item.title, item.status])), [['空氣污染','active'], ['水污染','active'], ['噪音','active'], ['廢棄物','active']]);
   assert.equal(config.caseTypes.length, 5); assert.equal(config.caseTypes[0].title, '餐飲異味');
 });
 test('依清單載入現有範本，不需在首頁列出每個 script', async () => {

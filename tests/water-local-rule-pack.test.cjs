@@ -55,7 +55,7 @@ test('local precedence reminds caller to check local stricter standard before na
 
 test('Local Pack declares no numeric limits and no automatic geographic inference',()=>{
   const info=context.window.WaterLocalLaw.packInfo();
-  ok(info.status==='test-routing-only','status');
+  ok(info.status==='routing-only','status');
   ok(info.limitations.some(x=>x.includes('不內建地方加嚴數值限值')),'numeric limitation');
   ok(info.limitations.some(x=>x.includes('不依地址')||x.includes('不依地址、里別或座標')),'geographic limitation');
 });

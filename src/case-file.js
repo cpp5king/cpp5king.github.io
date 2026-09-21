@@ -27,6 +27,10 @@
       if(!root.WaterV2UI?.validateState)throw new Error('目前版本缺少 Water V2 案件驗證模組。');
       validated.waterV2State=root.WaterV2UI.validateState(state.waterV2State);
     }
+    if(Object.prototype.hasOwnProperty.call(state,'wasteV1State')){
+      if(!root.WasteV1UI?.validateState)throw new Error('目前版本缺少 Waste V1 案件驗證模組。');
+      validated.wasteV1State=root.WasteV1UI.validateState(state.wasteV1State);
+    }
     return validated;
   }
 
@@ -50,8 +54,8 @@
   }
 
   function filename(state){
-    const date=String(state?.inputs?.waterInspectionDate||'').replaceAll('-','')||new Date().toISOString().slice(0,10).replaceAll('-','');
-    const template=String(state?.templateId||'case').replace(/[^a-zA-Z0-9_-]+/g,'-');
+    const date=String(state?.inputs?.waterInspectionDate||state?.wasteV1State?.caseInfo?.inspectionDate||'').replaceAll('-','')||new Date().toISOString().slice(0,10).replaceAll('-','');
+    const template=String(state?.templateId||(state?.categoryId==='waste'?'waste-v1':'case')).replace(/[^a-zA-Z0-9_-]+/g,'-');
     return `inspection-${date}-${template}.json`;
   }
 

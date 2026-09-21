@@ -70,7 +70,7 @@ test('sewer system without subtype is never guessed',()=>{
 
 test('pack explicitly declares routing-only limitation',()=>{
   const info=context.window.WaterStandardLaw.packInfo();
-  ok(info.status==='test-routing-only','status');
+  ok(info.status==='routing-only','status');
   ok(info.limitations.some(x=>x.includes('不含各水質項目數值限值')),'numeric limitation missing');
 });
 
