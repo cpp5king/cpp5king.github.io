@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'13036f27'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'b44f3409'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -186,7 +186,7 @@
     electroplating:{label:'電鍍業',articles:['49-9']},
     metalSurface:{label:'金屬表面處理業',articles:['49-9']},
     other:{label:'其他事業',articles:[]},
-    unknown:{label:'業別尚待確認',articles:[]}
+    unknown:{label:'尚待確認',articles:[]}
   });
   const specialOperations=Object.freeze({
     organicGroundwaterPollutant:{label:'貯存／輸送地下水污染管制標準有機污染物',articles:['49-1']},
