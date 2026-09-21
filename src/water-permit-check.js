@@ -1,14 +1,8 @@
 (function(root){
   'use strict';
   const bool=value=>value?'yes':'no';
-  const items=[
-    ['waterPermitSourceCompare','廢（污）水來源'],
-    ['waterPermitProcessCompare','收集／處理流程'],
-    ['waterPermitOutletCompare','排放口／納管口'],
-    ['waterPermitDestinationCompare','最終去向／處理方式'],
-    ['waterPermitFacilityCompare','設施／槽體／管線'],
-    ['waterPermitOperationCompare','操作方式／登記事項']
-  ];
+  if(!root.WaterPermitLaw)throw new Error('WaterPermitLaw is required before WaterPermitCheck.');
+  const items=root.WaterPermitLaw.comparisonItems();
   const stateLabel={
     match:'一致',
     mismatch:'不一致',
@@ -20,7 +14,7 @@
     return input.waterPermitCheckMode==='detailed'||(input.waterPermitCheckMode==='quick'&&input.waterPermitQuickDifferenceObserved==='yes');
   }
   function comparableReference(input={}){
-    return ['full','partial'].includes(input.waterPermitReferenceStatus);
+    return root.WaterPermitLaw.comparableReference(input);
   }
   function comparisonValues(input={}){return items.map(([key,label])=>({key,label,value:input[key]||''}));}
   function evaluated(input={}){
@@ -75,7 +69,7 @@
   }
   function apply(input={},out=input){
     const e=evaluated(out);
-    const subjectEligible=out.waterSubjectType==='sewerSystem'||(out.waterSubjectType==='business'&&out.waterSubjectConfirmed==='yes');
+    const subjectEligible=root.WaterPermitLaw.subjectEligible(out);
     out.waterShowPermitCheck=bool(subjectEligible&&out.waterWastewaterStatus==='yes');
     out.waterShowPermitQuick=bool(out.waterShowPermitCheck==='yes'&&out.waterPermitCheckMode==='quick');
     out.waterShowPermitDetailed=bool(out.waterShowPermitCheck==='yes'&&detailedActive(out));
