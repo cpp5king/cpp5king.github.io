@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'7c0a77be'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'329f7eb8'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -513,6 +513,138 @@
   );
 })(typeof window==='undefined'?globalThis:window);
 
+
+(function(root){
+  'use strict';
+
+  root.WATER_FIELD_NAVIGATION=Object.freeze({
+    article14NoPermitGround:Object.freeze({
+      lawBySubject:Object.freeze({
+        industry:'水污染防治法第14條第1項',
+        sewer:'水污染防治法第19條準用第14條第1項'
+      }),
+      reason:'目前結構化事實為無有效排放許可／核准資料，且有排放廢污水至地面水體方向。'
+    }),
+    article14PermitMismatch:Object.freeze({
+      lawBySubject:Object.freeze({
+        industry:'水污染防治法第14條第1項',
+        sewer:'水污染防治法第19條準用第14條第1項'
+      }),
+      reason:'{code} 項已記錄與排放許可／簡易排放許可登記事項不一致，進入未依登記事項運作之查核方向。'
+    }),
+    article14RouteMismatch:Object.freeze({
+      lawBySubject:Object.freeze({
+        industry:'水污染防治法第14條第1項',
+        sewer:'水污染防治法第19條準用第14條第1項'
+      }),
+      reason:'現場有實際排放至地面水體，排放位置／路徑與排放許可登記事項不一致，且已確認並非由非核准最終放流口排出，進入第14條第1項方向。'
+    }),
+    article18Meter:Object.freeze({
+      lawBySubject:Object.freeze({
+        industry:'水污染防治法第18條',
+        sewer:'水污染防治法第19條準用第18條'
+      }),
+      reason:'已記錄「{issue}」之具體事實，屬水污染防治措施中計測設施之查核方向；仍需依實際處理方式、設置位置及適用子法確認具體義務。'
+    }),
+    article18Record:Object.freeze({
+      lawBySubject:Object.freeze({
+        industry:'水污染防治法第18條',
+        sewer:'水污染防治法第19條準用第18條'
+      }),
+      reason:'已記錄「{issue}」之具體事實，屬水污染防治措施中操作／管理紀錄義務之查核方向；仍需確認本案適用之具體子法規定。'
+    }),
+    article181Bypass:Object.freeze({
+      law:'水污染防治法第18條之1第1項',
+      reason:'結構化事實顯示由非核准最終放流口／非核准納管口排出，進入繞流排放方向。'
+    }),
+    article181Dilution:Object.freeze({
+      law:'水污染防治法第18條之1第2項',
+      reason:'結構化事實符合排放／納管前，將須處理之廢污水與無需處理即可符合標準之水混合稀釋的查核方向。'
+    }),
+    article181Treatment:Object.freeze({
+      law:'水污染防治法第18條之1第4項',
+      reason:'結構化事實顯示廢污水需要處理、處理設施當時應運轉但未正常運轉，且未記錄其他替代處理方式。'
+    }),
+    article20NoPermitStorage:Object.freeze({
+      law:'水污染防治法第20條',
+      reason:'目前結構化事實顯示採貯留方式，但無有效許可／核准資料；第20條對事業及污水下水道系統直接適用。'
+    }),
+    article20NoPermitDilution:Object.freeze({
+      law:'水污染防治法第20條',
+      reason:'目前結構化事實顯示採稀釋方式，但無有效許可／核准資料；第20條對事業及污水下水道系統直接適用。'
+    }),
+    article20StorageMismatch:Object.freeze({
+      law:'水污染防治法第20條',
+      reason:'{code} 項已記錄與貯留許可登記事項不一致，進入第20條「依登記事項運作」之查核方向。'
+    }),
+    article20DilutionMismatch:Object.freeze({
+      law:'水污染防治法第20條',
+      reason:'{code} 項已記錄與稀釋許可登記事項不一致，進入第20條「依登記事項運作」之查核方向。'
+    }),
+    article32NoPermitSoilMethod:Object.freeze({
+      law:'水污染防治法第32條',
+      reason:'目前結構化事實顯示廢污水排放於土壤，且未有有效水許可／核准資料可支持土壤處理合法例外。'
+    }),
+    article32Groundwater:Object.freeze({
+      law:'水污染防治法第32條第1項',
+      reason:'現場結構化事實包含將廢污水注入地下水體，進入第32條第1項禁止方向。'
+    }),
+    article32SoilNoException:Object.freeze({
+      law:'水污染防治法第32條第1項',
+      reason:'現場有排放廢污水於土壤，且已確認未具備「符合土壤處理標準並取得主管機關許可」之合法例外。'
+    }),
+    article32SoilPending:Object.freeze({
+      law:'水污染防治法第32條方向',
+      reason:'現場有排放廢污水於土壤情形；第32條原則禁止，但法律另有符合土壤處理標準並經許可之例外。'
+    }),
+    article30Direction:Object.freeze({
+      law:'水污染防治法第30條方向',
+      reason:'已確認行為地點位於水污染管制區，並記錄行為：{actions}；仍依各款具體要件進一步確認。'
+    }),
+    article25Building:Object.freeze({
+      law:'水污染防治法第25條方向',
+      reason:'本對象選定為建築物污水處理設施；應依設施狀態、管理／清理、紀錄及排放事實進一步判斷。'
+    })
+  });
+
+  root.WATER_PENDING_GUIDANCE=Object.freeze({
+    permitUnknown:'{subject}：目前是否具有有效水許可／核准資料。',
+    permitTypeMissing:'{subject}：確認目前核對的有效許可／核准類型。',
+    permitTypeUnknown:'{subject}：目前許可類型尚無法確認，暫不以許可登記事項差異直接指定第14條或第20條。',
+    recycleOutsourceStorage:'{subject}：全量回收／全量委託情境尚需確認是否涉及廢水貯留及相應許可義務，不直接僅因處理方式套用第20條。',
+    permitMismatchOther:'{subject}：B～E 已發現許可／核准差異，但目前許可類型為「{permitType}」，需再確認該差異所對應之具體法規義務。',
+    routeMismatchSewer:'{subject}：實際最終去向為納管，路徑與核准內容不一致時，不直接套用第14條；需釐清是否屬第18條之1繞流、下水道核准排放口差異或其他水措義務。',
+    routeMismatchGroundPrerequisite:'{subject}：排放路徑與許可／核准內容不一致，但尚缺「排放許可類型」及「排放至地面水體」等第14條前提，暫不直接指定第14條。',
+    finalOutletUnknown:'{subject}：排放路徑與許可不一致時，需確認是否屬非核准最終放流口／非核准納管口，以區分第18條之1第1項與其他許可差異。',
+    alternativeTreatmentUnknown:'{subject}：處理設施應運轉但未正常運轉時，尚需確認是否有有效替代處理方式，以判斷第18條之1第4項方向。',
+    meterDuty:'{subject}：確認該水量計測設施之適用水措規定、法定設置位置及具體義務。',
+    recordDuty:'{subject}：確認本案應保存／提供之具體水措紀錄種類、頻率及保存義務。',
+    soilException:'{subject}：確認土壤排放是否已處理符合土壤處理標準，且具有有效土壤處理許可。',
+    destinationUnknown:'{subject}：實際排放之最終去向。',
+    sampledNoLab:'{subject}：本次僅記錄現場採樣；V2 不輸入實驗室結果，也不自動判定第7條超標。',
+    controlZone:'{subject}：第30條適用前提為行為地點位於公告之水污染管制區，尚需先確認管制區範圍。',
+    a30Pesticide:'{subject}：第30條第1款尚需確認是否涉及主管機關指定水體，且有污染之虞。',
+    a30Discard:'{subject}：第30條第2款尚需確認棄置位置是否在水體或其沿岸規定距離內，及棄置物是否屬法定污染物。',
+    a30Livestock:'{subject}：第30條第4款尚需確認是否位於主管機關指定水體或其沿岸規定距離內。',
+    a30Other:'{subject}：第30條第5款尚需確認是否有主管機關公告禁止該類足使水污染之行為。'
+  });
+
+  root.WATER_CORE_RELATIONS=Object.freeze({
+    article7Effluent:Object.freeze({
+      exceptionRule:'article59Exception',
+      exceptionFact:'waterFacilityFailureConfirmed',
+      exceptionFactValue:'yes',
+      establishedExceptionText:'放流水檢測超標之事實要件已確認，但§59（第59條）故障例外條件目前亦完整；§7研判須先處理該例外關係。',
+      pendingExceptionText:'放流水檢測超標之事實要件已確認，但第59條故障例外條件尚未查清；目前應先完成例外條件確認。'
+    }),
+    humanDischarge:Object.freeze({
+      excludePrimary:'article28Prevention',
+      reviewRules:Object.freeze(['article14NoPermit','article181Bypass']),
+      guidance:'目前較像人為開閥、私管或主動抽排，不要硬套設備疏漏；固定操作、閥門、管線及排放路徑後交由法規層研判。'
+    })
+  });
+})(typeof window==='undefined'?globalThis:window);
+
 (function(root){
   'use strict';
   const meta=root.WATER_RULE_PACK_META;
@@ -523,6 +655,9 @@
     lawVersions:meta.lawVersions,
     coreRules:root.WATER_RULES||{},
     fieldRules:root.WATER_V2_RULES||{},
+    fieldNavigation:root.WATER_FIELD_NAVIGATION||{},
+    pendingGuidance:root.WATER_PENDING_GUIDANCE||{},
+    coreRelations:root.WATER_CORE_RELATIONS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
