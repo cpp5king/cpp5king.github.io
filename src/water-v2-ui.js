@@ -44,7 +44,7 @@
 
   const subjectTypes = [
     ['industry','水污法事業','依許可／核准資料進行 A～F 現場查核'],
-    ['sewer','污水下水道系統','沿用 A～F 現場事實；第14、15、18條依第19條準用，其餘依各條文判斷'],
+    ['sewer','污水下水道系統',root.WaterLaw?.uiText?.('sewerSubjectHelp','v2')||'沿用 A～F 現場事實；準用關係依目前 Rule Pack 顯示'],
     ['building','建築物污水處理設施','依設施、管理、紀錄、排放四主題查核'],
     ['other','非上述管制主體','先記現場行為，再整理可能法規方向']
   ];
@@ -502,7 +502,7 @@
       <label class="field"><span class="field-label">自由文字補充（選填）</span><textarea class="text-area" id="permitNotes" placeholder="例如：文件來源、現場說明或需後續確認事項">${esc(i.permitNotes||'')}</textarea></label>
       ${i.permitStatus==='yes'?'<div class="notice info">請自行查看現有許可／核准內容，再依 B～F 核對現場。系統只使用結構化事實進行規則配對，不解析自由文字。</div>':''}
       ${i.permitStatus==='unknown'?'<div class="notice warn">「無法確認」不等同無許可；整理頁會列為尚待確認。</div>':''}
-      ${isSewer?'<div class="notice info">污水下水道系統的第14、15、18條依第19條準用；第20條等則依各該條文直接判斷，不一律冠上第19條。</div>':''}
+      ${isSewer?`<div class="notice info">${esc(root.WaterLaw?.uiText?.('sewerNotice','v2')||'污水下水道系統準用關係依目前 Rule Pack 顯示。')}</div>`:''}
     </section>
     ${topicCard('B','水量／流量','先選具體疑點；特殊細節以自由文字補充。',i)}
     ${topicCard('C','用電／設備運轉','只留下可辨識的運轉事實，不要求逐項抄錄設備資料。',i)}
