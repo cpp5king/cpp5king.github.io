@@ -21,7 +21,7 @@
           url:'https://oaout.moenv.gov.tw/Law/LawContent.aspx?id=GL005950'
         })
       ]),
-      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'PENDING'})
+      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'cb981d95'})
     }),
     lawVersions:Object.freeze([
       Object.freeze({
