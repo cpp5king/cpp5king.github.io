@@ -35,6 +35,8 @@
       computed('waterStandardRulePackVersionText',T.main.standardRulePackVersion,{display:true}),
       computed('waterStandardLawVersionText',T.main.standardLawVersion,{display:true}),
       computed('waterStandardRouteText',T.main.standardRoute,{display:true}),
+      computed('waterLocalRulePackVersionText',T.main.localRulePackVersion,{display:true}),
+      computed('waterLocalRuleStatusText',T.main.localRuleStatus,{display:true}),
       computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
       field('waterBehaviorDate',T.main.behaviorDate,'date',{format:'iso'}),
