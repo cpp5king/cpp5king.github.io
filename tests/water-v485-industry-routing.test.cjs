@@ -85,5 +85,5 @@ test('4.8.5 保留既有營建第9、10條成立規則',async()=>{
     waterConstructionVisibleSedimentFound:'no',waterConstructionWasteOilFound:'no',waterConstructionCleanupRecordsCompliant:'yes',waterSpecialOperationTypes:['none']
   });
   assert.match(out.waterIndustryOverviewText,/削減計畫/);
-  assert.match(out.waterFinalConclusionText,/B｜構成要件完整/);
+  assert.match(out.waterFinalConclusionText,/B｜構成要件事實已完整/);
 });
