@@ -1,0 +1,25 @@
+name: local-rc-snapshot
+
+on:
+  push:
+    branches:
+      - integrate/5.0.0-local-rc1
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run active regression tests
+        run: node tests/run-active-tests.cjs
+      - name: Assemble source snapshot
+        shell: bash
+        run: |
+          zip -r inspection-assistant-local-rc-source.zip . -x '.git/*' 'inspection-assistant-local-rc-source.zip'
+      - name: Upload source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: inspection-assistant-local-rc-source
+          path: inspection-assistant-local-rc-source.zip
+          if-no-files-found: error
+          retention-days: 7
