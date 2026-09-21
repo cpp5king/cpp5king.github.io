@@ -127,6 +127,83 @@
     return out;
   }
 
+
+  function narrative(ruleKey,status){
+    const rule=getRule(ruleKey,'core');
+    const configured=root.WATER_RULE_PACK?.corePresentation?.narratives?.[ruleKey]?.[status];
+    if(configured)return configured;
+    if(!rule)return '';
+    if(status==='established')return '本案具'+(rule.legalBasis||rule.title)+'之成立方向。';
+    if(status==='notEstablished')return (rule.title||ruleKey)+'目前不成立。';
+    if(status==='notApplicable')return (rule.title||ruleKey)+'目前不適用。';
+    return (rule.title||ruleKey)+'目前事證不足。';
+  }
+
+  function entryGuard(ruleKey,input={}){
+    const guard=root.WATER_RULE_PACK?.corePresentation?.guards?.[ruleKey];
+    if(!guard)return {action:'evaluate',text:''};
+    const value=input[guard.field]||'';
+    if(value===guard.evaluateValue)return {action:'evaluate',text:''};
+    if(value===guard.noValue)return {action:'message',text:guard.noText||''};
+    return {action:'message',text:guard.pendingText||''};
+  }
+
+  function conditionsMatch(input,conditions){
+    return (conditions||[]).every(cond=>{
+      const value=input[cond.field];
+      if(Object.prototype.hasOwnProperty.call(cond,'equals'))return value===cond.equals;
+      if(Array.isArray(cond.in))return cond.in.includes(value);
+      if(Object.prototype.hasOwnProperty.call(cond,'notEquals'))return value!==cond.notEquals;
+      return !!value;
+    });
+  }
+
+  function group(groupKey,input={}){
+    const cfg=root.WATER_RULE_PACK?.corePresentation?.groups?.[groupKey];
+    if(!cfg)return {state:'missing',ruleKeys:[],message:''};
+
+    if(cfg.gate){
+      const value=input[cfg.gate.field]||'';
+      if(value===cfg.gate.noValue)return {state:'message',ruleKeys:[],message:cfg.gate.noText||''};
+      if((cfg.gate.pendingValues||[]).includes(value))return {state:'message',ruleKeys:[],message:cfg.gate.pendingText||''};
+    }
+
+    if(cfg.block&&input[cfg.block.field]===cfg.block.equals){
+      const rel=relation(cfg.block.relation);
+      return {state:'message',ruleKeys:[],message:rel?.guidance||''};
+    }
+
+    if(cfg.routeField){
+      const route=(cfg.routes||{})[input[cfg.routeField]];
+      if(!route)return {state:'empty',ruleKeys:[],message:cfg.emptyText||''};
+      return {state:'active',ruleKeys:[...route],message:''};
+    }
+
+    const ruleKeys=(cfg.entries||[])
+      .filter(entry=>!entry.when||conditionsMatch(input,entry.when))
+      .map(entry=>entry.ruleKey);
+
+    if(!ruleKeys.length)return {state:'empty',ruleKeys:[],message:cfg.emptyText||''};
+    return {state:'active',ruleKeys,message:''};
+  }
+
+  function summaryLabel(ruleKey){
+    return root.WATER_RULE_PACK?.corePresentation?.summaryLabels?.[ruleKey]||getRule(ruleKey,'core')?.title||ruleKey;
+  }
+
+  function ruleElements(rule){
+    if(!rule)return [];
+    if(Array.isArray(rule.elements))return rule.elements;
+    const out=[];
+    const walk=node=>{
+      if(!node)return;
+      if(node.id&&!node.op){out.push(node);return;}
+      (node.items||[]).forEach(walk);
+    };
+    walk(rule.logic);
+    return out;
+  }
+
   function fnv1a32(str){
     let h=0x811c9dc5;
     for(let i=0;i<str.length;i++){
@@ -145,7 +222,8 @@
       fieldRules:pack.fieldRules||{},
       fieldNavigation:pack.fieldNavigation||{},
       pendingGuidance:pack.pendingGuidance||{},
-      coreRelations:pack.coreRelations||{}
+      coreRelations:pack.coreRelations||{},
+      corePresentation:pack.corePresentation||{}
     });
     const actual=fnv1a32(payload);
     return {ok:expected.algorithm==='fnv1a32-json'&&actual===expected.value,algorithm:expected.algorithm,expected:expected.value,actual};
@@ -176,6 +254,11 @@
     pending,
     relation,
     visibility,
+    narrative,
+    entryGuard,
+    group,
+    summaryLabel,
+    ruleElements,
     packInfo,
     verifyIntegrity
   });
