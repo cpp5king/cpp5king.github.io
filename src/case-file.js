@@ -17,7 +17,13 @@
       if(typeof state.outputs!=='object'||Array.isArray(state.outputs))throw new Error('案件檔草稿格式無效。');
       for(const key of ['record','reply'])if(state.outputs[key]!==undefined&&typeof state.outputs[key]!=='string')throw new Error('案件檔草稿格式無效。');
     }
-    return {categoryId,caseTypeId,templateId,inputs:clone(state.inputs),outputs:state.outputs?{record:String(state.outputs.record||''),reply:String(state.outputs.reply||'')}:null,stale:!!state.stale};
+    const validated={categoryId,caseTypeId,templateId,inputs:clone(state.inputs),outputs:state.outputs?{record:String(state.outputs.record||''),reply:String(state.outputs.reply||'')}:null,stale:!!state.stale};
+    if(Object.prototype.hasOwnProperty.call(state,'legalReviews')){
+      if(!Array.isArray(state.legalReviews))throw new Error('案件檔法規研判歷程格式無效。');
+      if(!root.WaterReview?.validate)throw new Error('目前版本缺少法規研判快照驗證模組。');
+      validated.legalReviews=state.legalReviews.map(review=>root.WaterReview.validate(review));
+    }
+    return validated;
   }
 
   function createPayload(state,appMeta){
