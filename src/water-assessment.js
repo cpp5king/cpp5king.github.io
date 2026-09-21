@@ -154,51 +154,13 @@
   }
   function apply(input,facts,out,lawVersion,results,sub,industry){
     const {r13,r14,r7,r18,rb,rd,rt,r20s,r20sm,r20d,r20dm,r22,r35,r26,r27e,r27n,r28p,r28e,r28n,r30,r32s,r32g,r59,r71}=results;
-    const subItems=[
-      {key:'sub4',label:'水措管理辦法§4 核准內容與現場',result:sub.approvedMeasuresMismatch,active:out.waterShowSublawCore==='yes'&&(out.waterPermitLegalComparisonActive==='yes'||!input.waterPermitCheckMode)},
-      {key:'sub7',label:'水措管理辦法§7 雨污分流',result:sub.rainWastewaterSeparation,active:out.waterShowSublawCore==='yes'&&facts.wastewaterConfirmed==='yes'},
-      {key:'sub8',label:'水措管理辦法§8 逕流廢水收集處理',result:sub.runoffCollection,active:out.waterShowSublawRunoff==='yes'},
-      {key:'sub31s',label:'水措管理辦法§31 委託前處理／貯留',result:sub.outsourceStorage,active:out.waterShowSublawOutsource==='yes'},
-      {key:'sub31m',label:'水措管理辦法§31 委託處理水量計測',result:sub.outsourceMeter,active:out.waterShowSublawOutsource==='yes'},
-      {key:'sub39m',label:'水措管理辦法§39 貯留水量計測',result:sub.storageMeter,active:out.waterShowSublawStorage==='yes'},
-      {key:'sub39r',label:'水措管理辦法§39 貯留紀錄',result:sub.storageRecords,active:out.waterShowSublawStorage==='yes'},
-      {key:'sub40',label:'水措管理辦法§40 貯留應變容量',result:sub.storageCapacity,active:out.waterShowSublawStorage==='yes'},
-      {key:'sub41q',label:'水措管理辦法§41 回收使用水質／例外',result:sub.reuseStandard,active:out.waterShowSublawReuse==='yes'},
-      {key:'sub41s',label:'水措管理辦法§41 回收使用採樣口',result:sub.reuseSamplingPort,active:out.waterShowSublawReuse==='yes'},
-      {key:'sub53l',label:'水措管理辦法§53 放流口位置',result:sub.outletLocation,active:out.waterShowSublawOutlet==='yes'},
-      {key:'sub53a',label:'水措管理辦法§53 採樣道路／平台',result:sub.outletAccess,active:out.waterShowSublawOutlet==='yes'},
-      {key:'sub53m',label:'水措管理辦法§53 放流水量計測',result:sub.outletMeter,active:out.waterShowSublawOutlet==='yes'},
-      {key:'sub53s',label:'水措管理辦法§53 告示牌／座標',result:sub.outletSign,active:out.waterShowSublawOutlet==='yes'},
-      {key:'sub53p',label:'水措管理辦法§53 可直接採樣',result:sub.outletSampling,active:out.waterShowSublawOutlet==='yes'},
-      {key:'sub53x',label:'水措管理辦法§53 陰井均勻混合',result:sub.outletMixing,active:out.waterShowSublawOutletMixing==='yes'},
-      {key:'sub65',label:'水措管理辦法§65 水量計校正維護',result:sub.meterCalibration,active:out.waterShowSublawMeter==='yes'},
-      {key:'sub891d',label:'水措管理辦法§89-1 申報與證明文件一致',result:sub.reportingDocuments,active:out.waterShowSublawReporting==='yes'},
-      {key:'sub891s',label:'水措管理辦法§89-1 申報與現場一致',result:sub.reportingSite,active:out.waterShowSublawReporting==='yes'}
-    ];
+    const subItems=root.WaterMeasureLaw.assessmentItems('common',{input,facts,out,results:sub});
     out.waterSublawOverviewText=sublawOverview(out,lawVersion,subItems);
 
-    const industryItems=[];
-    if(industry?.results){
-      const ir=industry.results;
-      const a9=out.waterShowIndustryArticle9==='yes', construction=out.waterShowIndustryConstruction==='yes', livestock=out.waterShowIndustryLivestockFertilizer==='yes';
-      if(a9){
-        industryItems.push(['ind9r','業別§9 遮雨／擋雨／導雨',root.WATER_INDUSTRY_RULES.article9RainProtection,ir.article9RainProtection]);
-        industryItems.push(['ind9b','業別§9 沉砂池',root.WATER_INDUSTRY_RULES.article9SedimentationBasin,ir.article9SedimentationBasin]);
-        industryItems.push(['ind9c','業別§9 沉砂池容量',root.WATER_INDUSTRY_RULES.article9BasinCapacity,ir.article9BasinCapacity]);
-        industryItems.push(['ind9f','業別§9 沉砂池液位',root.WATER_INDUSTRY_RULES.article9BasinFreeboard,ir.article9BasinFreeboard]);
-        industryItems.push(['ind9m','業別§9 不透水材質',root.WATER_INDUSTRY_RULES.article9BasinMaterial,ir.article9BasinMaterial]);
-        industryItems.push(['ind9x','業別§9 維護清淤紀錄',root.WATER_INDUSTRY_RULES.article9Maintenance,ir.article9Maintenance]);
-      }
-      if(construction){
-        industryItems.push(['ind10p','營建§10 削減計畫',root.WATER_INDUSTRY_RULES.constructionPlan,ir.constructionPlan]);
-        industryItems.push(['ind10i','營建§10 依核准計畫實施',root.WATER_INDUSTRY_RULES.constructionImplementation,ir.constructionImplementation]);
-      }
-      if(livestock){
-        industryItems.push(['ind70p','畜牧§70-1 農地肥分計畫',root.WATER_INDUSTRY_RULES.livestockFertilizerPlan,ir.livestockFertilizerPlan]);
-        industryItems.push(['ind70o','畜牧§70-1 依計畫運作',root.WATER_INDUSTRY_RULES.livestockFertilizerOperation,ir.livestockFertilizerOperation]);
-      }
-    }
-    out.waterIndustryOverviewText=industryItems.length?industryItems.map(([,label,rule,result])=>`【${label}】\n${resultBlock(rule,result,genericNarrative(result))}`).join('\n\n'):'目前未進入特定業別子法支線。';
+    const industryItems=industry?.results
+      ?root.WaterMeasureLaw.assessmentItems('industry',{input,facts,out,results:industry.results}).filter(item=>item.active)
+      :[];
+    out.waterIndustryOverviewText=industryItems.length?industryItems.map(item=>`【${item.label}】\n${resultBlock(item.rule,item.result,genericNarrative(item.result))}`).join('\n\n'):'目前未進入特定業別子法支線。';
 
     const resultMap={
       article13Plan:r13,
@@ -254,7 +216,7 @@
     if(input.waterSurfaceWaterPollutionEventConfirmed==='yes')addSummary('article71Cleanup',statusLabel[r71.status]);
 
     subItems.filter(x=>x.active).forEach(x=>summaries.push(x.label+'：'+sublawStatusLabel[x.result.status]));
-    industryItems.forEach(([,label,,result])=>summaries.push(label+'：'+sublawStatusLabel[result.status]));
+    industryItems.forEach(item=>summaries.push(item.label+'：'+sublawStatusLabel[item.result.status]));
     if(!summaries.length)summaries.push('目前尚未進入可判斷之主要條文模組。');
 
     out.waterRulesOverviewText=summaries.join('\n');
@@ -308,7 +270,7 @@
     if(out.waterShowArticle30==='yes')addRule('a30','article30Dumping',r30);
 
     subItems.filter(x=>x.active).forEach(x=>addOther(x.key,x.label,x.result));
-    industryItems.forEach(([key,label,,result])=>addOther(key,label,result));
+    industryItems.forEach(item=>addOther(item.key,item.label,item.result));
 
     out.waterFinalConclusionText=finalConclusion(input,activeForFinal,r59);
     out.waterLiveDecisionText=liveDecision(out);
