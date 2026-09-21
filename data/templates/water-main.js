@@ -28,6 +28,9 @@
       computed('waterLiveMissingText','尚缺關鍵事證',{display:true,className:'live-assessment'}),
       computed('waterRulePackVersionText',T.main.rulePackVersion,{display:true}),
       computed('waterCoreLawVersionText',T.main.coreLawVersion,{display:true}),
+      computed('waterMeasureRulePackVersionText',T.main.measureRulePackVersion,{display:true}),
+      computed('waterMeasureLawVersionText',T.main.measureLawVersion,{display:true}),
+      computed('waterPermitLawVersionText',T.main.permitLawVersion,{display:true}),
       computed('waterLawVersionText',T.main.lawVersion,{display:true}),
 
       field('waterBehaviorDate',T.main.behaviorDate,'date',{format:'iso'}),
