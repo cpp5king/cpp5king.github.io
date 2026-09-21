@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'1fe121e8'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'19135511'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -815,6 +815,37 @@
   });
 })(typeof window==='undefined'?globalThis:window);
 
+
+(function(root){
+  'use strict';
+  root.WATER_CORE_BINDINGS=Object.freeze({
+    r13:'article13Plan',
+    r14:'article14NoPermit',
+    r7:'article7Effluent',
+    r18:'article18Measures',
+    rb:'article181Bypass',
+    rd:'article181Dilution',
+    rt:'article181Treatment',
+    r20s:'article20StorageNoPermit',
+    r20sm:'article20StorageMismatch',
+    r20d:'article20DilutionNoPermit',
+    r20dm:'article20DilutionMismatch',
+    r22:'article22Reporting',
+    r35:'article35FalseReporting',
+    r26:'article26Obstruction',
+    r27e:'article27Emergency',
+    r27n:'article27Notice',
+    r28p:'article28Prevention',
+    r28e:'article28Emergency',
+    r28n:'article28Notice',
+    r30:'article30Dumping',
+    r32s:'article32Soil',
+    r32g:'article32Groundwater',
+    r59:'article59Exception',
+    r71:'article71Cleanup'
+  });
+})(typeof window==='undefined'?globalThis:window);
+
 (function(root){
   'use strict';
   const meta=root.WATER_RULE_PACK_META;
@@ -829,6 +860,7 @@
     pendingGuidance:root.WATER_PENDING_GUIDANCE||{},
     coreRelations:root.WATER_CORE_RELATIONS||{},
     corePresentation:root.WATER_CORE_PRESENTATION||{},
+    coreBindings:root.WATER_CORE_BINDINGS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
