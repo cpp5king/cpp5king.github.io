@@ -4,14 +4,14 @@ const nodePath=require('node:path');
 const ROOT=nodePath.join(__dirname,'..');
 const path=nodePath.join(ROOT,'src','water-v2-ui.js');
 const context={window:{},console};vm.createContext(context);
-for(const rel of ['src/water-rule-engine.js','data/rules/water-v2-core.js','src/water-v2-facts.js','src/water-v2-assessment.js']){
+for(const rel of ['data/water-rules.js','src/water-rule-engine.js','src/water-law.js','src/water-v2-facts.js','src/water-v2-assessment.js']){
   vm.runInContext(fs.readFileSync(nodePath.join(ROOT,rel),'utf8'),context,{filename:rel});
 }
 let src=fs.readFileSync(path,'utf8');
 src=src.replace("root.WaterV2UI=Object.freeze({", "root.__test={state,createInspection,lawAssessment};\n  root.WaterV2UI=Object.freeze({");
 vm.runInContext(src,context,{filename:'src/water-v2-ui.js'});
 const {state,createInspection,lawAssessment}=context.window.__test;
-function reset(){state.inspections=[];state.currentInspection=null;}
+function reset(){state.inspections=[];state.currentInspection=null;state.caseInfo.behaviorDate='2026-09-21';state.caseInfo.inspectionDate='2026-09-21';}
 function assess(i){reset();state.inspections.push(i);return lawAssessment();}
 function lawNames(a){return a.laws.map(x=>x.law);}
 function hasLaw(a,name){return lawNames(a).includes(name);}
