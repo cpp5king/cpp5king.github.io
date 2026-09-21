@@ -30,6 +30,8 @@
     const coreLawVersion=root.WaterLaw.resolveLawVersion(behaviorDate);
     const measureVersion=root.WaterMeasureLaw.resolveVersion(behaviorDate);
     const permitVersion=root.WaterPermitLaw.resolveVersion(behaviorDate);
+    const standardVersion=root.WaterStandardLaw.resolveVersion(behaviorDate);
+    const standardRoute=root.WaterStandardLaw.routeAppendix(out);
     const lawVersion=root.WaterLawVersions.resolve(behaviorDate);
 
     facts.sublawVersionResolved=measureVersion.status==='resolved'?'yes':'unknown';
@@ -40,6 +42,10 @@
     out.waterPermitLawVersionText=permitVersion.text+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
     const permitPackInfo=root.WaterPermitLaw.packInfo();
     out.waterPermitRulePackVersionText=permitPackInfo?'Water Permit Rules：'+permitPackInfo.packVersion+'（'+permitPackInfo.status+'）':'Water Permit Rules：未載入';
+    const standardPackInfo=root.WaterStandardLaw.packInfo();
+    out.waterStandardRulePackVersionText=standardPackInfo?'Water Standard Rules：'+standardPackInfo.packVersion+'（'+standardPackInfo.status+'）':'Water Standard Rules：未載入';
+    out.waterStandardLawVersionText=standardVersion.text+(hasBehaviorDateField?'':'（舊案件相容：沿用原案件日期基準）');
+    out.waterStandardRouteText=standardRoute.message;
 
     const packInfo=root.WaterLaw.packInfo();
     out.waterRulePackVersionText=packInfo?'Water Rules：'+packInfo.packVersion+'（'+packInfo.status+'）':'Water Rules：未載入';
