@@ -87,6 +87,17 @@
     return root.WATER_MEASURE_RULE_PACK?.industryCatalog||{};
   }
 
+
+  function uiText(key,scope='main'){
+    return root.WATER_MEASURE_RULE_PACK?.uiText?.[scope]?.[key]||'';
+  }
+
+  function applyUiText(target,scope='main'){
+    if(!target||typeof target!=='object')return target;
+    Object.assign(target,root.WATER_MEASURE_RULE_PACK?.uiText?.[scope]||{});
+    return target;
+  }
+
   function industryExtensions(){
     return root.WATER_MEASURE_RULE_PACK?.industryExtensions||{};
   }
@@ -298,7 +309,8 @@
       industryExtensions:pack.industryExtensions||{},
       industryFields:pack.industryFields||[],
       industryFieldOptions:pack.industryFieldOptions||{},
-      assessmentBindings:pack.assessmentBindings||{}
+      assessmentBindings:pack.assessmentBindings||{},
+      uiText:pack.uiText||{}
     });
     const actual=fnv1a32(payload);
     return {
@@ -316,6 +328,8 @@
     evaluate,
     evaluateAll,
     industryCatalog,
+    uiText,
+    applyUiText,
     industryExtensions,
     industryGroups,
     industryOptions,
@@ -326,4 +340,5 @@
     packInfo,
     verifyIntegrity
   });
+  if(root.WATER_TEXTS?.main)applyUiText(root.WATER_TEXTS.main,'main');
 })(typeof window==='undefined'?globalThis:window);
