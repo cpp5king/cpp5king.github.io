@@ -7,6 +7,7 @@
 
   const state = {
     view: 'home',
+    caseInfo: { behaviorDate:'', inspectionDate:'' },
     pollutionPoint: {
       presence: '', phenomena: [], otherPhenomenon: '', location: '', directionKnown: '', directionText: '', notes: ''
     },
@@ -158,7 +159,7 @@
   }
   function hasData(){
     const p = state.pollutionPoint;
-    return !!(p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection);
+    return !!(state.caseInfo.behaviorDate || state.caseInfo.inspectionDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection);
   }
   function setView(v){ state.view=v; root.scrollTo?.({top:0,behavior:'smooth'}); render(); }
 
@@ -182,6 +183,14 @@
         <p>先選你現在面對的情境。污染來源未知就從「污染排查」開始；已經知道要查誰，就直接進「對象查核」。流程可做到一半停止，隨時整理目前內容。</p>
         <span class="pill">資料只存在本次頁面記憶體，不寫入 localStorage / IndexedDB</span>
       </section>
+      <section class="card">
+        <h3>案件日期與法規版本</h3>
+        <div class="grid-2">
+          <label class="field"><span class="field-label">行為發生日期</span><input class="text-input" type="date" id="caseBehaviorDate" value="${esc(state.caseInfo.behaviorDate)}"><span class="field-help">用於選擇適用法規版本；不明可留空，系統會標示「適用法規版本待確認」。</span></label>
+          <label class="field"><span class="field-label">稽查日期</span><input class="text-input" type="date" id="caseInspectionDate" value="${esc(state.caseInfo.inspectionDate)}"><span class="field-help">僅作案件紀錄，不替代行為發生日期。</span></label>
+        </div>
+        <div class="notice info">${esc(root.WaterLaw?.packInfo?.()?.packVersion?('Water Rules：'+root.WaterLaw.packInfo().packVersion+'（'+root.WaterLaw.packInfo().status+'）'):'Water Rules：未載入')}<br>${esc(root.WaterLaw?.resolveLawVersion?.(state.caseInfo.behaviorDate)?.message||'適用法規版本待確認')}</div>
+      </section>
       <section class="grid-2">
         <article class="card entry-card" id="enterPollution">
           <div class="big">⌁</div><h3>污染排查</h3>
@@ -201,6 +210,8 @@
         <p>流程不要求全部完成；污染排查或對象查核做到任何階段，都可以先整理目前已記錄的事實、可能法規與尚待確認事項。</p>
         <div class="btn-row"><button class="btn btn-secondary" id="homeSummary" ${hasData()?'':'disabled'}>整理目前內容</button></div>
       </section>`;
+    const behaviorDate=document.getElementById('caseBehaviorDate');if(behaviorDate)behaviorDate.onchange=e=>{state.caseInfo.behaviorDate=e.target.value;renderHome();};
+    const inspectionDate=document.getElementById('caseInspectionDate');if(inspectionDate)inspectionDate.onchange=e=>{state.caseInfo.inspectionDate=e.target.value;};
     document.getElementById('enterPollution').onclick=()=>setView('pollution');
     document.getElementById('enterSubject').onclick=()=>{ if(!state.currentInspection) state.currentInspection=createInspection(); setView('subject'); };
     document.getElementById('homeSummary').onclick=()=>setView('summary');
@@ -597,6 +608,9 @@
 
   function facts(){
     const out=[];const p=state.pollutionPoint;
+    if(state.caseInfo.behaviorDate)out.push(`【時間】行為發生日期：${state.caseInfo.behaviorDate}。`);
+    else out.push('【時間】行為發生日期尚未確認；適用法規版本待確認。');
+    if(state.caseInfo.inspectionDate)out.push(`【時間】稽查日期：${state.caseInfo.inspectionDate}。`);
     if(p.presence) out.push(`【目視】污染現象目前${p.presence==='yes'?'仍存在':p.presence==='no'?'已未見':'無法確認是否仍存在'}。`);
     if(p.location) out.push(`【目視】污染點位置：${p.location}。`);
     if(p.phenomena.length||p.otherPhenomenon) out.push(`【目視】污染現象：${[...p.phenomena.map(phenomenonLabel),p.otherPhenomenon].filter(Boolean).join('、')}。`);
@@ -646,7 +660,7 @@
     if(!root.WaterV2Assessment?.assess) throw new Error('WaterV2Assessment 尚未載入。');
     const inspections=[...state.inspections];
     if(state.currentInspection&&!inspections.some(x=>x.id===state.currentInspection.id)) inspections.push(state.currentInspection);
-    return root.WaterV2Assessment.assess(inspections);
+    return root.WaterV2Assessment.assess(inspections,{behaviorDate:state.caseInfo.behaviorDate});
   }
 
   function renderScreeningSummary(){
@@ -681,6 +695,7 @@
 
   function reset(){
     state.view='home';
+    state.caseInfo={behaviorDate:'',inspectionDate:''};
     state.pollutionPoint={presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
     state.baseScreening={status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
     state.traceNodes=[];
