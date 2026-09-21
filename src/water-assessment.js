@@ -71,7 +71,7 @@
 
   function finalConclusion(input,active,r59){
     if(input.waterSevereHazardRiskConfirmed==='yes'){
-      return 'D｜重大／緊急污染\n優先控制污染、保護下游、確認緊急應變及3小時通報，並立即固定排放、污染範圍、流向與相關證據；法律研判不得優先於污染控制。';
+      return root.WaterLaw.finalMessage('severeHazard')||'D｜重大／緊急污染\n優先控制污染、保護下游並固定相關證據；法律研判不得優先於污染控制。';
     }
     const rel=root.WaterLaw.relation('article7Effluent');
     const adjusted=active.map(item=>{
