@@ -787,6 +787,9 @@
         emptyText:'目前未進入第32條土壤／地下水體支線。'
       })
     }),
+    finalMessages:Object.freeze({
+      severeHazard:'D｜重大／緊急污染\n優先控制污染、保護下游、確認緊急應變及3小時通報，並立即固定排放、污染範圍、流向與相關證據；法律研判不得優先於污染控制。'
+    }),
     summaryLabels:Object.freeze({
       article13Plan:'§13 水措計畫',
       article14NoPermit:'§14 排放許可',
@@ -927,6 +930,9 @@
       article30:'§30 污染物棄置',
       article59:'§59 設備故障例外',
       article71:'§71 污染清除後續'
+    }),
+    field:Object.freeze({
+      threeHourNotice:'依法需通報時，是否已於3小時內通知主管機關？'
     }),
     v2:Object.freeze({
       sewerSubjectHelp:'沿用 A～F 現場事實；第14、15、18條依第19條準用，其餘依各條文判斷',
