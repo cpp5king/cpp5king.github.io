@@ -67,8 +67,8 @@ water-main / water-v2-assessment
 - 檔案：`data/water-measure-rules.js`
 - Facade：`src/water-measure-law.js`
 - Pack ID：`WATER-MEASURE-TW`
-- 版本：`2026.09.21.1-test`
-- checksum：`08d4196d`
+- 版本：`2026.09.21.4-test`
+- checksum：`c71b497f`
 - 法規：水污染防治措施及檢測申報管理辦法
 - 官方來源：FL040734
 - 現行修正基準：2026-04-20
@@ -80,6 +80,14 @@ water-main / water-v2-assessment
 - 業別 catalog。
 - 水措版本解析。
 - 行為日期版本 gate。
+- 延伸業別 §45、§46、§46-1、§47、§48～49、§49-1～49-12 等法規 metadata 與評估邏輯。
+- 56 個法規驅動業別欄位定義，包含依法規可能變動之門檻與提示文字。
+- 共通水措 19 項 assessment bindings。
+- 業別水措 10 項 assessment bindings。
+
+`water-industry-v485.js` 現在只保留 UI patch、欄位切換清除與結果拼接；不再保存上述延伸業別法規判斷或門檻字串。
+
+`water-assessment.js` 不再手寫共通水措／業別水措條文清單，改由 `WaterMeasureLaw.assessmentItems()` 取得 active items。
 
 正式 App Shell 不再直接載入：
 
@@ -196,6 +204,24 @@ Core / Measure 等會保留事實匹配程度，但法律結果不得因此直�
 
 舊案件若根本不存在 `waterBehaviorDate` 欄位，才走明示 legacy fallback，避免載入新版時偷偷改寫過去結果。
 
+## 法規研判快照／重新檢視
+
+已建立 `WaterReview` 契約：
+
+- 每次一般水污案件產生紀錄時，自動追加一筆 `legalReviews`。
+- Water V2 摘要頁可明確按「保留本次研判快照」。
+- 快照保存：
+  - 行為日期／稽查日期。
+  - 當時事實快照與 input hash。
+  - Core / Measure / Permit / Standard / Local 五個 Rule Pack 版本與 integrity。
+  - 當時法律研判／待確認事項。
+  - 當時自動產生之草稿快照。
+- 後續重新研判會新增第 2、3…筆，不覆寫舊結果。
+- 手動修改草稿不反向改寫舊 review snapshot。
+- Water V2 完整記憶體狀態與 review history 可隨既有案件 JSON 匯出／匯入。
+- 仍不使用 localStorage、IndexedDB 或其他永久儲存。
+- 舊 schema v1 案件沒有 review history 時仍可正常匯入。
+
 ## 規則引擎
 
 `WaterRuleEngine schemaVersion 2.0`：
@@ -247,7 +273,7 @@ Draft PR：#24 `Refactor water law into independent Rule Pack`
 
 最新 GitHub Actions：
 
-- active tests：285 / 285 PASS
+- active tests：301 / 301 PASS
 - fail：0
 - skipped：0
 - Water Core Rule Pack：10 / 10 PASS
@@ -265,8 +291,8 @@ Draft PR：#24 `Refactor water law into independent Rule Pack`
 3. 補許可審查辦法 2024-01-11 以前歷史 revisions。
 4. Standard Pack 再逐步加入正式結構化限值資料；在資料完整前不得自動判超標。
 5. Local Pack 再加入公告範圍／里別／承受水體結構化資料；完成前不得以地址自動認定地方標準。
-6. 建立「重新檢視結果」資料契約，使 Rule Pack 更新後可另產生新研判，不覆寫舊結果。
-7. 逐步將 UI 中純顯示用途的 §條號文字改由 Rule Pack metadata 提供；不改事實題目本質。
+6. 逐步將 Core／Permit 等仍屬純顯示用途的 §條號文字改由各自 Rule Pack metadata 提供；不改事實題目本質。
+7. 進一步盤點少數仍存在於整合層的法律顯示／路由字串，持續避免規則回流 UI。
 
 ## 上線原則
 
