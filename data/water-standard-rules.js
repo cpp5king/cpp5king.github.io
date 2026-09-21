@@ -21,7 +21,7 @@
           url:'https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL015489'
         })
       ]),
-      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'PENDING'}),
+      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'379aceb7'}),
       limitations:Object.freeze([
         '本版僅提供版本與附表路由，不含各水質項目數值限值。',
         '特定業別、區域另定標準及地方加嚴標準應優先另行確認。',
