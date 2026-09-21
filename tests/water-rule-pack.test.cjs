@@ -57,4 +57,29 @@ test('V2 legal assessment routes through WaterLaw and keeps existing result',()=
   ok(a.laws.some(x=>x.law==='水污染防治法第14條第1項'),'existing §14 direction changed');
 });
 
+test('version-aware evaluation stays pending when behavior date is unknown',()=>{
+  const version=context.window.WaterLaw.resolveLawVersion('');
+  const r=context.window.WaterLaw.evaluate('article14NoPermitGround',{
+    subject_regulated:'yes',permit_missing:'yes',method_ground:'yes'
+  },'field',{version});
+  ok(r.baseStatus==='established','factual match should remain available');
+  ok(r.status==='insufficient','unresolved version must gate legal status');
+  ok(r.missingFacts.includes('applicableLawVersion'),'missing version fact');
+});
+
+test('version-aware V2 assessment suppresses law direction until version resolves',()=>{
+  const i={
+    id:'I2',name:'版本測試',subjectType:'industry',permitStatus:'no',permitType:'',methods:['ground'],
+    topics:{B:{status:'',doubtTypes:[]},C:{status:'',doubtTypes:[]},D:{status:'',doubtTypes:[]},E:{status:'',doubtTypes:[]},F:{status:'',doubtTypes:[]}},
+    details:{B:{},C:{},D:{},E:{},F:{actualDischarge:'yes',destinationKnown:'yes',destination:'ground',sampled:'no'}},
+    building:{facility:{},management:{},records:{},discharge:{}},
+    other:{article30:[],controlZone:'',soilDischarge:'',soilTreatmentAuthorized:'',groundwaterInjection:'',notes:''}
+  };
+  const unknown=context.window.WaterV2Assessment.assess([i],{behaviorDate:''});
+  ok(unknown.laws.length===0,'unknown version must suppress law direction');
+  ok(unknown.pending.some(x=>x.includes('適用法規版本待確認')),'version pending missing');
+  const known=context.window.WaterV2Assessment.assess([i],{behaviorDate:'2026-09-21'});
+  ok(known.laws.some(x=>x.law==='水污染防治法第14條第1項'),'resolved version should restore law direction');
+});
+
 console.log(`water rule pack tests: ${count}/${count} PASS`);
