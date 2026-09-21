@@ -200,77 +200,125 @@
     }
     out.waterIndustryOverviewText=industryItems.length?industryItems.map(([,label,rule,result])=>`【${label}】\n${resultBlock(rule,result,genericNarrative(result))}`).join('\n\n'):'目前未進入特定業別子法支線。';
 
+    const resultMap={
+      article13Plan:r13,
+      article14NoPermit:r14,
+      article7Effluent:r7,
+      article18Measures:r18,
+      article181Bypass:rb,
+      article181Dilution:rd,
+      article181Treatment:rt,
+      article20StorageNoPermit:r20s,
+      article20StorageMismatch:r20sm,
+      article20DilutionNoPermit:r20d,
+      article20DilutionMismatch:r20dm,
+      article22Reporting:r22,
+      article35FalseReporting:r35,
+      article26Obstruction:r26,
+      article27Emergency:r27e,
+      article27Notice:r27n,
+      article28Prevention:r28p,
+      article28Emergency:r28e,
+      article28Notice:r28n,
+      article30Dumping:r30,
+      article32Soil:r32s,
+      article32Groundwater:r32g,
+      article59Exception:r59,
+      article71Cleanup:r71
+    };
+
     const summaries=[];
-    if(facts.subjectIsBusiness==='yes')summaries.push(`§13 水措計畫：${input.waterArticle13NewOrChangeConfirmed==='yes'?statusLabel[r13.status]:(input.waterArticle13NewOrChangeConfirmed==='no'?'— 未進入':'? 待確認')}`);
-    if(out.waterShowArticle14==='yes')summaries.push(`§14 排放許可：${statusLabel[r14.status]}`);
-    if(out.waterShowArticle7==='yes')summaries.push(`§7 放流水標準：${statusLabel[r7.status]}`);
-    if(facts.subjectIsBusiness==='yes')summaries.push(`§18 水污染防治措施：${input.waterArticle18SpecificDutyConfirmed==='yes'?statusLabel[r18.status]:(input.waterArticle18SpecificDutyConfirmed==='no'?'— 未進入':'? 待查子法')}`);
+    const addSummary=(ruleKey,value)=>summaries.push(root.WaterLaw.summaryLabel(ruleKey)+'：'+value);
+
+    if(facts.subjectIsBusiness==='yes')addSummary('article13Plan',input.waterArticle13NewOrChangeConfirmed==='yes'?statusLabel[r13.status]:(input.waterArticle13NewOrChangeConfirmed==='no'?'— 未進入':'? 待確認'));
+    if(out.waterShowArticle14==='yes')addSummary('article14NoPermit',statusLabel[r14.status]);
+    if(out.waterShowArticle7==='yes')addSummary('article7Effluent',statusLabel[r7.status]);
+    if(facts.subjectIsBusiness==='yes')addSummary('article18Measures',input.waterArticle18SpecificDutyConfirmed==='yes'?statusLabel[r18.status]:(input.waterArticle18SpecificDutyConfirmed==='no'?'— 未進入':'? 待查子法'));
+
     if(out.waterShowArticle181==='yes'){
-      summaries.push(`§18-1 繞流：${statusLabel[rb.status]}`);
-      summaries.push(`§18-1 稀釋：${statusLabel[rd.status]}`);
-      summaries.push(`§18-1 處理設施：${statusLabel[rt.status]}`);
-      if(input.waterDestination==='storage')summaries.push(`§20 貯留：${statusLabel[r20s.status]}`);
-      if(input.waterDilutionObserved==='yes')summaries.push(`§20 稀釋：${statusLabel[r20d.status]}`);
-      summaries.push(`§22 申報：${input.waterArticle22ReportingDutyConfirmed==='yes'?statusLabel[r22.status]:(input.waterArticle22ReportingDutyConfirmed==='no'?'— 未進入':'? 待確認')}`);
+      addSummary('article181Bypass',statusLabel[rb.status]);
+      addSummary('article181Dilution',statusLabel[rd.status]);
+      addSummary('article181Treatment',statusLabel[rt.status]);
+      if(input.waterDestination==='storage')addSummary('article20StorageNoPermit',statusLabel[r20s.status]);
+      if(input.waterDilutionObserved==='yes')addSummary('article20DilutionNoPermit',statusLabel[r20d.status]);
+      addSummary('article22Reporting',input.waterArticle22ReportingDutyConfirmed==='yes'?statusLabel[r22.status]:(input.waterArticle22ReportingDutyConfirmed==='no'?'— 未進入':'? 待確認'));
     }
-    if(out.waterShowFalseDetails==='yes')summaries.push(`§35 不實申報／虛偽紀錄：${statusLabel[r35.status]}`);
-    if(out.waterShowArticle26Obstruction==='yes')summaries.push(`§26 查證／拒檢：${statusLabel[r26.status]}`);
-    if(out.waterShowArticle27==='yes')summaries.push(`§27 重大危害：${input.waterSevereHazardRiskConfirmed==='yes'?statusLabel[r27e.status]:(input.waterSevereHazardRiskConfirmed==='no'?'— 未進入':'? 待確認')}`);
-    if(out.waterShowArticle28==='yes'&&input.waterArticle28Scenario)summaries.push(`§28 設備疏漏：${input.waterArticle28Scenario==='no'?'— 未進入':statusLabel[r28p.status]}`);
-    if(out.waterShowArticle32==='yes')summaries.push(`§32 ${input.waterDestination==='soil'?'土壤':'地下水體'}：${statusLabel[(input.waterDestination==='soil'?r32s:r32g).status]}`);
-    if(out.waterShowArticle30==='yes')summaries.push(`§30 污染物棄置：${statusLabel[r30.status]}`);
-    if(input.waterFacilityFailureConfirmed==='yes')summaries.push(`§59 故障例外：${statusLabel[r59.status]}`);
-    if(input.waterSurfaceWaterPollutionEventConfirmed==='yes')summaries.push(`§71 污染清除：${statusLabel[r71.status]}`);
-    subItems.filter(x=>x.active).forEach(x=>summaries.push(`${x.label}：${sublawStatusLabel[x.result.status]}`));
-    industryItems.forEach(([,label,,result])=>summaries.push(`${label}：${sublawStatusLabel[result.status]}`));
+
+    if(out.waterShowFalseDetails==='yes')addSummary('article35FalseReporting',statusLabel[r35.status]);
+    if(out.waterShowArticle26Obstruction==='yes')addSummary('article26Obstruction',statusLabel[r26.status]);
+    if(out.waterShowArticle27==='yes')addSummary('article27Emergency',input.waterSevereHazardRiskConfirmed==='yes'?statusLabel[r27e.status]:(input.waterSevereHazardRiskConfirmed==='no'?'— 未進入':'? 待確認'));
+    if(out.waterShowArticle28==='yes'&&input.waterArticle28Scenario)addSummary('article28Prevention',input.waterArticle28Scenario==='no'?'— 未進入':statusLabel[r28p.status]);
+    if(out.waterShowArticle32==='yes')addSummary(input.waterDestination==='soil'?'article32Soil':'article32Groundwater',statusLabel[(input.waterDestination==='soil'?r32s:r32g).status]);
+    if(out.waterShowArticle30==='yes')addSummary('article30Dumping',statusLabel[r30.status]);
+    if(input.waterFacilityFailureConfirmed==='yes')addSummary('article59Exception',statusLabel[r59.status]);
+    if(input.waterSurfaceWaterPollutionEventConfirmed==='yes')addSummary('article71Cleanup',statusLabel[r71.status]);
+
+    subItems.filter(x=>x.active).forEach(x=>summaries.push(x.label+'：'+sublawStatusLabel[x.result.status]));
+    industryItems.forEach(([,label,,result])=>summaries.push(label+'：'+sublawStatusLabel[result.status]));
     if(!summaries.length)summaries.push('目前尚未進入可判斷之主要條文模組。');
 
     out.waterRulesOverviewText=summaries.join('\n');
-    out.waterArticle13Text=article13Text(input,r13);
-    out.waterArticle14Text=resultBlock(root.WATER_RULES.article14NoPermit,r14,assess14(r14));
+    out.waterArticle13Text=guardedText('article13Plan',input,r13);
+    out.waterArticle14Text=coreResultBlock('article14NoPermit',r14);
     out.waterArticle7Text=article7Text(input,r7,r59);
-    out.waterArticle18Text=article18Text(input,r18);
-    out.waterArticle181Text=combined181(input,[{rule:root.WATER_RULES.article181Bypass,result:rb},{rule:root.WATER_RULES.article181Dilution,result:rd},{rule:root.WATER_RULES.article181Treatment,result:rt}]);
-    out.waterArticle20Text=combined20(input,[{rule:root.WATER_RULES.article20StorageNoPermit,result:r20s},{rule:root.WATER_RULES.article20StorageMismatch,result:r20sm},{rule:root.WATER_RULES.article20DilutionNoPermit,result:r20d},{rule:root.WATER_RULES.article20DilutionMismatch,result:r20dm}]);
-    out.waterArticle22Text=article22Text(input,r22);
-    out.waterArticle35Text=resultBlock(root.WATER_RULES.article35FalseReporting,r35,assess35(r35));
-    out.waterArticle26Text=article26Text(input,r26);
-    out.waterArticle27Text=combined27(input,[{rule:root.WATER_RULES.article27Emergency,result:r27e},{rule:root.WATER_RULES.article27Notice,result:r27n}]);
-    out.waterArticle28Text=combined28(input,[{rule:root.WATER_RULES.article28Prevention,result:r28p},{rule:root.WATER_RULES.article28Emergency,result:r28e},{rule:root.WATER_RULES.article28Notice,result:r28n}]);
-    out.waterArticle32Text=combined32(input,r32s,r32g);
-    out.waterArticle30Text=resultBlock(root.WATER_RULES.article30Dumping,r30,assessGeneric(r30));
-    out.waterArticle59Text=article59Text(input,r59);
-    out.waterArticle71Text=article71Text(input,r71);
+    out.waterArticle18Text=guardedText('article18Measures',input,r18);
+    out.waterArticle181Text=groupText('article181',input,resultMap);
+    out.waterArticle20Text=groupText('article20',input,resultMap);
+    out.waterArticle22Text=guardedText('article22Reporting',input,r22);
+    out.waterArticle35Text=coreResultBlock('article35FalseReporting',r35);
+    out.waterArticle26Text=guardedText('article26Obstruction',input,r26);
+    out.waterArticle27Text=groupText('article27',input,resultMap);
+    out.waterArticle28Text=groupText('article28',input,resultMap);
+    out.waterArticle32Text=groupText('article32',input,resultMap);
+    out.waterArticle30Text=coreResultBlock('article30Dumping',r30);
+    out.waterArticle59Text=guardedText('article59Exception',input,r59);
+    out.waterArticle71Text=guardedText('article71Cleanup',input,r71);
 
     const activeForFinal=[];
-    const add=(key,label,result)=>activeForFinal.push({key,label,result});
-    if(facts.subjectIsBusiness==='yes'&&input.waterArticle13NewOrChangeConfirmed==='yes')add('a13','§13 水措計畫',r13);
-    if(out.waterShowArticle14==='yes')add('a14','§14 排放許可',r14);
-    if(out.waterShowArticle7==='yes')add('a7','§7 放流水標準',r7);
-    if(facts.subjectIsBusiness==='yes'&&input.waterArticle18SpecificDutyConfirmed==='yes')add('a18','§18 水污染防治措施',r18);
+    const addRule=(key,ruleKey,result)=>activeForFinal.push({key,ruleKey,label:root.WaterLaw.summaryLabel(ruleKey),result});
+    const addOther=(key,label,result)=>activeForFinal.push({key,ruleKey:null,label,result});
+
+    if(facts.subjectIsBusiness==='yes'&&input.waterArticle13NewOrChangeConfirmed==='yes')addRule('a13','article13Plan',r13);
+    if(out.waterShowArticle14==='yes')addRule('a14','article14NoPermit',r14);
+    if(out.waterShowArticle7==='yes')addRule('a7','article7Effluent',r7);
+    if(facts.subjectIsBusiness==='yes'&&input.waterArticle18SpecificDutyConfirmed==='yes')addRule('a18','article18Measures',r18);
+
     if(out.waterShowArticle181==='yes'){
-      if(input.waterActualDischarge==='yes')add('a181b','§18-1 繞流',rb);
-      if(input.waterDilutionObserved==='yes')add('a181d','§18-1 稀釋',rd);
-      if(input.waterTreatmentFacilityApplicable==='yes')add('a181t','§18-1 處理設施',rt);
-      if(input.waterDestination==='storage'){add('a20s','§20 貯留',r20s);if(input.waterStoragePermit==='valid')add('a20sm','§20 貯留登記事項',r20sm);}
-      if(input.waterDilutionObserved==='yes'){add('a20d','§20 稀釋',r20d);if(input.waterDilutionPermit==='valid')add('a20dm','§20 稀釋登記事項',r20dm);}
-      if(input.waterArticle22ReportingDutyConfirmed==='yes')add('a22','§22 申報',r22);
+      const g181=root.WaterLaw.group('article181',input);
+      if(g181.state==='active')g181.ruleKeys.forEach(ruleKey=>addRule(ruleKey,ruleKey,resultMap[ruleKey]));
+      const g20=root.WaterLaw.group('article20',input);
+      if(g20.state==='active')g20.ruleKeys.forEach(ruleKey=>addRule(ruleKey,ruleKey,resultMap[ruleKey]));
+      if(input.waterArticle22ReportingDutyConfirmed==='yes')addRule('a22','article22Reporting',r22);
     }
-    if(out.waterShowFalseDetails==='yes')add('a35','§35 不實申報／虛偽紀錄',r35);
-    if(out.waterShowArticle26Obstruction==='yes')add('a26','§26 規避／妨礙／拒絕查證',r26);
-    if(out.waterShowArticle27==='yes'&&input.waterSevereHazardRiskConfirmed==='yes'){add('a27e','§27 緊急應變',r27e);add('a27n','§27 3小時通知',r27n);}
-    if(out.waterShowArticle28==='yes'&&input.waterArticle28Scenario==='yes'){add('a28p','§28 維護／防範',r28p);if(input.waterLeakPollutedWaterBody==='yes'){add('a28e','§28 緊急應變',r28e);add('a28n','§28 3小時通知',r28n);}}
-    if(out.waterShowArticle32==='yes')add('a32','§32 土壤／地下水體',input.waterDestination==='soil'?r32s:r32g);
-    if(out.waterShowArticle30==='yes')add('a30','§30 污染物棄置',r30);
-    subItems.filter(x=>x.active).forEach(x=>add(x.key,x.label,x.result));
-    industryItems.forEach(([key,label,,result])=>add(key,label,result));
+
+    if(out.waterShowFalseDetails==='yes')addRule('a35','article35FalseReporting',r35);
+    if(out.waterShowArticle26Obstruction==='yes')addRule('a26','article26Obstruction',r26);
+    if(out.waterShowArticle27==='yes'){
+      const g27=root.WaterLaw.group('article27',input);
+      if(g27.state==='active')g27.ruleKeys.forEach(ruleKey=>addRule(ruleKey,ruleKey,resultMap[ruleKey]));
+    }
+    if(out.waterShowArticle28==='yes'){
+      const g28=root.WaterLaw.group('article28',input);
+      if(g28.state==='active')g28.ruleKeys.forEach(ruleKey=>addRule(ruleKey,ruleKey,resultMap[ruleKey]));
+    }
+    if(out.waterShowArticle32==='yes'){
+      const g32=root.WaterLaw.group('article32',input);
+      if(g32.state==='active')g32.ruleKeys.forEach(ruleKey=>addRule(ruleKey,ruleKey,resultMap[ruleKey]));
+    }
+    if(out.waterShowArticle30==='yes')addRule('a30','article30Dumping',r30);
+
+    subItems.filter(x=>x.active).forEach(x=>addOther(x.key,x.label,x.result));
+    industryItems.forEach(([key,label,,result])=>addOther(key,label,result));
+
     out.waterFinalConclusionText=finalConclusion(input,activeForFinal,r59);
     out.waterLiveDecisionText=liveDecision(out);
     out.waterLiveMissingText=liveMissing(out);
 
     out.waterRuleStatus=r14.status;
-    out.waterArticle14ElementsText=ruleLines(root.WATER_RULES.article14NoPermit,r14);
-    out.waterAssessmentText=assess14(r14);out.waterMissingText=missingText(r14);out.waterNextChecksText=nextText(r14);
+    out.waterArticle14ElementsText=ruleLines(root.WaterLaw.getRule('article14NoPermit','core'),r14);
+    out.waterAssessmentText=root.WaterLaw.narrative('article14NoPermit',r14.status);
+    out.waterMissingText=missingText(r14);
+    out.waterNextChecksText=nextText(r14);
     return out;
   }
   root.WaterAssessment={apply};
