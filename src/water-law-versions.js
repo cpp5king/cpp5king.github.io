@@ -1,9 +1,21 @@
 (function(root){
   'use strict';
-  const SOURCES=Object.freeze({
-    measures:{name:'水污染防治措施及檢測申報管理辦法',revision:'2026-04-20',sourceId:'FL040734'},
-    permit:{name:'水污染防治措施計畫及許可申請審查管理辦法',revision:'2026-03-24',sourceId:'GL005950'}
+
+  function sourceFrom(facade){
+    const source=facade?.packInfo?.()?.officialSources?.[0]||{};
+    return Object.freeze({
+      name:source.title||'',
+      revision:source.revision||'',
+      sourceId:source.sourceId||''
+    });
+  }
+
+  const SOURCES={};
+  Object.defineProperties(SOURCES,{
+    measures:{enumerable:true,get(){return sourceFrom(root.WaterMeasureLaw);}},
+    permit:{enumerable:true,get(){return sourceFrom(root.WaterPermitLaw);}}
   });
+  Object.freeze(SOURCES);
 
   function resolvePermit(dateValue){
     if(!root.WaterPermitLaw?.resolveVersion){
