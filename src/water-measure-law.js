@@ -114,6 +114,31 @@
     });
   }
 
+
+  function bindingMatches(condition,sources){
+    if(!condition)return true;
+    if(Array.isArray(condition.all))return condition.all.every(item=>bindingMatches(item,sources));
+    if(Array.isArray(condition.any))return condition.any.some(item=>bindingMatches(item,sources));
+    const source=sources[condition.source]||{};
+    const value=source[condition.field];
+    if(condition.falsy===true)return !value;
+    if(Object.prototype.hasOwnProperty.call(condition,'equals'))return value===condition.equals;
+    return false;
+  }
+
+  function assessmentItems(scope,{input={},facts={},out={},results={}}={}){
+    const pack=root.WATER_MEASURE_RULE_PACK||{};
+    const bindings=pack.assessmentBindings?.[scope]||[];
+    return bindings.map(binding=>({
+      key:binding.key,
+      ruleKey:binding.ruleKey,
+      label:binding.label,
+      rule:getRule(binding.ruleKey,scope==='industry'?'industry':'common'),
+      result:results[binding.ruleKey],
+      active:bindingMatches(binding.active,{input,facts,out})
+    }));
+  }
+
   function industryGuidance(input={}){
     const ext=industryExtensions();
     const type=input.waterIndustryType||'';
@@ -272,7 +297,8 @@
       industryCatalog:pack.industryCatalog||{},
       industryExtensions:pack.industryExtensions||{},
       industryFields:pack.industryFields||[],
-      industryFieldOptions:pack.industryFieldOptions||{}
+      industryFieldOptions:pack.industryFieldOptions||{},
+      assessmentBindings:pack.assessmentBindings||{}
     });
     const actual=fnv1a32(payload);
     return {
@@ -294,6 +320,7 @@
     industryGroups,
     industryOptions,
     industryFieldDefinitions,
+    assessmentItems,
     industryGuidance,
     evaluateIndustryExtensions,
     packInfo,
