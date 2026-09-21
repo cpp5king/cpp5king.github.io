@@ -12,7 +12,7 @@
       lastVerifiedAt:'2026-09-21',
       compatibleApp:Object.freeze({min:'4.9.43'}),
       provenance:'PP-IA-41-7F3C9A21',
-      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'PENDING'}),
+      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'13d2c6eb'}),
       limitations:Object.freeze([
         '本版不依地址、里別或座標自動判定公告範圍。',
         '本版不內建地方加嚴數值限值。',
