@@ -885,6 +885,58 @@
 
 (function(root){
   'use strict';
+  root.WATER_CORE_UI_TEXT=Object.freeze({
+    main:Object.freeze({
+      article13NewOrChange:'§13｜本案是否涉及事業設立或變更？',
+      article13Designated:'是否已確認屬第13條指定之種類、範圍及規模？',
+      permit:'§14｜稽查當時排放許可狀態為何？',
+      storageActivity:'§20｜是否已確認現場實際以貯留方式處理廢水？',
+      sampleTaken:'§7｜是否已有可供本案判斷之放流水採樣？',
+      approvedRoute:'§18-1｜是否已確認核准登記之收集、處理流程與放流／納管出口？',
+      bypassEmergency:'該繞流是否屬第18條之1第3項急迫搶救例外，且已於3小時內通知？',
+      dilutionPermit:'第20條稀釋許可狀態為何？',
+      dilutionEmergency:'該稀釋是否屬第18條之1第3項急迫搶救例外，且已於3小時內通知？',
+      article18SpecificDuty:'§18｜是否已依水措管理相關規定確認本案存在某項具體水措義務？',
+      article28Scenario:'§28｜是否發現輸送或貯存設備有疏漏、溢流、滲漏至水體之虞，或已發生疏漏？',
+      severeHazard:'§27｜本案排放是否已確認有嚴重危害人體健康、農漁業生產或飲用水水源之虞？',
+      threeHourNotice:'是否於法定3小時內通知當地主管機關？',
+      soilPermit:'§32｜排放於土壤時，是否具有有效土壤處理許可？',
+      groundwaterBody:'§32｜是否已確認廢（污）水實際進入地下水體／地下含水層？',
+      dumping:'§30｜是否已確認存在污染物「棄置」行為？',
+      reportingDuty:'§22｜是否已依適用規定確認本案具有申報義務？',
+      falseReportRecord:'§35｜是否已確認存在不實申報或業務文書虛偽記載？',
+      inspectionBasis:'§26｜本次是否已確認稽查人員攜帶證明文件並就法定事項執行查證？',
+      facilityFailure:'§59｜是否已確認廢（污）水處理設施發生故障，並主張／需檢核24小時標準例外？',
+      a59Record:'是否立即記錄故障並以電話或電傳報備，且留存報備人員資料？',
+      a59Recover:'是否24小時內恢復正常，或恢復前持續減少／停止生產服務？',
+      a59Report5:'是否於5日內提出書面報告？',
+      a59SixMonths:'是否不屬6個月內相同故障？',
+      surfacePollutionEvent:'§71｜是否已確認地面水體發生污染事件？',
+      article13:'§13 水措計畫',
+      article14:'§14 排放許可',
+      article7:'§7 放流水標準',
+      article18:'§18 水污染防治措施',
+      article181:'§18-1 異常排放／處理設施',
+      article20:'§20 貯留／稀釋',
+      article22:'§22 申報',
+      article35:'§35 疑似不實申報／虛偽紀錄',
+      article26:'§26 查證／拒檢',
+      article27:'§27 重大危害',
+      article28:'§28 輸送／貯存設備疏漏',
+      article32:'§32 土壤／地下水體',
+      article30:'§30 污染物棄置',
+      article59:'§59 設備故障例外',
+      article71:'§71 污染清除後續'
+    }),
+    v2:Object.freeze({
+      sewerSubjectHelp:'沿用 A～F 現場事實；第14、15、18條依第19條準用，其餘依各條文判斷',
+      sewerNotice:'污水下水道系統的第14、15、18條依第19條準用；第20條等則依各該條文直接判斷，不一律冠上第19條。'
+    })
+  });
+})(typeof window==='undefined'?globalThis:window);
+
+(function(root){
+  'use strict';
   const meta=root.WATER_RULE_PACK_META;
   root.WATER_RULE_PACK=Object.freeze({
     meta,
@@ -899,6 +951,7 @@
     corePresentation:root.WATER_CORE_PRESENTATION||{},
     coreBindings:root.WATER_CORE_BINDINGS||{},
     factAdapters:root.WATER_FACT_ADAPTERS||{},
+    uiText:root.WATER_CORE_UI_TEXT||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
