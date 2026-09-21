@@ -408,6 +408,48 @@
 
 (function(root){
   'use strict';
+  const eq=(source,field,value)=>Object.freeze({source,field,equals:value});
+  const all=(...items)=>Object.freeze({all:Object.freeze(items)});
+  const any=(...items)=>Object.freeze({any:Object.freeze(items)});
+  root.WATER_MEASURE_ASSESSMENT_BINDINGS=Object.freeze({
+    common:Object.freeze([
+      Object.freeze({key:'sub4',ruleKey:'approvedMeasuresMismatch',label:'水措管理辦法§4 核准內容與現場',active:all(eq('out','waterShowSublawCore','yes'),any(eq('out','waterPermitLegalComparisonActive','yes'),Object.freeze({source:'input',field:'waterPermitCheckMode',falsy:true})))}),
+      Object.freeze({key:'sub7',ruleKey:'rainWastewaterSeparation',label:'水措管理辦法§7 雨污分流',active:all(eq('out','waterShowSublawCore','yes'),eq('facts','wastewaterConfirmed','yes'))}),
+      Object.freeze({key:'sub8',ruleKey:'runoffCollection',label:'水措管理辦法§8 逕流廢水收集處理',active:eq('out','waterShowSublawRunoff','yes')}),
+      Object.freeze({key:'sub31s',ruleKey:'outsourceStorage',label:'水措管理辦法§31 委託前處理／貯留',active:eq('out','waterShowSublawOutsource','yes')}),
+      Object.freeze({key:'sub31m',ruleKey:'outsourceMeter',label:'水措管理辦法§31 委託處理水量計測',active:eq('out','waterShowSublawOutsource','yes')}),
+      Object.freeze({key:'sub39m',ruleKey:'storageMeter',label:'水措管理辦法§39 貯留水量計測',active:eq('out','waterShowSublawStorage','yes')}),
+      Object.freeze({key:'sub39r',ruleKey:'storageRecords',label:'水措管理辦法§39 貯留紀錄',active:eq('out','waterShowSublawStorage','yes')}),
+      Object.freeze({key:'sub40',ruleKey:'storageCapacity',label:'水措管理辦法§40 貯留應變容量',active:eq('out','waterShowSublawStorage','yes')}),
+      Object.freeze({key:'sub41q',ruleKey:'reuseStandard',label:'水措管理辦法§41 回收使用水質／例外',active:eq('out','waterShowSublawReuse','yes')}),
+      Object.freeze({key:'sub41s',ruleKey:'reuseSamplingPort',label:'水措管理辦法§41 回收使用採樣口',active:eq('out','waterShowSublawReuse','yes')}),
+      Object.freeze({key:'sub53l',ruleKey:'outletLocation',label:'水措管理辦法§53 放流口位置',active:eq('out','waterShowSublawOutlet','yes')}),
+      Object.freeze({key:'sub53a',ruleKey:'outletAccess',label:'水措管理辦法§53 採樣道路／平台',active:eq('out','waterShowSublawOutlet','yes')}),
+      Object.freeze({key:'sub53m',ruleKey:'outletMeter',label:'水措管理辦法§53 放流水量計測',active:eq('out','waterShowSublawOutlet','yes')}),
+      Object.freeze({key:'sub53s',ruleKey:'outletSign',label:'水措管理辦法§53 告示牌／座標',active:eq('out','waterShowSublawOutlet','yes')}),
+      Object.freeze({key:'sub53p',ruleKey:'outletSampling',label:'水措管理辦法§53 可直接採樣',active:eq('out','waterShowSublawOutlet','yes')}),
+      Object.freeze({key:'sub53x',ruleKey:'outletMixing',label:'水措管理辦法§53 陰井均勻混合',active:eq('out','waterShowSublawOutletMixing','yes')}),
+      Object.freeze({key:'sub65',ruleKey:'meterCalibration',label:'水措管理辦法§65 水量計校正維護',active:eq('out','waterShowSublawMeter','yes')}),
+      Object.freeze({key:'sub891d',ruleKey:'reportingDocuments',label:'水措管理辦法§89-1 申報與證明文件一致',active:eq('out','waterShowSublawReporting','yes')}),
+      Object.freeze({key:'sub891s',ruleKey:'reportingSite',label:'水措管理辦法§89-1 申報與現場一致',active:eq('out','waterShowSublawReporting','yes')})
+    ]),
+    industry:Object.freeze([
+      Object.freeze({key:'ind9r',ruleKey:'article9RainProtection',label:'業別§9 遮雨／擋雨／導雨',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind9b',ruleKey:'article9SedimentationBasin',label:'業別§9 沉砂池',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind9c',ruleKey:'article9BasinCapacity',label:'業別§9 沉砂池容量',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind9f',ruleKey:'article9BasinFreeboard',label:'業別§9 沉砂池液位',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind9m',ruleKey:'article9BasinMaterial',label:'業別§9 不透水材質',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind9x',ruleKey:'article9Maintenance',label:'業別§9 維護清淤紀錄',active:eq('out','waterShowIndustryArticle9','yes')}),
+      Object.freeze({key:'ind10p',ruleKey:'constructionPlan',label:'營建§10 削減計畫',active:eq('out','waterShowIndustryConstruction','yes')}),
+      Object.freeze({key:'ind10i',ruleKey:'constructionImplementation',label:'營建§10 依核准計畫實施',active:eq('out','waterShowIndustryConstruction','yes')}),
+      Object.freeze({key:'ind70p',ruleKey:'livestockFertilizerPlan',label:'畜牧§70-1 農地肥分計畫',active:eq('out','waterShowIndustryLivestockFertilizer','yes')}),
+      Object.freeze({key:'ind70o',ruleKey:'livestockFertilizerOperation',label:'畜牧§70-1 依計畫運作',active:eq('out','waterShowIndustryLivestockFertilizer','yes')})
+    ])
+  });
+})(typeof window==='undefined'?globalThis:window);
+
+(function(root){
+  'use strict';
   const meta=root.WATER_MEASURE_RULE_PACK_META;
   root.WATER_MEASURE_RULE_PACK=Object.freeze({
     meta,
@@ -420,6 +462,7 @@
     industryExtensions:root.WATER_MEASURE_INDUSTRY_EXTENSIONS||{},
     industryFields:root.WATER_MEASURE_INDUSTRY_FIELDS||[],
     industryFieldOptions:root.WATER_MEASURE_INDUSTRY_FIELD_OPTIONS||{},
+    assessmentBindings:root.WATER_MEASURE_ASSESSMENT_BINDINGS||{},
     provenance:meta.provenance
   });
 })(typeof window==='undefined'?globalThis:window);
