@@ -246,6 +246,11 @@
   }
 
 
+  function finalMessage(key){
+    return root.WATER_RULE_PACK?.corePresentation?.finalMessages?.[key]||'';
+  }
+
+
   function uiText(key,scope='main'){
     return root.WATER_RULE_PACK?.uiText?.[scope]?.[key]||'';
   }
@@ -328,6 +333,7 @@
     entryGuard,
     group,
     summaryLabel,
+    finalMessage,
     uiText,
     applyUiText,
     ruleElements,
@@ -335,4 +341,5 @@
     verifyIntegrity
   });
   if(root.WATER_TEXTS?.main)applyUiText(root.WATER_TEXTS.main,'main');
+  if(root.WATER_FIELD_TEXTS)applyUiText(root.WATER_FIELD_TEXTS,'field');
 })(typeof window==='undefined'?globalThis:window);
