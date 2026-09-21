@@ -245,6 +245,17 @@
     return root.WATER_RULE_PACK?.corePresentation?.summaryLabels?.[ruleKey]||getRule(ruleKey,'core')?.title||ruleKey;
   }
 
+
+  function uiText(key,scope='main'){
+    return root.WATER_RULE_PACK?.uiText?.[scope]?.[key]||'';
+  }
+
+  function applyUiText(target,scope='main'){
+    if(!target||typeof target!=='object')return target;
+    Object.assign(target,root.WATER_RULE_PACK?.uiText?.[scope]||{});
+    return target;
+  }
+
   function ruleElements(rule){
     if(!rule)return [];
     if(Array.isArray(rule.elements))return rule.elements;
@@ -279,7 +290,8 @@
       coreRelations:pack.coreRelations||{},
       corePresentation:pack.corePresentation||{},
       coreBindings:pack.coreBindings||{},
-      factAdapters:pack.factAdapters||{}
+      factAdapters:pack.factAdapters||{},
+      uiText:pack.uiText||{}
     });
     const actual=fnv1a32(payload);
     return {ok:expected.algorithm==='fnv1a32-json'&&actual===expected.value,algorithm:expected.algorithm,expected:expected.value,actual};
@@ -316,8 +328,11 @@
     entryGuard,
     group,
     summaryLabel,
+    uiText,
+    applyUiText,
     ruleElements,
     packInfo,
     verifyIntegrity
   });
+  if(root.WATER_TEXTS?.main)applyUiText(root.WATER_TEXTS.main,'main');
 })(typeof window==='undefined'?globalThis:window);
