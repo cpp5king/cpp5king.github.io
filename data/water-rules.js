@@ -11,7 +11,7 @@
     lastVerifiedAt:'2026-09-21',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'8678cde4'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'f0781057'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -635,7 +635,9 @@
       exceptionFact:'waterFacilityFailureConfirmed',
       exceptionFactValue:'yes',
       establishedExceptionText:'放流水檢測超標之事實要件已確認，但§59（第59條）故障例外條件目前亦完整；§7研判須先處理該例外關係。',
-      pendingExceptionText:'放流水檢測超標之事實要件已確認，但第59條故障例外條件尚未查清；目前應先完成例外條件確認。'
+      pendingExceptionText:'放流水檢測超標之事實要件已確認，但第59條故障例外條件尚未查清；目前應先完成例外條件確認。',
+      finalEstablishedNote:'§7超標事實受§59例外影響，需先排除例外',
+      finalPendingNote:'§7超標事實尚待排除§59故障例外'
     }),
     humanDischarge:Object.freeze({
       excludePrimary:'article28Prevention',
