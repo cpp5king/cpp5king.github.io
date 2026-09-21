@@ -133,10 +133,10 @@
     const configured=root.WATER_RULE_PACK?.corePresentation?.narratives?.[ruleKey]?.[status];
     if(configured)return configured;
     if(!rule)return '';
-    if(status==='established')return '本案具'+(rule.legalBasis||rule.title)+'之成立方向。';
-    if(status==='notEstablished')return (rule.title||ruleKey)+'目前不成立。';
-    if(status==='notApplicable')return (rule.title||ruleKey)+'目前不適用。';
-    return (rule.title||ruleKey)+'目前事證不足。';
+    if(status==='established')return (rule.legalBasis||rule.title)+'之構成要件事實目前已完整。';
+    if(status==='notEstablished')return (rule.title||ruleKey)+'目前不支持。';
+    if(status==='notApplicable')return (rule.title||ruleKey)+'本案不適用。';
+    return (rule.title||ruleKey)+'尚有要件待確認。';
   }
 
   function entryGuard(ruleKey,input={}){
