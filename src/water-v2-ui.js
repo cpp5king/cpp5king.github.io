@@ -343,6 +343,17 @@
       n.sourceCandidates.push(makeSourceCandidate({id:`source_legacy_${n.id}`,status:n.sourceStatus,name:n.sourceName||'',evidence:Array.isArray(n.evidence)?n.evidence:[],evidenceOther:n.evidenceOther||''}));
     }
     n.sourceCandidates=n.sourceCandidates.map((c,index)=>makeSourceCandidate(Object.assign({},c,{id:c?.id||`source_${n.id}_${index+1}`})));
+    // 5.0.0 compatibility: a restored single-source node may still be mutated through
+    // sourceStatus/sourceName/evidence by existing integrations. Keep that legacy
+    // contract live only for the migrated legacy candidate; multi-source nodes never
+    // collapse back to one ambiguous legacy value.
+    if(n.sourceCandidates.length===1&&String(n.sourceCandidates[0].id||'').startsWith('source_legacy_')&&n.sourceStatus){
+      const c=n.sourceCandidates[0];
+      c.status=n.sourceStatus;
+      c.name=n.sourceName||'';
+      c.evidence=Array.isArray(n.evidence)?[...n.evidence]:[];
+      c.evidenceOther=n.evidenceOther||'';
+    }
     return n.sourceCandidates;
   }
   function findSourceCandidate(nodeId,candidateId){
@@ -428,7 +439,16 @@
     const ids=[id];let added=true;while(added){added=false;state.traceNodes.forEach(n=>{if(n.parentId&&ids.includes(n.parentId)&&!ids.includes(n.id)){ids.push(n.id);added=true;}});}state.traceNodes=state.traceNodes.filter(n=>!ids.includes(n.id));
   }
   function syncSources(){
-    state.sources=state.traceNodes.flatMap(n=>ensureSourceCandidates(n).map(c=>({candidateId:c.id,nodeId:n.id,status:c.status,name:c.name,evidence:[...c.evidence],evidenceOther:c.evidenceOther})));
+    state.sources=state.traceNodes.flatMap(n=>{
+      const candidates=ensureSourceCandidates(n);
+      if(candidates.length===1){
+        const c=candidates[0];
+        n.sourceStatus=c.status;n.sourceName=c.name;n.evidence=[...c.evidence];n.evidenceOther=c.evidenceOther;
+      }else if(candidates.length>1){
+        n.sourceStatus='';n.sourceName='';n.evidence=[];n.evidenceOther='';
+      }
+      return candidates.map(c=>({candidateId:c.id,nodeId:n.id,status:c.status,name:c.name,evidence:[...c.evidence],evidenceOther:c.evidenceOther}));
+    });
   }
   function sourceStatusLabel(status){
     return ({suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})[status]||'來源狀態未設定';
