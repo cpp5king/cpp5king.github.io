@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
 
-  const VERSION = '4.9.43';
+  const VERSION = '5.0.1';
   const PROVENANCE = 'PP-IA-41-7F3C9A21';
   let $app = null;
 
@@ -329,11 +329,28 @@
 
   function addTraceNode(parentId){
     const siblings=state.traceNodes.filter(n=>n.parentId===parentId).length;
-    state.traceNodes.push({id:newId('node'),parentId,branchNo:siblings+1,type:'',location:'',hasFlow:'',directionKnown:'',directionText:'',notes:'',result:'',stopReason:'',stopNotes:'',screeningActive:false,screeningPh:'',screeningTemperature:'',screeningIndustry:'',screeningProcesses:[],screenings:[],sourceStatus:'',sourceName:'',evidence:[],evidenceOther:''});
+    state.traceNodes.push({id:newId('node'),parentId,branchNo:siblings+1,type:'',location:'',hasFlow:'',directionKnown:'',directionText:'',notes:'',result:'',stopReason:'',stopNotes:'',screeningActive:false,screeningPh:'',screeningTemperature:'',screeningIndustry:'',screeningProcesses:[],screenings:[],sourceCandidates:[],sourceStatus:'',sourceName:'',evidence:[],evidenceOther:''});
     renderPollution();
   }
   function nodeDepth(node){let d=0,p=node.parentId;while(p){d++;const pn=state.traceNodes.find(n=>n.id===p);p=pn?pn.parentId:null;}return Math.min(d,4);}
   function nodeNumber(id){return state.traceNodes.findIndex(n=>n.id===id)+1;}
+  function makeSourceCandidate(prefill={}){
+    return {id:prefill.id||newId('source'),status:prefill.status||'suspected',name:prefill.name||'',evidence:Array.isArray(prefill.evidence)?[...prefill.evidence]:[],evidenceOther:prefill.evidenceOther||''};
+  }
+  function ensureSourceCandidates(n){
+    if(!Array.isArray(n.sourceCandidates)) n.sourceCandidates=[];
+    if(!n.sourceCandidates.length&&n.sourceStatus){
+      n.sourceCandidates.push(makeSourceCandidate({id:`source_legacy_${n.id}`,status:n.sourceStatus,name:n.sourceName||'',evidence:Array.isArray(n.evidence)?n.evidence:[],evidenceOther:n.evidenceOther||''}));
+    }
+    n.sourceCandidates=n.sourceCandidates.map((c,index)=>makeSourceCandidate(Object.assign({},c,{id:c?.id||`source_${n.id}_${index+1}`})));
+    return n.sourceCandidates;
+  }
+  function findSourceCandidate(nodeId,candidateId){
+    const n=state.traceNodes.find(x=>x.id===nodeId);
+    if(!n)return null;
+    const candidates=ensureSourceCandidates(n);
+    return candidates.find(c=>c.id===candidateId)||(candidateId?'':candidates.length===1?candidates[0]:null);
+  }
   function renderTraceTree(){
     const roots=state.traceNodes.filter(n=>!n.parentId);
     return roots.map(n=>renderNodeRecursive(n)).join('');
@@ -343,8 +360,11 @@
     return `${renderTraceNode(n)}${children.map(c=>renderNodeRecursive(c)).join('')}`;
   }
   function renderTraceNode(n){
-    const depth=nodeDepth(n), idx=nodeNumber(n);
-    const statusTag=n.sourceStatus==='confirmed'?'<span class="tag confirmed">已確認來源</span>':n.sourceStatus==='suspected'?'<span class="tag suspected">疑似來源</span>':n.sourceStatus==='excluded'?'<span class="tag stopped">已排除來源</span>':n.result==='stop'?'<span class="tag stopped">支線停止</span>':'';
+    const depth=nodeDepth(n), idx=nodeNumber(n), candidates=ensureSourceCandidates(n);
+    const confirmedCount=candidates.filter(c=>c.status==='confirmed').length;
+    const suspectedCount=candidates.filter(c=>c.status==='suspected').length;
+    const excludedCount=candidates.filter(c=>c.status==='excluded').length;
+    const statusTag=confirmedCount?`<span class="tag confirmed">已確認來源 ${confirmedCount}</span>`:suspectedCount?`<span class="tag suspected">疑似來源 ${suspectedCount}</span>`:excludedCount?'<span class="tag stopped">來源均已排除</span>':n.result==='stop'?'<span class="tag stopped">支線停止</span>':'';
     const nodeTypeOptions=[['ditch','側溝'],['drain','排水溝'],['outfall','排水口'],['channel','渠道'],['pipe','管線'],['manhole','人孔／陰井'],['site','場址／場所'],['waterbody','水體'],['other','其他']];
     return `<article class="subcard trace-card level-${depth}" data-node-id="${n.id}">
       <div class="trace-head"><div><h4>節點 ${idx}${n.parentId?`｜支線 ${n.branchNo}`:''}</h4><div>${statusTag}</div></div><button class="btn btn-danger" data-remove-node="${n.id}">刪除此節點</button></div>
@@ -358,46 +378,57 @@
       <label class="field"><span class="field-label">節點補充</span><textarea class="text-area" data-node-field="notes" data-node="${n.id}">${esc(n.notes)}</textarea></label>
       ${(n.screeningActive||n.screenings.length)?`<div class="divider"></div><h4>此節點快篩</h4>${screeningTable(n.screenings,`node:${n.id}`,{ph:n.screeningPh||'',temperature:n.screeningTemperature||'',industry:n.screeningIndustry||'',processes:n.screeningProcesses||[]},n)}`:''}
       ${n.result==='stop'?`<div class="details"><label class="field"><span class="field-label">停止原因</span>${ynu(n.stopReason,`stop_${n.id}`,{excluded:'已排除',blocked:'無法繼續追查'})}</label><label class="field"><span class="field-label">排除／停止說明</span><textarea class="text-area" data-node-field="stopNotes" data-node="${n.id}">${esc(n.stopNotes)}</textarea></label></div>`:''}
-      ${n.result==='source'?renderSourceEditor(n):''}
+      ${candidates.length?renderSourceEditor(n):''}
       <div class="btn-row">
         <button class="btn btn-secondary" data-add-child="${n.id}">繼續往來源追</button>
         <button class="btn btn-secondary" data-add-child="${n.id}">新增另一支線</button>
         <button class="btn btn-ghost" data-add-node-screen="${n.id}">＋此處快篩</button>
         <button class="btn btn-ghost" data-stop-node="${n.id}">此支線停止追查</button>
-        <button class="btn btn-good" data-source-node="${n.id}">標記疑似來源</button>
+        <button class="btn btn-good" data-add-source-candidate="${n.id}">＋新增疑似來源</button>
       </div>
     </article>`;
   }
   function renderSourceEditor(n){
-    return `<div class="details">
+    const candidates=ensureSourceCandidates(n);
+    return `<div class="details source-candidates">
       <h4>來源判斷</h4>
-      <label class="field"><span class="field-label">目前對此來源的判斷</span>${ynu(n.sourceStatus,`sourceStatus_${n.id}`,{suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})}</label>
-      <label class="field"><span class="field-label">來源名稱或場所</span><input class="text-input" data-node-field="sourceName" data-node="${n.id}" value="${esc(n.sourceName)}" placeholder="例如：○○股份有限公司"></label>
-      ${n.sourceStatus==='confirmed'?`<label class="field"><span class="field-label">來源確認依據</span>${checkboxList(n.evidence,evidenceOptions,`evidence_${n.id}`)}</label>${n.evidence.includes('other')?`<label class="field"><span class="field-label">其他依據</span><input class="text-input" data-node-field="evidenceOther" data-node="${n.id}" value="${esc(n.evidenceOther)}"></label>`:''}${n.evidence.length===1&&n.evidence[0]==='screening'?'<div class="notice warn">目前只勾選快篩輔助。快篩結果不宜單獨作為來源確認唯一依據；系統不會阻止儲存，仍由稽查員判斷。</div>':''}`:''}${n.sourceStatus==='excluded'?'<div class="notice info">此對象已排除為本次污染來源；若先前已建立對象查核，查核資料仍會保留。</div>':''}
+      <div class="notice info">同一支點可以同時保留多個疑似來源；每個來源各自確認或排除。確認其中一個來源，不會自動改變其他來源的狀態。</div>
+      ${candidates.map((c,index)=>`<div class="subcard source-candidate-card" data-source-candidate="${c.id}">
+        <div class="record-head"><strong>來源 ${index+1}</strong><button type="button" class="btn btn-danger" data-remove-source-candidate="${c.id}" data-node="${n.id}">移除</button></div>
+        <label class="field"><span class="field-label">目前對此來源的判斷</span>${ynu(c.status,`sourceStatus_${n.id}_${c.id}`,{suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})}</label>
+        <label class="field"><span class="field-label">來源名稱或場所</span><input class="text-input" data-source-field="name" data-node="${n.id}" data-source-id="${c.id}" value="${esc(c.name)}" placeholder="例如：○○股份有限公司"></label>
+        ${c.status==='confirmed'?`<label class="field"><span class="field-label">來源確認依據</span>${checkboxList(c.evidence,evidenceOptions,`evidence_${n.id}_${c.id}`)}</label>${c.evidence.includes('other')?`<label class="field"><span class="field-label">其他依據</span><input class="text-input" data-source-field="evidenceOther" data-node="${n.id}" data-source-id="${c.id}" value="${esc(c.evidenceOther)}"></label>`:''}${c.evidence.length===1&&c.evidence[0]==='screening'?'<div class="notice warn">目前只勾選快篩輔助。快篩結果不宜單獨作為來源確認唯一依據；系統不會阻止儲存，仍由稽查員判斷。</div>':''}`:''}
+        ${c.status==='excluded'?'<div class="notice info">此對象已排除為本次污染來源；其他候選來源不受影響，既有對象查核資料也會保留。</div>':''}
+      </div>`).join('')}
     </div>`;
   }
 
   function bindTraceEvents(){
-    document.querySelectorAll('[data-node-field]').forEach(el=>{el.oninput=e=>{const n=state.traceNodes.find(x=>x.id===e.target.dataset.node);if(n){n[e.target.dataset.nodeField]=e.target.value;if(['sourceName','evidenceOther'].includes(e.target.dataset.nodeField))syncSources();}};});
+    document.querySelectorAll('[data-node-field]').forEach(el=>{el.oninput=e=>{const n=state.traceNodes.find(x=>x.id===e.target.dataset.node);if(n)n[e.target.dataset.nodeField]=e.target.value;};});
+    document.querySelectorAll('[data-source-field]').forEach(el=>{el.oninput=e=>{const c=findSourceCandidate(e.target.dataset.node,e.target.dataset.sourceId);if(c){c[e.target.dataset.sourceField]=e.target.value;syncSources();}};});
     state.traceNodes.forEach(n=>{
+      const candidates=ensureSourceCandidates(n);
       document.querySelectorAll(`input[name="hasFlow_${n.id}"]`).forEach(el=>el.onchange=e=>{n.hasFlow=e.target.value;});
       document.querySelectorAll(`input[name="nodeDir_${n.id}"]`).forEach(el=>el.onchange=e=>{n.directionKnown=e.target.value;if(e.target.value!=='yes')n.directionText='';renderPollution();});
       document.querySelectorAll(`input[name="stop_${n.id}"]`).forEach(el=>el.onchange=e=>{n.stopReason=e.target.value;});
-      document.querySelectorAll(`input[name="sourceStatus_${n.id}"]`).forEach(el=>el.onchange=e=>{n.sourceStatus=e.target.value;syncSources();renderPollution();});
-      document.querySelectorAll(`input[name="evidence_${n.id}"]`).forEach(el=>el.onchange=()=>{n.evidence=[...document.querySelectorAll(`input[name="evidence_${n.id}"]:checked`)].map(x=>x.value);syncSources();renderPollution();});
+      candidates.forEach(c=>{
+        document.querySelectorAll(`input[name="sourceStatus_${n.id}_${c.id}"]`).forEach(el=>el.onchange=e=>{c.status=e.target.value;syncSources();renderPollution();});
+        document.querySelectorAll(`input[name="evidence_${n.id}_${c.id}"]`).forEach(el=>el.onchange=()=>{c.evidence=[...document.querySelectorAll(`input[name="evidence_${n.id}_${c.id}"]:checked`)].map(x=>x.value);syncSources();renderPollution();});
+      });
       bindScreening(`node:${n.id}`,n.screenings,n);
     });
     document.querySelectorAll('[data-add-child]').forEach(b=>b.onclick=()=>addTraceNode(b.dataset.addChild));
     document.querySelectorAll('[data-add-node-screen]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.addNodeScreen);n.screeningActive=true;const y=root.scrollY||0;renderPollution();root.scrollTo?.({top:y});});
-    document.querySelectorAll('[data-stop-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.stopNode);n.result='stop';n.sourceStatus='';syncSources();renderPollution();});
-    document.querySelectorAll('[data-source-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.sourceNode);n.result='source';if(!n.sourceStatus)n.sourceStatus='suspected';syncSources();renderPollution();});
+    document.querySelectorAll('[data-stop-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.stopNode);n.result='stop';syncSources();renderPollution();});
+    document.querySelectorAll('[data-add-source-candidate]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.addSourceCandidate);if(!n)return;n.result='source';ensureSourceCandidates(n).push(makeSourceCandidate());syncSources();renderPollution();});
+    document.querySelectorAll('[data-remove-source-candidate]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.node);if(!n)return;n.sourceCandidates=ensureSourceCandidates(n).filter(c=>c.id!==b.dataset.removeSourceCandidate);if(!n.sourceCandidates.length&&n.result==='source')n.result='';syncSources();renderPollution();});
     document.querySelectorAll('[data-remove-node]').forEach(b=>b.onclick=()=>{removeNodeCascade(b.dataset.removeNode);syncSources();renderPollution();});
   }
   function removeNodeCascade(id){
     const ids=[id];let added=true;while(added){added=false;state.traceNodes.forEach(n=>{if(n.parentId&&ids.includes(n.parentId)&&!ids.includes(n.id)){ids.push(n.id);added=true;}});}state.traceNodes=state.traceNodes.filter(n=>!ids.includes(n.id));
   }
   function syncSources(){
-    state.sources=state.traceNodes.filter(n=>n.result==='source'&&n.sourceStatus).map(n=>({nodeId:n.id,status:n.sourceStatus,name:n.sourceName,evidence:[...n.evidence],evidenceOther:n.evidenceOther}));
+    state.sources=state.traceNodes.flatMap(n=>ensureSourceCandidates(n).map(c=>({candidateId:c.id,nodeId:n.id,status:c.status,name:c.name,evidence:[...c.evidence],evidenceOther:c.evidenceOther})));
   }
   function sourceStatusLabel(status){
     return ({suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})[status]||'來源狀態未設定';
@@ -405,19 +436,20 @@
   function renderSourceBox(s){
     const n=state.traceNodes.find(x=>x.id===s.nodeId);
     const evid=s.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]);
-    const existing=state.inspections.find(i=>i.sourceNodeId===s.nodeId);
+    const existing=state.inspections.find(i=>i.sourceCandidateId===s.candidateId||(!i.sourceCandidateId&&i.sourceNodeId===s.nodeId&&ensureSourceCandidates(n||{}).length===1));
     const action=s.status==='excluded'
-      ? (existing?`<div class="btn-row"><button class="btn btn-ghost" data-handoff-source="${s.nodeId}">查看對象查核</button></div>`:'')
-      : `<div class="btn-row"><button class="btn btn-primary" data-handoff-source="${s.nodeId}">進行對象查核</button></div>`;
+      ? (existing?`<div class="btn-row"><button class="btn btn-ghost" data-handoff-source="${s.candidateId}">查看對象查核</button></div>`:'')
+      : `<div class="btn-row"><button class="btn btn-primary" data-handoff-source="${s.candidateId}">進行對象查核</button></div>`;
     const detail=s.status==='confirmed'
       ? (evid.length?`確認依據：${esc(evid.join('、'))}`:'尚未記錄來源確認依據')
       : s.status==='suspected'?'可先進入對象查核，以進一步確認或排除來源關聯。':'已排除為本次污染來源。';
-    return `<div class="source-box"><h4>${sourceStatusLabel(s.status)}｜${esc(s.name||`節點 ${n?nodeNumber(n.id):''}`)}</h4><p>${detail}</p>${action}</div>`;
+    return `<div class="source-box"><h4>${sourceStatusLabel(s.status)}｜${esc(s.name||`節點 ${n?nodeNumber(n.id):''}`)}</h4><p>${detail}</p><div class="hint">來源支點：節點 ${n?nodeNumber(n.id):''}${n?.location?`｜${esc(n.location)}`:''}</div>${action}</div>`;
   }
   function bindSourceEvents(){
     document.querySelectorAll('[data-handoff-source]').forEach(b=>b.onclick=()=>{
-      const s=state.sources.find(x=>x.nodeId===b.dataset.handoffSource);const existing=state.inspections.find(i=>i.sourceNodeId===s.nodeId);
-      state.currentInspection=existing||createInspection({sourceNodeId:s.nodeId,name:s.name});
+      const s=state.sources.find(x=>x.candidateId===b.dataset.handoffSource);if(!s)return;
+      const existing=state.inspections.find(i=>i.sourceCandidateId===s.candidateId||(!i.sourceCandidateId&&i.sourceNodeId===s.nodeId&&state.sources.filter(x=>x.nodeId===s.nodeId).length===1));
+      state.currentInspection=existing||createInspection({sourceNodeId:s.nodeId,sourceCandidateId:s.candidateId,name:s.name});
       if(!existing) state.inspections.push(state.currentInspection);
       setView('subject');
     });
@@ -425,7 +457,7 @@
 
   function createInspection(prefill={}){
     return {
-      id:newId('inspection'),sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',permitNotes:'',methods:[],
+      id:newId('inspection'),sourceNodeId:prefill.sourceNodeId||'',sourceCandidateId:prefill.sourceCandidateId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',permitNotes:'',methods:[],
       topics:{B:newTopic(),C:newTopic(),D:newTopic(),E:newTopic(),F:newTopic()},
       details:{
         // 舊欄位暫留，讓 4.9.38 匯出案件仍可讀取；4.9.43 UI 不再逐題要求填寫。
@@ -488,11 +520,13 @@
   function renderSubject(){
     const i=state.currentInspection||createInspection();state.currentInspection=i;
     const sourceNode=i.sourceNodeId?state.traceNodes.find(n=>n.id===i.sourceNodeId):null;
-    const relationStatus=sourceNode?sourceNode.sourceStatus:'';
+    const sourceCandidate=sourceNode?findSourceCandidate(sourceNode.id,i.sourceCandidateId):null;
+    if(sourceCandidate&&!i.sourceCandidateId)i.sourceCandidateId=sourceCandidate.id;
+    const relationStatus=sourceCandidate?sourceCandidate.status:'';
     $app.innerHTML=`
-      <div class="section-title"><div><h2>對象查核</h2><p>${i.sourceNodeId?'由污染排查的疑似／確認對象帶入；對象查核可作為確認或排除來源的查證手段。':'已知稽查對象可直接從這裡開始。'}</p></div><button class="btn btn-ghost" id="subjectHome">返回水污首頁</button></div>
-      ${sourceNode?`<div class="notice info source-link-notice"><strong>來源排查：${esc(i.name||sourceNode.sourceName||sourceNode.location||'未命名對象')}</strong><span>來源關聯：<b>${sourceStatusLabel(relationStatus)}</b></span><button class="btn btn-ghost" id="viewSource">查看來源排查</button></div>
-      <section class="card relation-card"><h3>來源關聯判斷</h3><p>可先完成對象查核，再依查核結果更新是否為本次污染來源。</p><label class="field"><span class="field-label">目前判斷</span>${ynu(relationStatus,'inspectionSourceStatus',{suspected:'仍無法確認',confirmed:'確認為來源',excluded:'排除此來源'})}</label>${relationStatus==='confirmed'&&!sourceNode.evidence.length?'<div class="notice warn">目前已標記為確認來源，但尚未記錄來源確認依據；可回「來源排查」補充。</div>':''}</section>`:''}
+      <div class="section-title"><div><h2>對象查核</h2><p>${sourceCandidate?'由污染排查的疑似／確認對象帶入；對象查核只回寫這一個來源關聯，不影響同支點的其他候選來源。':'已知稽查對象可直接從這裡開始。'}</p></div><button class="btn btn-ghost" id="subjectHome">返回水污首頁</button></div>
+      ${sourceCandidate?`<div class="notice info source-link-notice"><strong>來源排查：${esc(i.name||sourceCandidate.name||sourceNode?.location||'未命名對象')}</strong><span>來源關聯：<b>${sourceStatusLabel(relationStatus)}</b></span><button class="btn btn-ghost" id="viewSource">查看來源排查</button></div>
+      <section class="card relation-card"><h3>來源關聯判斷</h3><p>可先完成對象查核，再依查核結果更新這一個候選來源；同支點其他來源會各自保留原狀。</p><label class="field"><span class="field-label">目前判斷</span>${ynu(relationStatus,'inspectionSourceStatus',{suspected:'仍無法確認',confirmed:'確認為來源',excluded:'排除此來源'})}</label>${relationStatus==='confirmed'&&!sourceCandidate.evidence.length?'<div class="notice warn">目前已標記為確認來源，但尚未記錄來源確認依據；可回「來源排查」補充。</div>':''}</section>`:''}
       <section class="card">
         <h3>確認管制主體</h3>
         <label class="field"><span class="field-label">稽查對象名稱／場所</span><input class="text-input" id="subjectName" value="${esc(i.name)}" placeholder="可先留白"></label>
@@ -564,15 +598,15 @@
     document.getElementById('subjectHome').onclick=()=>setView('home');document.getElementById('subjectBack').onclick=()=>setView('home');document.getElementById('subjectSummary').onclick=()=>{saveInspection();setView('summary');};
     const vs=document.getElementById('viewSource');if(vs)vs.onclick=()=>setView('pollution');
     document.querySelectorAll('input[name="inspectionSourceStatus"]').forEach(el=>el.onchange=e=>{
-      const n=state.traceNodes.find(x=>x.id===i.sourceNodeId);
-      if(!n)return;
-      n.sourceStatus=e.target.value;
+      const c=findSourceCandidate(i.sourceNodeId,i.sourceCandidateId);
+      if(!c)return;
+      c.status=e.target.value;
       syncSources();saveInspection();renderSubject();
     });
     document.getElementById('subjectName').oninput=e=>{
       i.name=e.target.value;
-      const n=state.traceNodes.find(x=>x.id===i.sourceNodeId);
-      if(n){n.sourceName=e.target.value;syncSources();}
+      const c=findSourceCandidate(i.sourceNodeId,i.sourceCandidateId);
+      if(c){c.name=e.target.value;syncSources();}
     };
     document.querySelectorAll('input[name="subjectType"]').forEach(el=>el.onchange=e=>{i.subjectType=e.target.value;saveInspection();renderSubject();});
     document.querySelectorAll('input[name="permitStatus"]').forEach(el=>el.onchange=e=>{i.permitStatus=e.target.value;if(e.target.value!=='no')i.methods=[];if(e.target.value!=='yes')i.permitType='';renderSubject();});
@@ -649,9 +683,12 @@
         (n.screenings||[]).map(r=>screeningAssist().normalizeRecord(r)).filter(r=>r.code||r.reaction).forEach(r=>{const d=screeningAssist().item(r.code);out.push(`【快篩】${loc} ${d?.label||r.code||'快篩項目'}：${screenReactionLabel(r.reaction)}。`);});
       }
       if(n.result==='stop'&&n.stopReason) out.push(`【目視】${n.location||`節點 ${nodeNumber(n.id)}`}支線${n.stopReason==='excluded'?'已排除':'無法繼續追查'}${n.stopNotes?`：${n.stopNotes}`:'。'}`);
-      if(n.sourceStatus==='suspected') out.push(`【現場研判】${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}標記為疑似來源，尚無法確認。`);
-      if(n.sourceStatus==='confirmed') out.push(`【現場研判】已確認來源為${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}；依據：${n.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]).join('、')||'未填'}。`);
-      if(n.sourceStatus==='excluded') out.push(`【現場研判】${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}經查核後已排除為本次污染來源。`);
+      ensureSourceCandidates(n).forEach(c=>{
+        const sourceLabel=c.name||n.location||`節點 ${nodeNumber(n.id)}`;
+        if(c.status==='suspected') out.push(`【現場研判】${sourceLabel}標記為疑似來源，尚無法確認。`);
+        if(c.status==='confirmed') out.push(`【現場研判】已確認來源為${sourceLabel}；依據：${c.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]).join('、')||'未填'}。`);
+        if(c.status==='excluded') out.push(`【現場研判】${sourceLabel}經查核後已排除為本次污染來源。`);
+      });
     });
     const inspections=[...state.inspections];if(state.currentInspection&&!inspections.some(x=>x.id===state.currentInspection.id))inspections.push(state.currentInspection);
     inspections.forEach(i=>{
@@ -760,7 +797,7 @@
     });
     return copy;
   }
-  function snapshot(){saveInspection();return cloneState(state);}
+  function snapshot(){saveInspection();syncSources();return cloneState(state);}
   function restore(next){
     const copy=validateState(next);
     state.view=copy.view||'home';
@@ -768,9 +805,14 @@
     state.pollutionPoint=copy.pollutionPoint||{presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
     state.baseScreening=copy.baseScreening||{status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
     state.traceNodes=copy.traceNodes||[];
-    state.sources=copy.sources||[];
+    state.traceNodes.forEach(ensureSourceCandidates);
     state.currentInspection=copy.currentInspection||null;
     state.inspections=copy.inspections||[];
+    state.inspections.forEach(i=>{
+      if(!i.sourceCandidateId&&i.sourceNodeId){const n=state.traceNodes.find(x=>x.id===i.sourceNodeId);const cs=n?ensureSourceCandidates(n):[];if(cs.length===1)i.sourceCandidateId=cs[0].id;}
+    });
+    if(state.currentInspection&&!state.currentInspection.sourceCandidateId&&state.currentInspection.sourceNodeId){const n=state.traceNodes.find(x=>x.id===state.currentInspection.sourceNodeId);const cs=n?ensureSourceCandidates(n):[];if(cs.length===1)state.currentInspection.sourceCandidateId=cs[0].id;}
+    syncSources();
     state.draftText=String(copy.draftText||'');
     state.legalReviews=copy.legalReviews||[];
   }
