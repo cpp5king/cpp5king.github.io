@@ -21,7 +21,7 @@ const blankBurning=()=>({
   basic:{inspectionDateTime:nowLocal(),location:'',placeType:'unknown',burningState:'unknown',purpose:'unknown',purposeSource:'unknown',purposeNote:'',scale:'unknown',area:'',amount:'unknown'},
   materials:[],materialDescription:'',evidence:[],evidenceDescription:'',persons:[],observations:[],disposalLink:{enabled:false,batchRef:'',note:''},disposition:[],notes:''
 });
-const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.1.1',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
+const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.2.0',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
 const isObj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 function deepMerge(base,input){
   if(Array.isArray(base))return Array.isArray(input)?clone(input):clone(base);
