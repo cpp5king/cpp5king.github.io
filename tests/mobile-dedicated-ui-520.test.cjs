@@ -9,7 +9,7 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);\n  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -48,4 +48,18 @@ test('Noise replaces useless bottom scroll-to-top with Home while restaurant kee
   const app=read('src/sentence-app.js');
   assert.match(app,/active\.categoryId==='noise'[\s\S]*?\{label:'首頁',action:\(\)=>\{viewMode='home';render\(\);\}\}/);
   assert.match(app,/: \{label:'回到最上面',action:scrollToTop\}/);
+});
+
+test('all mobile flows expose Air-style legal assessment and current-content actions',()=>{
+  const wizard=read('src/mobile-wizard.js');
+  const shared=read('src/mobile-inspection-flow.js');
+  const css=read('src/styles.css');
+  for(const label of ['法規研判','整理目前內容']){
+    assert.match(wizard,new RegExp(label));
+    assert.match(shared,new RegExp(label));
+  }
+  assert.match(wizard,/ia-mobile-flow-tools/);
+  assert.match(wizard,/ia-mobile-tool/);
+  assert.match(wizard,/首頁／案件大類/);
+  assert.match(css,/body:has\(\.sentence-form\[data-mobile-wizard="yes"\]\) \.module-sticky-actions\{[\s\S]*?display:none!important/);
 });
