@@ -72,14 +72,33 @@ jobs:
               raise RuntimeError('Non-official URL rejected: '+url)
             return url
 
-          def curl_download(url,path):
+          def curl_download(url,path,referer='https://law.moj.gov.tw/'):
             official(url)
-            subprocess.run([
-              'curl','-fL','--retry','8','--retry-all-errors',
-              '--connect-timeout','20','--max-time','300',
-              '-A','InspectionAssistant/5.1 law snapshot builder',
-              '-o',path,url
-            ],check=True)
+            last=None
+            for attempt in range(1,17):
+              tmp=path+'.part'
+              try:
+                subprocess.run([
+                  'curl','--http1.1','-fL','--retry','2','--retry-all-errors',
+                  '--connect-timeout','20','--max-time','180',
+                  '-A','Mozilla/5.0 InspectionAssistant/5.1',
+                  '-e',referer,'-o',tmp,url
+                ],check=True)
+                with open(tmp,'rb') as f:
+                  head=f.read(1024).lstrip().lower()
+                size=os.path.getsize(tmp)
+                is_html=(head.startswith(b'<!doctype html') or head.startswith(b'<html') or b'<title>error</title>' in head)
+                if size>0 and not is_html:
+                  os.replace(tmp,path)
+                  return
+                last=RuntimeError(f'HTML/error response ({size} bytes)')
+              except Exception as e:
+                last=e
+              try: os.remove(tmp)
+              except FileNotFoundError: pass
+              import time
+              time.sleep(min(attempt,5))
+            raise RuntimeError('Unable to download official attachment after retries: '+url+' / '+str(last))
 
           def load_zip(path):
             with zipfile.ZipFile(path) as z:
@@ -103,8 +122,9 @@ jobs:
             return official(urllib.parse.urljoin(base,str(url or '')))
 
           def safe_ext(name,url):
-            ext=os.path.splitext(urllib.parse.urlparse(url).path)[1].lower()
-            if not ext: ext=os.path.splitext(name)[1].lower()
+            ext=os.path.splitext(name)[1].lower()
+            if not ext or not re.fullmatch(r'\.[a-z0-9]{1,8}',ext):
+              ext=os.path.splitext(urllib.parse.urlparse(url).path)[1].lower()
             if not re.fullmatch(r'\.[a-z0-9]{1,8}',ext or ''): ext='.bin'
             return ext
 
@@ -151,7 +171,7 @@ jobs:
               rel=f'data/law-assets/{pcode}/{i:02d}{ext}'
               path=os.path.join('out',rel)
               os.makedirs(os.path.dirname(path),exist_ok=True)
-              curl_download(surl,path)
+              curl_download(surl,path,source_url)
               with open(path,'rb') as f:data=f.read()
               if not data: raise RuntimeError('Empty attachment: '+surl)
               sha=hashlib.sha256(data).hexdigest()
