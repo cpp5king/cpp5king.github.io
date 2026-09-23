@@ -41,7 +41,7 @@
     function isDirectCaseType(item) {
       if (!item) return false;
       if (item.directTemplateId) return true;
-      return item.categoryId === 'air' && ['air-fixed-source','air-construction','air-open-burning'].includes(item.id);
+      return (item.categoryId === 'air' && ['air-fixed-source','air-construction','air-open-burning'].includes(item.id)) || item.id === 'waste-inspection';
     }
     function clearCurrentCase() {
       const state=session.snapshot();
