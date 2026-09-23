@@ -27,6 +27,20 @@ test('5.1 four modules and Air four paths are active',()=>{
   assert.equal(air.find(x=>x.id==='restaurant-odor').directTemplateId,'restaurant-odor-reference');
 });
 
+test('post-5.1 Waste has a real case entry and routes directly to Waste UI',()=>{
+  const context=vm.createContext({window:{}});
+  vm.runInContext(read('data/templates/catalog.js'),context);
+  const c=context.window.INSPECTION_CONFIG;
+  const waste=c.caseTypes.find(x=>x.id==='waste-inspection');
+  assert.ok(waste);
+  assert.equal(waste.categoryId,'waste');
+  assert.equal(waste.status,'active');
+  const app=read('src/sentence-app.js');
+  assert.match(app,/item\.id === 'waste-inspection'/);
+  assert.match(app,/category\.id === 'waste'/);
+  assert.match(app,/root\.WasteV1UI\?\.mount/);
+});
+
 test('5.1 Air routing sends three structured paths to Air V1 and restaurant to template flow',()=>{
   const app=read('src/sentence-app.js');
   assert.match(app,/\['air-fixed-source','air-construction','air-open-burning'\]\.includes\(type\.id\)/);
