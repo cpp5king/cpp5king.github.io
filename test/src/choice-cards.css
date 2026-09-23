@@ -1,0 +1,11 @@
+/* Opt-in noise card forms only; restaurant/odor presentation is unchanged. */
+.card-form .sentence-slot { min-width: 0; width: auto; }
+.card-form .sentence-slot:has(.single-choice) { grid-column: 1 / -1; }
+.single-choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 8px; }
+.single-choice .choice-card { display: flex; align-items: center; gap: 8px; text-align: left; font-weight: 500; padding: 10px 12px; color: #29496d; background: #fff; border: 2px solid #b7c5d6; overflow-wrap: anywhere; }
+.single-choice .choice-card::before { content: ''; flex: 0 0 1em; }
+.single-choice .choice-card[aria-checked="true"] { color: #174e8b; border-color: #2f7de1; background: #eaf4ff; font-weight: 700; }
+.single-choice .choice-card[aria-checked="true"]::before { content: '✓'; }
+.single-choice .choice-card:hover:not(:disabled) { background: #f3f8ff; }
+.single-choice .choice-card:disabled { color: #6d7888; border-color: #c4ced9; background: #e4eaf1; }
+.single-choice .choice-card:focus-visible { outline: 3px solid #1f6fd1; outline-offset: 2px; }

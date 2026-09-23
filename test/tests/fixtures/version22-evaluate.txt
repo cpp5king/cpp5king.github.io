@@ -1,0 +1,30 @@
+  function evaluate(input) {
+    const data=rules(),m=data.messages;
+    const result={ready:false,needsHoliday:false,showZone:false,showException:false,established:false,visibleChecks:[],status:m.basic,act:null};
+    const time=minutes(text(input.article8Time));
+    if (!validDate(text(input.date)) || time===null || !text(input.subject)) return result;
+    result.ready=true;
+    const act=data.acts.find(a=>a.id===input.prohibitedAct); result.act=act;
+    if (!act) {result.status=m.act;return result;}
+    result.needsHoliday=!!act.holidayPeriods;
+    if (result.needsHoliday && !['yes','no'].includes(input.article8Holiday)) {result.status=m.holiday;return result;}
+    const periods=result.needsHoliday && input.article8Holiday==='yes' ? act.holidayPeriods : act.periods;
+    if (!act.allDay && !inPeriods(time,periods)) {result.status=m.timeOutside;return result;}
+    result.showZone=true;
+    if (!data.zones.some(z=>z.id===input.article8Zone)) {result.status=m.zone;return result;}
+    if (!act.zones.includes(input.article8Zone)) {result.status=m.zoneOutside;return result;}
+    if (act.hasExceptions) {
+      if (act.exceptionChecks) {
+        result.visibleChecks=act.exceptionChecks.map(c=>c.id);
+        if (!act.exceptionChecks.every(c=>['yes','no'].includes(input[c.id]))) {result.status=m.checks;return result;}
+        if (act.exceptionChecks.every(c=>input[c.id]==='yes')) {result.status=m.exempt;return result;}
+      } else {
+      result.showException=true;
+      const selected=(act.exceptions||[]).find(e=>act.id+':'+e.id===input.article8Exception);
+      if (selected) {result.visibleChecks=(selected.checks||[]).map(c=>c.id);result.status=m.exempt;return result;}
+      if (!act.exceptionsComplete) {result.status=m.incomplete;return result;}
+      if (input.article8Exception!=='none') {result.status=m.exception;return result;}
+      }
+    }
+    result.established=true;result.status=m.established;return result;
+  }

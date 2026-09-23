@@ -1,0 +1,486 @@
+[
+  {
+    "Path": "\\.gitignore",
+    "Hash": "2AE7F34169E2F687E9CA5ABE6EF22C191E3BC42EB06844D9948968406C94F3E5"
+  },
+  {
+    "Path": "\\AGENTS.md",
+    "Hash": "68FB3288FF3BCF30ED3C5ADD75EAFF186AB8AB015210C5EE7FB8FE7EAA106CD7"
+  },
+  {
+    "Path": "\\DESIGN.md",
+    "Hash": "11C77FFA7FC6368FE068275D71F6EB1BB197123E7C05BE47713938078D6BEF99"
+  },
+  {
+    "Path": "\\index.html",
+    "Hash": "86CF03718A282774FB2F00EB7A87646225A64D43D3323C03681359D6ABD7F721"
+  },
+  {
+    "Path": "\\README.md",
+    "Hash": "F3E431D36DCF478331F788E4B2C75177B6E4263FE62069BE5EEF60C66512C8D8"
+  },
+  {
+    "Path": "\\start.cmd",
+    "Hash": "C369A077A253E26E89B85071FB50BB426AB159E49027572D5F1F18497386F266"
+  },
+  {
+    "Path": "\\archive\\README.md",
+    "Hash": "8F5262CD800396452C3CFFA2E7679A386D60EE29977306712250D73AA210D21B"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\bin\\runxlrd.py",
+    "Hash": "9A8B1D974F0FBB4F2148470C6D2F96B3C4899D596BE3882252BB40454B3874B5"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\bin\\__pycache__\\runxlrd.cpython-312.pyc",
+    "Hash": "3905A671C21C685D37A859F901FC2B2E9996F5CC4CA9D7C952BB31B6E713A38E"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__init__.py",
+    "Hash": "926B88133F1CBAD6AD1A38D6DC499A0294C481C1E672C628D027161FFB61D8FD"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\biffh.py",
+    "Hash": "1A3B41A08F4F34811D6D99864EF7C343C1EE85988B25DDA87DDA36AA6BA7CE60"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\book.py",
+    "Hash": "D4B1F1C9631BE74641230525642E14B4815E9B9CBCA3C337CC00DC74F085FFCE"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\compdoc.py",
+    "Hash": "DF191FB896CB44644C74F899541B160201A4B70EC99DAFB0DE9FE5713093E984"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\formatting.py",
+    "Hash": "E8C87A18E33B1594E3D1C2781474A5D02568FBC227603BF6288653332704C3A4"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\formula.py",
+    "Hash": "72011735609A6152B3219C1AEC85B4B43702D485F352F86A25750E2FBE57A1AC"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\info.py",
+    "Hash": "030B2F2F9ED9FA598A0C368205F515A24C0CC0FBC92E7F638C6B6A3FD81EBCEC"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\sheet.py",
+    "Hash": "9A1C04A84B5E508418F632B90B25FCEECB6E9363265D444E35FF3A91940C858D"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\timemachine.py",
+    "Hash": "EC2B54EC563A9905BB1D23F91633352BDA487CD7B1542B7F3C95C6D8CDC51007"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\xldate.py",
+    "Hash": "4BEB9468B5FC91AB86CB64A45FF33E4BE141AAA43A1FD11F4C0569BF914C5F42"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\__init__.cpython-312.pyc",
+    "Hash": "0D1E69AFBE595077F8C632B5141E6CF67D9463CC3CB7E9C5BB45B223596DD4E6"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\biffh.cpython-312.pyc",
+    "Hash": "9965F795FAFE82FFF8824F50E88A8580550E222B05066882F51A5282D8B27A35"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\book.cpython-312.pyc",
+    "Hash": "8254B638351664A23E5089DF73F95746A2B988C8E4D90121C3C292FE7C08EE87"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\compdoc.cpython-312.pyc",
+    "Hash": "818BE5F5A6860CEA556CEDFDDA7EA5DA4E1C662E6BAC274B95781BCEC93FB761"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\formatting.cpython-312.pyc",
+    "Hash": "40AA6E9BC6CE73F9FB9197ACDB34FD3A993C57CEE579F2E195BD46B9C673BAAF"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\formula.cpython-312.pyc",
+    "Hash": "1DAE7EC5583E9234F0846C8D81B5581E5F13BDDCF836427FADAD8649B124A5F7"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\info.cpython-312.pyc",
+    "Hash": "C3F9096DD09AFD23553BC7D942B67FC320CD7899BA3484A84AF8F0ADFB311AC1"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\sheet.cpython-312.pyc",
+    "Hash": "5AB55689C78192043A0E25518669A38E545353DCAB4EF7C05C436EE591A2B37F"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\timemachine.cpython-312.pyc",
+    "Hash": "7DC9C2F0A11A73517AACDB3764FA73F2095BDFAEEC3389BCB2518F879A3CFD80"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd\\__pycache__\\xldate.cpython-312.pyc",
+    "Hash": "598C4C557911EB0276B839166EF37316D2DD5377C16F274DC954A5A91174F849"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\INSTALLER",
+    "Hash": "CEEBAE7B8927A3227E5303CF5E0F1F7B34BB542AD7250AC03FBCDE36EC2F1508"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\LICENSE",
+    "Hash": "B5A5DBCE60265E305A815A6CB83ED07F24519D8BA644F2A307994488BCED8815"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\METADATA",
+    "Hash": "AE263DBA4D616210BB2D709CD091BA453984314F79F8F50F44AF864352656DEC"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\RECORD",
+    "Hash": "2F88308FBC0FAE713D56E42FCAB7C0D91E4C316412D3C3CF4E9273CE914B47AE"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\REQUESTED",
+    "Hash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\top_level.txt",
+    "Hash": "9D9FADDD273F0AA36C72D4B72FE577EAA5F00B90EE005BE40758A7240A45FEF3"
+  },
+  {
+    "Path": "\\archive\\development-tmp\\reading-deps\\xlrd-2.0.2.dist-info\\WHEEL",
+    "Hash": "5B367C7308E1F25D23B542CD8D8AB51E9AFE582A824603EBFBE4D7E0FE48D56A"
+  },
+  {
+    "Path": "\\archive\\legacy\\data\\flows\\air-restaurant-odor.js",
+    "Hash": "F19D3B8FE91669F44B2BDB8B59B800C7324748F05F4337C7A891942C7E11CE3B"
+  },
+  {
+    "Path": "\\archive\\legacy\\data\\templates\\demo.js",
+    "Hash": "4AAAD3B2340178FB181213E9DBCD8A0250F7412FD76C23A49AB2D61DD841F4FA"
+  },
+  {
+    "Path": "\\archive\\legacy\\data\\templates\\restaurant-odor.js",
+    "Hash": "3F00E2E99656AA74E580FB0F3653FA46EA1B6ACA4E14ABA6BB8FF5EEAAA0CBEA"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\app.js",
+    "Hash": "F0EFD62C093FBADC219E9C4D59335F7F55EA473E2ECEC1573134E8757A3F878B"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\draft-engine.js",
+    "Hash": "FF4BE774F202A88FE7DC6240BBBC54A726E4A0EA956497ADB0D82CF82CF1F34D"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\flow-engine.js",
+    "Hash": "EDD5DAAA25925538938B58CE8BDE3090958F646E5F9F5615E0AFAEFABAC88503"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\generator.js",
+    "Hash": "D00BD49E3F857A242A5ABF616D4A6C402967E677DC6F2BA6FA51B247131A6095"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\sentence-app.js",
+    "Hash": "96FC0D259A02F6921D03AAF3157D4473AFD42CDD3C8FE4B2820F4BB20DF30CE1"
+  },
+  {
+    "Path": "\\archive\\legacy\\src\\styles.css",
+    "Hash": "609B776D978C5DE27396F5EA1232FCD97B1F96F9929187859C4E4824B93C7F37"
+  },
+  {
+    "Path": "\\data\\rules\\noise-article8.js",
+    "Hash": "91974CD79D6DD816B133762410E3B1D05428A9B27585824F120799DC0A410B78"
+  },
+  {
+    "Path": "\\data\\rules\\noise-article9.js",
+    "Hash": "0150D9D72A032A2DD3D28E0160CF2E0203CAC8BD7ADE8F58F5E81C9DCB013857"
+  },
+  {
+    "Path": "\\data\\templates\\catalog.js",
+    "Hash": "EABF502A3B941957F1A0541D6369A8D8BB4ED368358691FD115043A1FB8DF31F"
+  },
+  {
+    "Path": "\\data\\templates\\noise-article9-documents.js",
+    "Hash": "A27C37BCA486B5AC09DE43C5FDF790BF8DE2F24F80539E53D15B38984001AE51"
+  },
+  {
+    "Path": "\\data\\templates\\noise-case.js",
+    "Hash": "71C73B2B05A5E0D5CB793C3783A3BBAA0D1D57E61A77D383476A2900B1A2E883"
+  },
+  {
+    "Path": "\\data\\templates\\noise-main.js",
+    "Hash": "F5D906685A089799ED992B81F36B3EF4F56FC64B5D9F288AF8506F97803F395D"
+  },
+  {
+    "Path": "\\data\\templates\\noise-neighbor.js",
+    "Hash": "F9FFEAAB180EE12902EC82C6382174B22016511C1226A5ECA77AC01C32263ED1"
+  },
+  {
+    "Path": "\\data\\templates\\restaurant-odor-sampling-pending.js",
+    "Hash": "7CF5F28AB23438F2183DEF4540228129AC5BD36BA2E07F8246E53FD6A406B103"
+  },
+  {
+    "Path": "\\data\\templates\\restaurant-odor.js",
+    "Hash": "7A53A9208D37272BC5BC124884695F8EEC30EF63DB2C36ABEBD8A562C699BE73"
+  },
+  {
+    "Path": "\\docs\\architecture-review.md",
+    "Hash": "0424C1A7633E16EC8678C26DE9F72B60D1EB2874A041FACF89FD679BF1FDBE63"
+  },
+  {
+    "Path": "\\docs\\article8-v21.md",
+    "Hash": "F689E3C7E460174D24AA4EA75B7827E2ADF9A79EF466A6DE0F7BA3DA8395020F"
+  },
+  {
+    "Path": "\\docs\\article9-v26.md",
+    "Hash": "E7AD4C9FDF853B291F174A3E46284EF8C758061248CB28B960255C2AA0C4E0A4"
+  },
+  {
+    "Path": "\\docs\\article9-v27.md",
+    "Hash": "4C72037278611CBF7A859BCD592654A5DB6EDB33305220B2F84D494D1222A838"
+  },
+  {
+    "Path": "\\docs\\article9-v28.md",
+    "Hash": "D7CCDADEA19B7A7D11925D7687A32A72E1A61E79B2B9D8FB1C2FD1A80C3400B6"
+  },
+  {
+    "Path": "\\docs\\article9-v29.md",
+    "Hash": "03B41CBBC07E6D66A96B4AFE1085F030485F4ADB89A7925E496AA3887477CF11"
+  },
+  {
+    "Path": "\\docs\\file-inventory.md",
+    "Hash": "0AEDF47A10EEB148BAFE5A2B93268E2C04F87C0520A4BEA7E333C798EBAF3A08"
+  },
+  {
+    "Path": "\\docs\\noise-main-v30.md",
+    "Hash": "576102329C4F5C553B917A54A7C369E9F0B5684BC551A602A2B5E61BD1E623ED"
+  },
+  {
+    "Path": "\\docs\\noise-v1.md",
+    "Hash": "80697516B91F95E2DD26C3377221C8C3EEAA22FFAE315BF1DFD5C4567BCCB697"
+  },
+  {
+    "Path": "\\docs\\noise-v31.md",
+    "Hash": "053C76B54C3A4914CEEC4A2560EB12BAFFE9613578A2768E89ACD14EBEB9C470"
+  },
+  {
+    "Path": "\\docs\\sampling-pending-example.md",
+    "Hash": "ABD18AE74F9B63A21C1084F6BFD80E314CE540B4F161661EE5780693791F76E6"
+  },
+  {
+    "Path": "\\src\\case-session.js",
+    "Hash": "9B957BA75EAB0DCC3711D0887E6BB73EE28796ED32FDE993A2B3591ED9714056"
+  },
+  {
+    "Path": "\\src\\draft-engine.js",
+    "Hash": "828B78B945A5B1D805226D1C338DD59520A4D1395B264D8326E002647CC75A01"
+  },
+  {
+    "Path": "\\src\\field-renderer.js",
+    "Hash": "FA3093B026DFD5C3E01AFD88BC25A33BAC8407FB7D442ED21A28077597390BD9"
+  },
+  {
+    "Path": "\\src\\noise-article8.js",
+    "Hash": "5EB2C9F93F72107B7D5E3725007A1FE595FF7056F3A5678435678866137426A9"
+  },
+  {
+    "Path": "\\src\\noise-article9-documents.js",
+    "Hash": "CC2BD6C91B4CB70ABB4030B00A19491CA13666F24010C7527F5ECAE2EB6DC7F9"
+  },
+  {
+    "Path": "\\src\\noise-article9-measurement.js",
+    "Hash": "3BFF741CAAC36FD9DC1A23F5D55892DC12BE55CF8E2246C220C6650ABA9B4BBC"
+  },
+  {
+    "Path": "\\src\\noise-article9.js",
+    "Hash": "9D80AEB1497AEF59E146E5071E363B1DC0C9D60A773257510830AAA5AF15BEA4"
+  },
+  {
+    "Path": "\\src\\noise-main.js",
+    "Hash": "750B9ACB43469940585CBFAA0BEB6A50A3AA138E5D4F9C934CFFCE5B7426C36E"
+  },
+  {
+    "Path": "\\src\\sentence-app.js",
+    "Hash": "A4BD2CCF331F5F577EF1463E0F66D562C464891CA7407404F1D9C30D359E36EE"
+  },
+  {
+    "Path": "\\src\\styles.css",
+    "Hash": "609B776D978C5DE27396F5EA1232FCD97B1F96F9929187859C4E4824B93C7F37"
+  },
+  {
+    "Path": "\\src\\template-loader.js",
+    "Hash": "C302F3720AD2C189ECDA13E64B4E430E646E14BFEE96061A1CED38432EB737EB"
+  },
+  {
+    "Path": "\\tests\\article8.test.cjs",
+    "Hash": "D81D09D3865DAEE3212E5B43C75339DD2DE33876D19BF882C655D529629ED194"
+  },
+  {
+    "Path": "\\tests\\article9-background-flow.test.cjs",
+    "Hash": "B7ADD2BE6C4F1364A71001AA2AA2FCD6CFFDD9EC15CCAD3BB4728D6F82F26BA0"
+  },
+  {
+    "Path": "\\tests\\article9-exits.test.cjs",
+    "Hash": "FE8F2983DFD9E053C820A9225B7743EC4A55446CF278DBDD362B37D900D1F4A8"
+  },
+  {
+    "Path": "\\tests\\article9-measurement.test.cjs",
+    "Hash": "6DCC473B90113819CA84EF636E390D692AA1D8399E6A99D16C1E24FA1B67ABDD"
+  },
+  {
+    "Path": "\\tests\\article9.test.cjs",
+    "Hash": "FD682D92BB06E350562CA2A3F1FA4CCB425463F5FBD4A227474ACAF3BD7B5EF8"
+  },
+  {
+    "Path": "\\tests\\case-session.test.cjs",
+    "Hash": "592943555915A311D2675579CC45412207A99D52F45641A3F020ACA9F5FC2ADB"
+  },
+  {
+    "Path": "\\tests\\direct-templates.test.cjs",
+    "Hash": "31581B8887D2351F0EE98D932F181A37DF7F0DD5D4CCBA9FDC076485F87145C3"
+  },
+  {
+    "Path": "\\tests\\dom-stub.cjs",
+    "Hash": "A6FD5F918F6300A589CF7915DFD951C4A452D2B276A7B6A8E533FF0600E24DCE"
+  },
+  {
+    "Path": "\\tests\\draft-engine.test.cjs",
+    "Hash": "86F936D546A63F3F784AE503C7DDF19FCE0E70AE8D76ABF9DC6410417CB32DEE"
+  },
+  {
+    "Path": "\\tests\\flow-engine.test.cjs",
+    "Hash": "70715DCBF7B0660B82A898E17F0596689C370E3A0B4E52CEEEA650BA960DDA90"
+  },
+  {
+    "Path": "\\tests\\generic-engine.test.cjs",
+    "Hash": "D659D2E7A543566863DABEC9860010768112C6633E556C8002766200EFDD082A"
+  },
+  {
+    "Path": "\\tests\\helpers.cjs",
+    "Hash": "53ECBEF319BA95BFFC27F25888E934C86581EC1ADA522AF280CD997D1D5B0627"
+  },
+  {
+    "Path": "\\tests\\locked.test.cjs",
+    "Hash": "6C9C77ACAA7D905DD185A5FEEB706F7F6DA56E609F99C54CA673E51EC4BB13B0"
+  },
+  {
+    "Path": "\\tests\\noise-main.test.cjs",
+    "Hash": "0262B81CD1272F111C847D856B9370EF0F26090D723F35245995D18AAE48AC1D"
+  },
+  {
+    "Path": "\\tests\\noise-v31.test.cjs",
+    "Hash": "334322224F122DAEA3EEFEFCA48144511B55B7C182B875AE4557E67B600B1AD1"
+  },
+  {
+    "Path": "\\tests\\noise.test.cjs",
+    "Hash": "CE50ADFA97F5E6F9F36C0E0AA887CCBB9E8F4D2C56E25966B85B6836C94DEDFA"
+  },
+  {
+    "Path": "\\tests\\offline-bundle.test.cjs",
+    "Hash": "90F5CB71E60A44494EBC63D28FB85C0F438CD64C45408E27EB071BB2465E7A55"
+  },
+  {
+    "Path": "\\tests\\reference-template.test.cjs",
+    "Hash": "86BE65CD7CA609A55F1FF951D9D63023087845898BF531057112E9956348FEC5"
+  },
+  {
+    "Path": "\\tests\\restaurant-simplified.test.cjs",
+    "Hash": "1D0786DB6E218EA1F2EF96E532C45B6345D9EF031D658A9302041091B81288DB"
+  },
+  {
+    "Path": "\\tests\\sampling-fields.test.cjs",
+    "Hash": "20884B3B53FED1212D5CF44AB16B3D9FDB980D5CD1AD87DF64C02E540AA20CB5"
+  },
+  {
+    "Path": "\\tests\\sampling-operation.test.cjs",
+    "Hash": "5B7EB1BAE09629D95F0B530742C9B5DD937CF67CA22158DE7D5895C4112237E2"
+  },
+  {
+    "Path": "\\tests\\sampling-pending.test.cjs",
+    "Hash": "B529BF507514FFDDDAC1BC8D474ABCB729AE03ECEBDC046BC4AFC7A5EB8AC817"
+  },
+  {
+    "Path": "\\tests\\template-loader.test.cjs",
+    "Hash": "124CE78C75E0074EA1C8FD3006A363FF64440AE4AA669874123C3A4DF1D9E3CE"
+  },
+  {
+    "Path": "\\tests\\unmeasured-ending-v312.test.cjs",
+    "Hash": "7FAB653071BE89A661B97ACFFF307700EF5023B1937B0F339800F6CC105D75E7"
+  },
+  {
+    "Path": "\\tests\\unmeasured-facts-v311.test.cjs",
+    "Hash": "6791CE2877C1EDC557C9A4FE85CB38427D10E7A181BC64580131EB2F106BBAFE"
+  },
+  {
+    "Path": "\\tests\\fixtures\\restaurant-before-locked.json",
+    "Hash": "D01660D56E3D479476EE21FFD0B4958083455EDCC332EC2F44555233ECAE9B2D"
+  },
+  {
+    "Path": "\\tests\\fixtures\\sampling-case.cjs",
+    "Hash": "D820F83DCADACC3B95591E444875348E34A8172E938694CEEC699FBF1610283C"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version20-manifest.json",
+    "Hash": "C86494141582FBB12B223CC0AC7D9C7D3022C8DE2962702125B7F504FB5F2FF8"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version20-output-baseline.json",
+    "Hash": "B65304909229B69C5B5F4571D9C03F00FE30E6A0DCBCCB32D940B133251E267E"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version21-article8-baseline.json",
+    "Hash": "1F3466CA3453B8198D56FB15977D8C612723E8F286190115F9C7BFF83D236DEA"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version21-manifest.json",
+    "Hash": "3CD1A56509E05E6251015FC0CFBB267AE144EC341BD51F0F0BB0C2CAA88355A5"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version22-evaluate.txt",
+    "Hash": "479D3579F91FEB82192D4AF8755945301E7DB32087527ED7F94C5AA75217329B"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version22-manifest.json",
+    "Hash": "0E0F4ED816AD9AA50D7AC2EF25A9DFCE849B6219C120628BD3CA8576B16DE55F"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version23-manifest.json",
+    "Hash": "A3C136D93BC6C5E99C9D4C02428E7C3673A6F3F45F25DB3B6A26907604F990CC"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version24-manifest.json",
+    "Hash": "5A8B66652C0BFE7AC7FA5B945AD0FC79E02855F39B9280689599D8B2216B56F4"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version25-manifest.json",
+    "Hash": "B783F81586920F735924712FF4C3C2E96A745028A82E3845976DBB81C8526B7E"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version25-standards.json",
+    "Hash": "00298BA15B6199F533E95BAF9006CD7219F7183647DB7F39DF66F878F34DB900"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version26-calculation.json",
+    "Hash": "2487DFA608DAAF492690933B4BC03D2A31805092854AE75E10C1B938F0941DE5"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version26-manifest.json",
+    "Hash": "9496FF812743C76D3CA2DE3D61C1AF139BAC47A11D052FE1B46D49A4DED6A7A6"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version27-manifest.json",
+    "Hash": "9ABC874241C9586863DA24653F52FDBD97C303BB7318DF5ADEEF969A41993118"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version28-manifest.json",
+    "Hash": "8E4E122EDA6E19B55C8B5C833CEE1559A7B5BD4038AEAADC76F60AB1C6B7D9CB"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version29-manifest.json",
+    "Hash": "4F28A03DC0DFEDAA145BEA12F3CAE55C82871C8B347175B3031B2CCC161D473D"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version30-manifest.json",
+    "Hash": "2B90D397BB9B6C831BDD54644F8432712175ED72FEC1C06381980F28B8740041"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version31-manifest.json",
+    "Hash": "5F27AB2388204DD7FBEDF565B3687C4F17A284E8E847F0D970DB9386D71A3FA2"
+  },
+  {
+    "Path": "\\tests\\fixtures\\version311-manifest.json",
+    "Hash": "F8D636730254C5E32FEF53D8C036977E08172575CCCD912CBB797E950002B25F"
+  }
+]

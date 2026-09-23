@@ -1,0 +1,12 @@
+@media (max-width:760px) {
+  .sentence-form[data-mobile-focus="yes"] .sentence-slot.multi-select-editing {
+    display:block !important;
+    border:2px solid #2f7de1;
+    background:#f2f7ff;
+    box-shadow:0 0 0 3px rgba(47,125,225,.10);
+  }
+  .sentence-form[data-mobile-focus="yes"]:has(.sentence-slot.multi-select-editing)
+    .sentence-slot[data-ui-current="yes"]:not(.multi-select-editing) {
+    display:none !important;
+  }
+}

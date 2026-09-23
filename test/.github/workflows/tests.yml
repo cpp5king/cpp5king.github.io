@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run active regression tests
+        run: node tests/run-active-tests.cjs
+
+  package-windows:
+    if: github.event_name == 'push'
+    needs: node-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -e "const fs=require('fs');const s=fs.readFileSync('data/app-meta.js','utf8');const m=s.match(/version:\s*['\"]([^'\"]+)/);if(!m)process.exit(1);process.stdout.write(m[1]);")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Assemble Windows offline package
+        shell: bash
+        run: |
+          VERSION='${{ steps.version.outputs.version }}'
+          ROOT="dist/inspection-assistant-${VERSION}-windows"
+          mkdir -p "$ROOT"
+          cp index.html manifest.webmanifest service-worker.js start.cmd "$ROOT/"
+          cp -R data src icons "$ROOT/"
+          printf '%s\n' '稽查助手 Windows 離線版' '' '使用方式：' '1. 解壓縮整個資料夾。' '2. 雙擊 start.cmd。' '3. 會以預設瀏覽器開啟，無需安裝、無需網路。' '' '注意：請勿單獨搬動 index.html，data、src、icons 資料夾需一起保留。' > "$ROOT/WINDOWS-README.txt"
+          cd dist
+          zip -r "inspection-assistant-${VERSION}-windows.zip" "inspection-assistant-${VERSION}-windows"
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: inspection-assistant-${{ steps.version.outputs.version }}-windows
+          path: dist/inspection-assistant-${{ steps.version.outputs.version }}-windows.zip
+          if-no-files-found: error
+          retention-days: 30

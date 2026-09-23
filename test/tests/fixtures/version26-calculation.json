@@ -1,0 +1,4 @@
+{
+  "correct": " function correct(l1,l2){const d=l1-l2;if(d<r().minimumDifference)return {usable:false,difference:d};if(d>=r().noCorrectionDifference)return {usable:true,value:l1,corrected:false,difference:d};return {usable:true,value:l1+10*Math.log10(1-Math.pow(10,-d/10)),corrected:true,difference:d};}\n",
+  "precision": "  // Normalize only machine-precision equality, never round measured values for judgement.\n  for(const item of result.items)if(item.correction?.corrected && Math.abs(item.final-item.standard)<=Number.EPSILON*Math.max(1,Math.abs(item.standard))*8)item.final=item.standard;\n  result.status=result.items.every(i=>i.final<=i.standard)?'compliant':'exceeded';result.message=m[result.status];result.ready=true;return result;"
+}
