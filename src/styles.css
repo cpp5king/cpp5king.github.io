@@ -1203,3 +1203,32 @@ body[data-module="home"] .mobile-home-module-grid button[data-module="waste"]{
     background:transparent
   }
 }
+
+
+/* 5.2.1 Home law entry */
+.home-law-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px
+}
+.home-law-grid button{
+  min-height:46px;
+  box-shadow:none
+}
+.home-law-grid button[data-module="water"]{border-color:#2f7de1;color:#173a63;background:#edf6ff}
+.home-law-grid button[data-module="noise"]{border-color:#7c3aed;color:#4c1d95;background:#f3e8ff}
+.home-law-grid button[data-module="waste"]{border-color:#8b5e3c;color:#5a3a27;background:#f7efe8}
+.home-law-grid button[data-module="air"]{border-color:#2e8b57;color:#1f5f3d;background:#eaf6ef}
+@media(max-width:760px){
+  .mobile-home-minor-actions:has(button:nth-child(3)){
+    grid-template-columns:repeat(3,minmax(0,1fr))
+  }
+  .mobile-home-minor-actions:has(button:nth-child(3)) button{
+    font-size:.76rem;
+    padding-left:5px;
+    padding-right:5px
+  }
+  .home-law-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-law-grid button{width:100%;min-height:50px}
+}
