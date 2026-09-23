@@ -37,11 +37,17 @@
     header.setAttribute('aria-label',config.ariaLabel||'手機逐步流程');
 
     const brandRow=el('div','', 'mobile-wizard-brand-row');
+    const home=button('首頁',true);
+    home.classList.add('ia-mobile-home');
+    home.addEventListener('click',()=>{
+      const target=[...root.document.querySelectorAll('#app > nav.actions button')].find(b=>String(b.textContent||'').trim()==='首頁／案件大類');
+      target?.click?.();
+    });
     const brand=el('div','', 'mobile-wizard-brand');
     const brandMark=el('span','', 'mobile-wizard-brand-mark');
     brandMark.setAttribute('aria-hidden','true');
     brand.append(brandMark,el('strong',config.brandLabel||'稽查助手'));
-    brandRow.append(brand,el('small',config.brandSlogan||'專業稽查・守護安寧','mobile-wizard-slogan'));
+    brandRow.append(home,brand,el('small',config.brandSlogan||'專業稽查・守護安寧','mobile-wizard-slogan'));
 
     const progressRow=el('div','', 'mobile-wizard-progress-row');
     const progress=el('strong','步驟 1 / 1','mobile-wizard-progress');
@@ -54,6 +60,16 @@
     const title=el('h2','', 'mobile-wizard-title');
     heading.append(stepIcon,title);
     header.append(brandRow,progressRow,heading);
+
+    const tools=el('div','', 'ia-mobile-flow-tools');
+    const triggerAction=label=>{
+      const candidates=[...root.document.querySelectorAll('.module-sticky-actions button,.air-sticky button')];
+      candidates.find(b=>String(b.textContent||'').trim()===label)?.click?.();
+    };
+    const lawButton=button('法規研判',true);lawButton.classList.add('ia-mobile-tool');lawButton.addEventListener('click',()=>triggerAction('法規研判'));
+    const summaryButton=button('整理目前內容',true);summaryButton.classList.add('ia-mobile-tool');summaryButton.addEventListener('click',()=>triggerAction('整理目前內容'));
+    tools.append(lawButton,summaryButton);
+    header.append(tools);
 
     const content=el('section','', 'mobile-wizard-content');
     content.setAttribute('aria-live','polite');
