@@ -9,7 +9,7 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.1\.1/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -21,6 +21,7 @@ test('5.2 mobile flow covers Water Waste and Air without persistent storage',()=
   assert.match(js,/首頁／案件大類/);
   assert.match(js,/第 .*步/);
   assert.doesNotMatch(js,/localStorage|sessionStorage|indexedDB/);
+  assert.match(js,/root\.scrollTo/);
   assert.doesNotThrow(()=>new vm.Script(js));
 });
 
@@ -29,9 +30,9 @@ test('5.2 mobile CSS gives a real full-height step UI while desktop remains sepa
   assert.match(css,/5\.2 shared dedicated mobile UI for Water \/ Waste \/ Air/);
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(css,/\.ia-mobile-flow-shell/);
-  assert.match(css,/grid-template-rows:auto minmax\(0,1fr\) auto/);
   assert.match(css,/\.ia-mobile-flow-content/);
-  assert.match(css,/overflow-y:auto/);
+  assert.match(css,/overflow:visible/);
+  assert.match(css,/position:fixed;left:0;right:0;bottom:0/);
 });
 
 test('Air restaurant templates also use dedicated mobile wizard steps',()=>{
