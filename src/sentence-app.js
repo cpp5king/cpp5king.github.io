@@ -153,6 +153,44 @@
       nav.append(button('匯入案件', () => importInput.click(), true));
       return nav;
     }
+    function isMobileViewport(){
+      return !!window.matchMedia?.('(max-width:760px)')?.matches;
+    }
+    function canExportCurrentCase(state=session.snapshot()){
+      if(!state?.categoryId)return false;
+      if(state.templateId)return true;
+      if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.())return true;
+      if(state.categoryId==='waste'&&root.WasteV1UI?.hasData?.())return true;
+      if(state.categoryId==='air'&&root.AirV1UI?.hasData?.())return true;
+      return false;
+    }
+    function mobileIntermediaryHeader(state,category,title,subtitle=''){
+      const shell=el('section','', 'mobile-stage-shell');
+      const top=el('div','', 'mobile-stage-top');
+      top.append(button('首頁',()=>{viewMode='home';render();},true));
+      const identity=el('div','', 'mobile-stage-identity');
+      identity.append(el('strong',category?.title||'稽查助手'));
+      if(subtitle)identity.append(el('span',subtitle));
+      top.append(identity);
+      if(state.caseTypeId||state.templateId||hasInput())top.append(button('目前案件',()=>{viewMode='case';render();},true));
+
+      const more=el('details','', 'mobile-stage-more');
+      const moreSummary=el('summary','更多');
+      const actions=el('div','', 'mobile-stage-more-actions');
+      if(state.categoryId||hasInput())actions.append(button('新增案件',clearCurrentCase,true));
+      if(['water','noise','waste','air'].includes(state.categoryId)&&root.LawReferenceUI?.open){
+        actions.append(button('法規',()=>root.LawReferenceUI.open(state.categoryId,lawContext(state)),true));
+      }
+      if(canExportCurrentCase(state))actions.append(button('匯出案件',()=>exportCase(),true));
+      actions.append(button('匯入案件',()=>importInput.click(),true));
+      more.append(moreSummary,actions);
+      top.append(more);
+      shell.append(top);
+      const heading=el('div','', 'mobile-stage-heading');
+      heading.append(el('h2',title));
+      shell.append(heading);
+      return shell;
+    }
     const importInput = document.createElement('input');
     importInput.type = 'file'; importInput.accept = '.json,application/json'; importInput.hidden = true;
     if(document.body?.append)document.body.append(importInput);
@@ -200,6 +238,7 @@
       const type = config.caseTypes.find(item => item.id === state.caseTypeId);
       const template = config.templates.find(item => item.id === state.templateId);
       document.body?.setAttribute?.('data-module', viewMode==='home' ? 'home' : (category?.id || 'home'));
+      document.body?.setAttribute?.('data-view',viewMode);
 
       if(viewMode==='home'){
         const mobileHome=!!window.matchMedia?.('(max-width:760px)')?.matches;
@@ -273,23 +312,39 @@
         return;
       }
 
-      app.append(navigation(state));
+      const mobileIntermediary=isMobileViewport()&&['category','template'].includes(viewMode);
+      if(!mobileIntermediary)app.append(navigation(state));
 
       if(viewMode==='category'){
         if(!category){viewMode='home';render();return;}
+        const types=config.caseTypes.filter(item=>item.categoryId===category.id);
+        const selectType=item=>{
+          const isCurrent=item.id===state.caseTypeId;
+          if(isCurrent){
+            viewMode=state.templateId?'case':(isDirectCaseType(item)?'case':'template');
+            render();
+            return;
+          }
+          destructiveNavigate(()=>{session.selectCaseType(item.id);if(item.directTemplateId)session.selectTemplate(item.directTemplateId);},isDirectCaseType(item)?'case':'template');
+        };
+        if(mobileIntermediary){
+          const shell=mobileIntermediaryHeader(state,category,`選擇${category.title}案件類型`,'案件類型');
+          const list=el('div','', 'mobile-stage-choice-grid');
+          for(const item of types){
+            const isCurrent=item.id===state.caseTypeId;
+            const entry=button(item.title+(isCurrent?' · 目前案件':'')+(item.status==='development'?'（開發中）':''),()=>selectType(item));
+            entry.setAttribute('data-module',category.id);
+            entry.disabled=item.status!=='active';
+            list.append(entry);
+          }
+          if(!types.length)list.append(el('p','目前尚無可用案件類型。','mobile-stage-empty'));
+          shell.append(list);app.append(shell);return;
+        }
         app.append(el('p',category.title),el('h2',`選擇${category.title}案件類型`));
         const list=el('div','', 'actions');
-        const types=config.caseTypes.filter(item=>item.categoryId===category.id);
         for(const item of types){
           const isCurrent=item.id===state.caseTypeId;
-          const entry=button(item.title+(isCurrent?'（目前案件）':'')+(item.status==='development'?'（開發中）':''),()=>{
-            if(isCurrent){
-              viewMode=state.templateId?'case':(isDirectCaseType(item)?'case':'template');
-              render();
-              return;
-            }
-            destructiveNavigate(()=>{session.selectCaseType(item.id);if(item.directTemplateId)session.selectTemplate(item.directTemplateId);},isDirectCaseType(item)?'case':'template');
-          });
+          const entry=button(item.title+(isCurrent?'（目前案件）':'')+(item.status==='development'?'（開發中）':''),()=>selectType(item));
           entry.disabled=item.status!=='active';list.append(entry);
         }
         if(!types.length)list.append(el('p','目前尚無可用案件類型。'));
@@ -299,15 +354,27 @@
 
       if(viewMode==='template'){
         if(!category||!type){viewMode=category?'category':'home';render();return;}
+        const available=config.templates.filter(item=>item.categoryId===category.id&&item.caseTypeId===type.id);
+        const selectTemplate=item=>{
+          const isCurrent=item.id===state.templateId;
+          if(isCurrent){viewMode='case';render();return;}
+          destructiveNavigate(()=>session.selectTemplate(item.id),'case');
+        };
+        if(mobileIntermediary){
+          const shell=mobileIntermediaryHeader(state,category,'選擇處理情境／紀錄範本',type.title);
+          const list=el('div','', 'mobile-stage-template-list');
+          for(const item of available){
+            const isCurrent=item.id===state.templateId;
+            list.append(button(item.title+(isCurrent?' · 目前案件':''),()=>selectTemplate(item)));
+          }
+          if(!available.length)list.append(el('p','目前尚無可用範本。','mobile-stage-empty'));
+          shell.append(list);app.append(shell);return;
+        }
         app.append(el('p',[category.title,type.title].filter(Boolean).join(' → ')),el('h2','選擇處理情境／紀錄範本'));
         const list=el('div','', 'actions');
-        const available=config.templates.filter(item=>item.categoryId===category.id&&item.caseTypeId===type.id);
         for(const item of available){
           const isCurrent=item.id===state.templateId;
-          list.append(button(item.title+(isCurrent?'（目前案件）':''),()=>{
-            if(isCurrent){viewMode='case';render();return;}
-            destructiveNavigate(()=>session.selectTemplate(item.id),'case');
-          }));
+          list.append(button(item.title+(isCurrent?'（目前案件）':''),()=>selectTemplate(item)));
         }
         if(!available.length)list.append(el('p','目前尚無可用範本。'));
         app.append(list);
