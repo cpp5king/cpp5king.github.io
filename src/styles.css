@@ -747,3 +747,17 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
   .ia-mobile-flow-tools{margin-top:7px;gap:6px}
   .ia-mobile-tool{min-height:34px!important;padding:5px 7px!important;font-size:.74rem!important}
 }
+
+@media(max-width:760px){
+  .ia-mobile-home{width:auto!important;max-width:86px!important}
+  .ia-mobile-flow-shell[data-flow-mode="wizard"] .ia-mobile-flow-content > section.card > h3:first-child,
+  .ia-mobile-flow-shell[data-flow-mode="wizard"] .ia-mobile-flow-content > section.card > h3:first-child + p,
+  .ia-mobile-flow-shell[data-flow-module="air"][data-flow-mode="wizard"] .air-section > h3:first-child,
+  .ia-mobile-flow-shell[data-flow-module="air"][data-flow-mode="wizard"] .air-section > h3:first-child + p{
+    display:none!important
+  }
+  .ia-mobile-flow-shell[data-flow-mode="wizard"] .ia-mobile-flow-content > section.card,
+  .ia-mobile-flow-shell[data-flow-module="air"][data-flow-mode="wizard"] .air-section{
+    padding-top:14px!important
+  }
+}
