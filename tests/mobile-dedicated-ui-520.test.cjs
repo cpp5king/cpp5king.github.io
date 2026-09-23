@@ -11,8 +11,8 @@ test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const sw=read('service-worker.js');
   assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r4/);
   assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
-  assert.match(html,/src\/styles\.css\?v=5\.2-test-r6/);
-  assert.match(html,/src\/sentence-app\.js\?v=5\.2-test-r6/);
+  assert.match(html,/src\/styles\.css\?v=5\.2-test-r7/);
+  assert.match(html,/src\/sentence-app\.js\?v=5\.2-test-r7/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -105,4 +105,13 @@ test('5.2 mobile category and template pages use compact intermediary navigation
   assert.match(css,/body\[data-view="category"\]>header/);
   assert.match(css,/body\[data-view="template"\] main>\.mobile-install/);
   assert.match(css,/\.mobile-stage-choice-grid\{[\s\S]*?grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+});
+
+test('mobile intermediary shows Home New Law and Import directly without More menu',()=>{
+  const app=read('src/sentence-app.js');
+  const css=read('src/styles.css');
+  assert.match(app,/mobile-stage-quicknav/);
+  for(const label of ['首頁','新增案件','法規','匯入案件'])assert.match(app,new RegExp(`button\\('${label}'`));
+  assert.doesNotMatch(app,/const more=el\('details','', 'mobile-stage-more'\)/);
+  assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
 });
