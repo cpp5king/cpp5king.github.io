@@ -510,7 +510,10 @@
   if(appMeta){
     if(root.document)root.document.title=appMeta.label;
     const appVersionTitle=root.document?.querySelector?.('#app-version-title');
-    if(appVersionTitle)appVersionTitle.textContent=appMeta.label;
+    if(appVersionTitle){
+      const testSite=/\/test(?:\/|$)/.test(root.location?.pathname||'');
+      appVersionTitle.textContent=testSite?'稽查助手 5.2 測試版':appMeta.label;
+    }
   }
   // 可供 DOM 整合測試呼叫，同一個入口在實際頁面自動啟動。
   root.InspectionApp = { start };
