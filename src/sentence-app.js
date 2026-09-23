@@ -147,7 +147,7 @@
       if (state.categoryId && viewMode==='case') nav.append(button(`返回${category?.title||'模組'}首頁`, () => { viewMode='category'; render(); }, true));
       if (state.templateId && viewMode==='case' && !config.caseTypes.find(item => item.id === state.caseTypeId)?.directTemplateId) nav.append(button('返回紀錄範本', () => { viewMode='template'; render(); }, true));
       if (viewMode!=='case' && state.categoryId) nav.append(button('返回目前案件', () => { viewMode='case'; render(); }, true));
-      if (state.categoryId || hasInput()) nav.append(button('新增案件／清除目前案件', clearCurrentCase, true));
+      if (state.categoryId || hasInput()) nav.append(button('新增案件', clearCurrentCase, true));
       if (['water','noise','waste','air'].includes(state.categoryId) && root.LawReferenceUI?.open && viewMode!=='home') nav.append(button('法規', () => root.LawReferenceUI.open(state.categoryId,lawContext(state)), true));
       if (viewMode==='case' && (state.templateId || root.WasteV1UI?.hasData?.() || root.AirV1UI?.hasData?.())) nav.append(button('匯出案件', () => exportCase(), true));
       nav.append(button('匯入案件', () => importInput.click(), true));
