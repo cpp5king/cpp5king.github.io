@@ -5,6 +5,17 @@ window.INSPECTION_CONFIG.templates.push({
   title: "周界異味採樣－待檢驗結果", version: "1.0.0",
   formTitle: "周界異味採樣資料",
   instructions: "本樣態以現場作業中為使用前提，限現場已執行周界異味採樣、採樣程序完成且檢驗結果尚未下達。請依實際資料填寫；稽查日期與採樣日期分開，本模板固定包含採樣位置、程序、拍照簽名及標準作業程序文字。",
+  mobileWizard: {
+    ariaLabel: "周界異味採樣手機逐步流程",
+    brandLabel: "稽查助手",
+    brandSlogan: "空氣污染・採樣紀錄",
+    fallbackTitle: "其他必要事項",
+    steps: [
+      {id:"basic",title:"稽查基本資料",help:"先記錄稽查日期、時間及本次稽查對象。",fields:["date","time","subject"]},
+      {id:"attendees",title:"現場會同人員",help:"依實際到場人員勾選；公司名稱只在相對應人員有到場時填寫。",fields:["attendees"]},
+      {id:"sampling",title:"周界異味採樣資料",help:"稽查日期與採樣日期分開記錄，並填入實際採樣起迄時間及袋數。",fields:["samplingDate","samplingStart","samplingEnd","bagCount"]}
+    ]
+  },
   fields: [
     { id: "date", label: "稽查日期", type: "date", format: "roc", missing: "（稽查日期尚待確認）" },
     { id: "time", label: "稽查時間（小時）", type: "hour", suffix: "時許", missing: "（稽查時間尚待確認）" },
