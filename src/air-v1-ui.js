@@ -21,7 +21,7 @@ const blankBurning=()=>({
   basic:{inspectionDateTime:nowLocal(),location:'',placeType:'unknown',burningState:'unknown',purpose:'unknown',purposeSource:'unknown',purposeNote:'',scale:'unknown',area:'',amount:'unknown'},
   materials:[],materialDescription:'',evidence:[],evidenceDescription:'',persons:[],observations:[],disposalLink:{enabled:false,batchRef:'',note:''},disposition:[],notes:''
 });
-const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.1.0',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
+const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.1.1',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
 const isObj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 function deepMerge(base,input){
   if(Array.isArray(base))return Array.isArray(input)?clone(input):clone(base);
@@ -73,7 +73,7 @@ function normalizeState(input){
   for(const [article,x] of Object.entries(out.construction.articleChecks))for(const [defectId,fact] of Object.entries(x.defectFacts||{}))for(const ref of fact.refs||[]){if(!ref.observationId||!constructionObsIds.has(ref.observationId))throw new Error(`空氣污染案件關聯錯誤：第 ${article} 條缺失 ${defectId} 連到不存在的現場觀察 ${ref.observationId||'(空白)'}。`);}
   const configuredDefects=new Set();for(const a of CFG().construction?.articleChecks||[])for(const d of a.items||[])configuredDefects.add(`${a.article}:${d.id}`);
   for(const imp of out.construction.improvements){for(const link of imp.links||[]){if(!isObj(link)||!link.key)throw new Error(`空氣污染案件格式無效：改善／複查 ${imp.id} 的缺失關聯不完整。`);if(configuredDefects.size&&!configuredDefects.has(link.key))throw new Error(`空氣污染案件關聯錯誤：改善／複查 ${imp.id} 連到未知缺失 ${link.key}。`);}if(imp.afterObservationId&&!constructionObsIds.has(imp.afterObservationId))throw new Error(`空氣污染案件關聯錯誤：改善／複查 ${imp.id} 連到不存在的改善後現場觀察 ${imp.afterObservationId}。`);}
-  out.activeMode=String(input.activeMode||'');out.version='5.1.0';out.provenance=PROVENANCE;out.schema='air-v1';out.schemaVersion=1;return out;
+  out.activeMode=String(input.activeMode||'');out.version='5.1.1';out.provenance=PROVENANCE;out.schema='air-v1';out.schemaVersion=1;return out;
 }
 let state=fresh();let host=null;let mode='';
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n;}
