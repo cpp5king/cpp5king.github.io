@@ -9,10 +9,10 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2\.0/);
-  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2\.0/);
-  assert.match(html,/src\/styles\.css\?v=5\.2\.1-test-r2/);
-  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.1-test-r2/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2\.1/);
+  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2\.1/);
+  assert.match(html,/src\/styles\.css\?v=5\.2\.1/);
+  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.1/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -138,7 +138,7 @@ test('5.2.1 Air update-now is attached to datetime fields instead of a standalon
   assert.doesNotMatch(air,/air-row-actions[^\n]{0,220}更新為現在/);
   assert.match(css,/air-datetime-row/);
   assert.match(css,/air-now-btn/);
-  assert.match(air,/out\.version='5\.2\.0'/);
+  assert.match(air,/out\.version='5\.2\.1'/);
 });
 
 test('5.2.1 Home exposes a standalone law library chooser',()=>{
