@@ -106,7 +106,16 @@ function renderStep(host,info,header,content,navParts,key){
   update();
 }
 function enhance(host){
-  if(!isMobile()||host.classList.contains('ia-mobile-flow-shell'))return;
+  if(!isMobile())return;
+  const mounted=host.classList.contains('ia-mobile-flow-shell');
+  const shellAlive=!!host.querySelector(':scope > .ia-mobile-flow-header');
+  if(mounted&&shellAlive)return;
+  if(mounted&&!shellAlive){
+    host.classList.remove('ia-mobile-flow-shell');
+    delete host.dataset.mobileFlow;
+    delete host.dataset.flowMode;
+    delete host.dataset.flowModule;
+  }
   const info=moduleInfo(host);if(!info)return;
   const originals=[...host.childNodes];
   if(!originals.length)return;
