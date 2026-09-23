@@ -803,3 +803,115 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
     padding-bottom:calc(92px + env(safe-area-inset-bottom))
   }
 }
+
+
+/* 5.2 compact mobile home: keep primary actions above the fold */
+@media(max-width:760px){
+  body[data-module="home"]>header{
+    padding:10px 14px 8px!important;
+  }
+  body[data-module="home"]>header .badge,
+  body[data-module="home"]>header p{
+    display:none!important;
+  }
+  body[data-module="home"]>header h1{
+    margin:0!important;
+    font-size:1.55rem!important;
+    line-height:1.15!important;
+  }
+  body[data-module="home"] main{
+    padding:10px 10px 18px!important;
+  }
+  body[data-module="home"] main>.mobile-install{
+    display:none!important;
+  }
+  body[data-module="home"] footer{
+    display:none!important;
+  }
+  .mobile-home-shell{
+    display:grid;
+    gap:10px;
+  }
+  .mobile-home-current,
+  .mobile-home-modules{
+    margin:0;
+    padding:12px;
+    border:1px solid #d9e3ec;
+    border-radius:13px;
+    background:#fff;
+    box-shadow:0 3px 12px rgba(24,55,86,.045);
+  }
+  .mobile-home-kicker{
+    margin-bottom:3px;
+    color:#6d7d8c;
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.04em;
+  }
+  .mobile-home-current h2,
+  .mobile-home-modules h2{
+    margin:0 0 8px;
+    font-size:1rem;
+    line-height:1.25;
+  }
+  .mobile-home-case-type,
+  .mobile-home-note{
+    margin:3px 0;
+    color:#667788;
+    font-size:.78rem;
+    line-height:1.4;
+  }
+  .mobile-home-current>button{
+    width:100%;
+    min-height:42px;
+    margin-top:8px;
+    padding:7px 10px;
+    border-radius:9px;
+    font-size:.9rem;
+  }
+  .mobile-home-module-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .mobile-home-module-grid button{
+    width:100%;
+    min-height:52px;
+    padding:8px 6px;
+    border-radius:10px;
+    font-size:.9rem;
+    line-height:1.25;
+    box-shadow:none;
+  }
+  .mobile-home-minor-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+  .mobile-home-minor-actions button{
+    min-height:38px;
+    padding:6px 8px;
+    border-radius:9px;
+    font-size:.8rem;
+    box-shadow:none;
+  }
+  .mobile-home-install-help{
+    margin:0;
+    padding:8px 10px;
+    border:1px solid #dde5ec;
+    border-radius:10px;
+    background:#f8fafc;
+    color:#526679;
+    font-size:.76rem;
+  }
+  .mobile-home-install-help summary{
+    cursor:pointer;
+    font-weight:800;
+  }
+  .mobile-home-install-help p{
+    margin:7px 0 0;
+    line-height:1.45;
+  }
+}
+
+@media(max-width:760px){.mobile-home-minor-actions button:only-child{grid-column:1/-1}}

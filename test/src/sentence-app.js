@@ -200,21 +200,53 @@
       const type = config.caseTypes.find(item => item.id === state.caseTypeId);
       const template = config.templates.find(item => item.id === state.templateId);
       document.body?.setAttribute?.('data-module', viewMode==='home' ? 'home' : (category?.id || 'home'));
-      app.append(navigation(state));
 
       if(viewMode==='home'){
-        if(state.categoryId){
-          const kept=el('section','', 'panel');
-          kept.append(el('h2','目前案件仍保留'));
-          kept.append(el('p',`${category?.title||'目前模組'}的輸入仍在本次頁面記憶體中；回首頁不會清除資料。`));
-          kept.append(button('返回目前案件',()=>{viewMode='case';render();}));
-          app.append(kept);
+        const mobileHome=!!window.matchMedia?.('(max-width:760px)')?.matches;
+        if(!mobileHome){
+          app.append(navigation(state));
+          if(state.categoryId){
+            const kept=el('section','', 'panel');
+            kept.append(el('h2','目前案件仍保留'));
+            kept.append(el('p',`${category?.title||'目前模組'}的輸入仍在本次頁面記憶體中；回首頁不會清除資料。`));
+            kept.append(button('返回目前案件',()=>{viewMode='case';render();}));
+            app.append(kept);
+          }
+          app.append(el('h2','選擇案件大類'));
+          const desktopList=el('div','', 'actions');
+          for(const item of config.categories){
+            const isCurrent=item.id===state.categoryId;
+            const entry=button(item.title+(isCurrent?'（目前案件）':'')+(item.status==='development'?'（開發中）':''),()=>{
+              if(isCurrent){viewMode='category';render();return;}
+              destructiveNavigate(()=>session.selectCategory(item.id),'category');
+            });
+            entry.setAttribute('data-module',item.id);
+            entry.disabled=item.status!=='active';
+            desktopList.append(entry);
+          }
+          app.append(desktopList);
+          app.querySelector('h2')?.focus?.();
+          return;
         }
-        app.append(el('h2','選擇案件大類'));
-        const list=el('div','', 'actions');
+
+        const home=el('section','', 'mobile-home-shell');
+        if(state.categoryId){
+          const current=el('section','', 'mobile-home-current');
+          current.append(el('div','目前案件','mobile-home-kicker'));
+          current.append(el('h2',category?.title||'目前案件'));
+          const caseText=[type?.title,template?.title].filter(Boolean).join(' · ');
+          if(caseText)current.append(el('p',caseText,'mobile-home-case-type'));
+          current.append(el('p','資料仍保留於本次頁面記憶體；回首頁不會清除。','mobile-home-note'));
+          current.append(button('繼續查核',()=>{viewMode='case';render();}));
+          home.append(current);
+        }
+
+        const moduleSection=el('section','', 'mobile-home-modules');
+        moduleSection.append(el('h2','選擇案件大類'));
+        const list=el('div','', 'mobile-home-module-grid');
         for(const item of config.categories){
           const isCurrent=item.id===state.categoryId;
-          const entry=button(item.title+(isCurrent?'（目前案件）':'')+(item.status==='development'?'（開發中）':''),()=>{
+          const entry=button(item.title+(isCurrent?' · 目前案件':'')+(item.status==='development'?'（開發中）':''),()=>{
             if(isCurrent){viewMode='category';render();return;}
             destructiveNavigate(()=>session.selectCategory(item.id),'category');
           });
@@ -222,10 +254,26 @@
           entry.disabled=item.status!=='active';
           list.append(entry);
         }
-        app.append(list);
-        app.querySelector('h2')?.focus?.();
+        moduleSection.append(list);
+        home.append(moduleSection);
+
+        const minor=el('div','', 'mobile-home-minor-actions');
+        if(state.categoryId||hasInput())minor.append(button('新增案件',clearCurrentCase,true));
+        minor.append(button('匯入案件',()=>importInput.click(),true));
+        home.append(minor);
+
+        const install=el('details','', 'mobile-home-install-help');
+        const installSummary=el('summary','📱 可加入主畫面離線使用');
+        const installText=el('p','iPhone／iPad 可由瀏覽器「分享」→「加入主畫面」；安裝後可離線使用。');
+        install.append(installSummary,installText);
+        home.append(install);
+
+        app.append(home);
+        app.querySelector('.mobile-home-current h2,.mobile-home-modules h2')?.focus?.();
         return;
       }
+
+      app.append(navigation(state));
 
       if(viewMode==='category'){
         if(!category){viewMode='home';render();return;}
@@ -462,7 +510,10 @@
   if(appMeta){
     if(root.document)root.document.title=appMeta.label;
     const appVersionTitle=root.document?.querySelector?.('#app-version-title');
-    if(appVersionTitle)appVersionTitle.textContent=appMeta.label;
+    if(appVersionTitle){
+      const testSite=/\/test(?:\/|$)/.test(root.location?.pathname||'');
+      appVersionTitle.textContent=testSite?'稽查助手 5.2 測試版':appMeta.label;
+    }
   }
   // 可供 DOM 整合測試呼叫，同一個入口在實際頁面自動啟動。
   root.InspectionApp = { start };

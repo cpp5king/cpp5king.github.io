@@ -11,6 +11,8 @@ test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const sw=read('service-worker.js');
   assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r4/);
   assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
+  assert.match(html,/src\/styles\.css\?v=5\.2-test-r5/);
+  assert.match(html,/src\/sentence-app\.js\?v=5\.2-test-r5/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -71,4 +73,19 @@ test('mobile shell reattaches after Water Waste or Air rerenders replace host co
   assert.match(js,/const shellAlive=!!host\.querySelector\(':scope > \.ia-mobile-flow-header'\)/);
   assert.match(js,/if\(mounted&&!shellAlive\)/);
   assert.match(js,/host\.classList\.remove\('ia-mobile-flow-shell'\)/);
+});
+
+test('5.2 mobile home keeps current case and module choices above the fold',()=>{
+  const app=read('src/sentence-app.js');
+  const css=read('src/styles.css');
+  assert.match(app,/mobile-home-shell/);
+  assert.match(app,/繼續查核/);
+  assert.match(app,/mobile-home-module-grid/);
+  assert.match(app,/mobile-home-minor-actions/);
+  assert.match(app,/📱 可加入主畫面離線使用/);
+  assert.match(app,/matchMedia\?\.\('\(max-width:760px\)'\)/);
+  assert.match(app,/testSite\?'稽查助手 5\.2 測試版':appMeta\.label/);
+  assert.match(css,/5\.2 compact mobile home: keep primary actions above the fold/);
+  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css,/main>\.mobile-install\{[\s\S]*?display:none!important/);
 });
