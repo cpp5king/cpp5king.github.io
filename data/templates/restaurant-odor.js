@@ -8,6 +8,19 @@ window.INSPECTION_CONFIG.templates.push({
   "formTitle": "依草稿順序選填",
   "instructions": "依現場事實選填；電子鼻數值為選填。勸導文字依防制設備選項自動加入，無設備時請選擇手冊交付情形。",
   "relatedTemplates": [{"id":"restaurant-odor-sampling-pending","label":"周界異味採樣－待檢驗結果"}],
+  "mobileWizard": {
+    "ariaLabel": "餐飲油煙手機逐步流程",
+    "brandLabel": "稽查助手",
+    "brandSlogan": "空氣污染・現場查核",
+    "fallbackTitle": "其他必要事項",
+    "steps": [
+      {"id":"basic","title":"稽查基本資料","help":"先記錄日期、時間與稽查對象；不知道的資料可保留待確認。","fields":["date","time","subject"]},
+      {"id":"operation","title":"營業與烹飪狀態","help":"依到場當下實際情形選擇，不以平時狀態代替現場事實。","fields":["operating"]},
+      {"id":"control","title":"油煙污染防制設備","help":"確認是否設有防制設備；有設備時再依現場可確認情形勾選設備種類。","fields":["equipment"]},
+      {"id":"observation","title":"周界觀察與電子鼻","help":"記錄本次周界實際觀察；電子鼻數值為選填，不取代法定檢測。","fields":["observation","measurement"]},
+      {"id":"guidance","title":"現場勸導／手冊","help":"依防制設備情形完成本次應記錄的勸導或手冊交付事項。","fields":["handbook"]}
+    ]
+  },
   "fields": [
     {
       "id": "date",
