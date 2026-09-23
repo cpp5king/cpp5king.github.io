@@ -98,7 +98,8 @@ function renderStep(host,info,header,content,navParts,key){
     const helpNode=header.querySelector('.ia-mobile-flow-step-help');helpNode.textContent=help;helpNode.hidden=!help;
     navParts.prev.disabled=index===0;
     navParts.next.textContent=index===steps.length-1?'整理目前內容':'下一步';
-    content.scrollTop=0;
+    const pageTop=Math.max(0,host.getBoundingClientRect().top+(root.scrollY||root.pageYOffset||0));
+    try{root.scrollTo?.({top:pageTop,left:0,behavior:'auto'});}catch(_){root.scrollTo?.(0,pageTop);}
   };
   navParts.prev.onclick=()=>{if(index>0){index--;update();}};
   navParts.next.onclick=()=>{if(index<steps.length-1){index++;update();}else clickExistingAction('整理目前內容');};
