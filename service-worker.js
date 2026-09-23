@@ -90,6 +90,7 @@ const APP_SHELL=[
   './src/ui-profile.js'+V,
   './src/field-renderer.js'+V,
   './src/mobile-wizard.js'+V,
+  './src/mobile-inspection-flow.js'+V,
   './src/water-v482.js'+V,
   './src/water-industry-v485.js'+V,
   './src/water-industry-v485-final.js'+V,
