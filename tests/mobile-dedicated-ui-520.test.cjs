@@ -9,7 +9,7 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r4/);
   assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
@@ -63,4 +63,12 @@ test('all mobile flows expose Air-style legal assessment and current-content act
   assert.match(wizard,/ia-mobile-tool/);
   assert.match(wizard,/首頁／案件大類/);
   assert.match(css,/body:has\(\.sentence-form\[data-mobile-wizard="yes"\]\) \.module-sticky-actions\{[\s\S]*?display:none!important/);
+});
+
+test('mobile shell reattaches after Water Waste or Air rerenders replace host contents',()=>{
+  const js=read('src/mobile-inspection-flow.js');
+  assert.match(js,/const mounted=host\.classList\.contains\('ia-mobile-flow-shell'\)/);
+  assert.match(js,/const shellAlive=!!host\.querySelector\(':scope > \.ia-mobile-flow-header'\)/);
+  assert.match(js,/if\(mounted&&!shellAlive\)/);
+  assert.match(js,/host\.classList\.remove\('ia-mobile-flow-shell'\)/);
 });
