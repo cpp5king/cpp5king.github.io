@@ -46,7 +46,7 @@
     function clearCurrentCase() {
       const state=session.snapshot();
       if (!state.categoryId && !hasInput()) return;
-      if (!window.confirm('新增案件／清除目前案件將清除目前輸入、法規研判與兩份草稿（含手動修改），是否繼續？')) return;
+      if (!window.confirm('新增案件將清除目前輸入、法規研判與兩份草稿（含手動修改），是否繼續？')) return;
       resetModuleDrafts();
       session.home();
       viewMode='home';
@@ -91,6 +91,7 @@
       for(const item of items){const b=button(item.label,item.action,true);if(item.className)b.classList.add(item.className);bar.append(b);}
       return bar;
     }
+    function scrollToTop(){window.scrollTo?.({top:0,behavior:'smooth'});}
     function closeActionModal(){document.querySelector?.('.ia-action-overlay')?.remove?.();}
     function actionModal(title,bodyBuilder,actions=[]){
       closeActionModal();const overlay=el('div','', 'ia-action-overlay');const panel=el('section','', 'ia-action-panel');panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',title);
@@ -275,7 +276,7 @@
         app.append(moduleStickyActions([
           {label:'法規研判',action:()=>root.WaterV2UI?.showLaw?.()},
           {label:'整理目前內容',action:()=>root.WaterV2UI?.showSummary?.()},
-          {label:'清除本流程',action:()=>{if(window.confirm('確定清除目前水污染流程輸入？'))root.WaterV2UI?.reset?.();}}
+          {label:'回到最上面',action:scrollToTop}
         ]));return;
       }
       if (category.id === 'waste' && root.WasteV1UI?.mount) {
@@ -283,7 +284,7 @@
         app.append(moduleStickyActions([
           {label:'法規研判',action:()=>root.WasteV1UI?.showLaw?.()},
           {label:'整理目前內容',action:()=>root.WasteV1UI?.showSummary?.()},
-          {label:'清除本流程',action:()=>{if(window.confirm('確定清除目前廢棄物流程輸入？'))root.WasteV1UI?.reset?.();}}
+          {label:'回到最上面',action:scrollToTop}
         ]));return;
       }
       if (category.id === 'air' && ['air-fixed-source','air-construction','air-open-burning'].includes(type.id) && root.AirV1UI?.mount) {
@@ -448,7 +449,7 @@
         const bar=moduleStickyActions([
           {label:'法規研判',action:()=>{const current=session.snapshot();const facts=root.DraftEngine.normalize(template,fields.read());if(current.categoryId==='air')root.AirRuleUI?.open?.({mode:'restaurant-odor',inputs:facts});else openNoiseAssessment(template,facts);}},
           {label:'整理目前內容',action:()=>openTemplateSummary(template,fields.read())},
-          {label:'清除本流程',action:()=>{if(!window.confirm('確定清除目前流程輸入與草稿？'))return;const current=session.snapshot();session.selectTemplate(current.templateId);render();}}
+          {label:'回到最上面',action:scrollToTop}
         ]);
         app.append(bar);
       }
