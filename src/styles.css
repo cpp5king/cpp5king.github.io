@@ -913,3 +913,5 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
     line-height:1.45;
   }
 }
+
+@media(max-width:760px){.mobile-home-minor-actions button:only-child{grid-column:1/-1}}
