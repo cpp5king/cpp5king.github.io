@@ -276,7 +276,9 @@
         app.append(moduleStickyActions([
           {label:'法規研判',action:()=>root.WaterV2UI?.showLaw?.()},
           {label:'整理目前內容',action:()=>root.WaterV2UI?.showSummary?.()},
-          {label:'回到最上面',action:scrollToTop}
+          active.categoryId==='noise'
+            ? {label:'首頁',action:()=>{viewMode='home';render();}}
+            : {label:'回到最上面',action:scrollToTop}
         ]));return;
       }
       if (category.id === 'waste' && root.WasteV1UI?.mount) {
