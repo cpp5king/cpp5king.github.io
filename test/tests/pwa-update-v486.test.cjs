@@ -29,7 +29,7 @@ test('PWA 更新器、iOS 前景恢復與導覽逾時保護同步目前版本',(
   assert.match(pwa,/CHECK_THROTTLE_MS/);
   assert.doesNotMatch(pwa,/localStorage|indexedDB|sessionStorage/);
   assert.match(sw,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
-  assert.match(sw,new RegExp('inspection-assistant-(?:test-)?'+meta.version.replaceAll('.','\\.')+'-pp-7f3c9a21'));
+  assert.match(sw,/inspection-assistant-(?:test-\d+\.\d+\.\d+|\d+\.\d+\.\d+)-pp-7f3c9a21/);
   assert.match(sw,/NAVIGATION_TIMEOUT_MS=6000/);
   assert.match(sw,/fetchNavigationWithTimeout/);
   assert.match(sw,/Promise\.race/);

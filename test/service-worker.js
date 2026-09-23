@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.1.1');
+importScripts('./data/law-offline-assets.js?v=5.2.0');
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='5.1.1';
-const CACHE_REVISION='test-site-5.2-mobile-r7';
-const CACHE_NAME='inspection-assistant-test-5.1.1-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.0';
+const CACHE_REVISION='test-site-5.2.1-visual-r1';
+const CACHE_NAME='inspection-assistant-test-5.2.1-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
