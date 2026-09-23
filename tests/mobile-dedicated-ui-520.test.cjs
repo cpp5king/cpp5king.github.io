@@ -97,9 +97,10 @@ test('5.2 mobile category and template pages use compact intermediary navigation
   assert.match(app,/mobile-stage-shell/);
   assert.match(app,/mobile-stage-choice-grid/);
   assert.match(app,/mobile-stage-template-list/);
-  assert.match(app,/mobile-stage-more/);
-  assert.match(app,/canExportCurrentCase/);
-  assert.match(app,/匯出案件/);
+  assert.match(app,/mobile-stage-quicknav/);
+  assert.doesNotMatch(app,/mobile-stage-more/);
+  assert.doesNotMatch(app,/canExportCurrentCase/);
+  assert.match(app,/viewMode==='case'[\s\S]*?匯出案件/);
   assert.match(app,/const mobileIntermediary=isMobileViewport\(\)&&\['category','template'\]\.includes\(viewMode\)/);
   assert.match(css,/5\.2 compact mobile intermediary pages: category \/ template/);
   assert.match(css,/body\[data-view="category"\]>header/);
