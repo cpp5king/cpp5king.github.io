@@ -1,0 +1,170 @@
+name: RC6 Official Law Snapshot
+
+on:
+  push:
+    branches:
+      - tmp-law-snapshot-rc6
+    paths:
+      - .github/workflows/rc6-law-snapshot.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build official law snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out/data/law-assets
+          python - <<'PY'
+          import io, json, os, re, urllib.request, urllib.parse, zipfile, hashlib
+          from datetime import datetime, timezone
+
+          API_LAW='https://law.moj.gov.tw/api/ch/law/json'
+          API_ORDER='https://law.moj.gov.tw/api/ch/order/json'
+          TARGETS={
+            'O0040001':'water-act',
+            'O0040054':'water-measure-reg',
+            'O0040055':'water-permit-reg',
+            'O0040004':'effluent-standard',
+            'O0030001':'noise-act',
+            'O0030006':'noise-standard',
+            'O0050001':'waste-act',
+            'O0050036':'waste-rules',
+            'O0020001':'air-act',
+            'O0020036':'air-behavior-guideline',
+            'O0020058':'construction-air-reg',
+            'O0020127':'restaurant-air-reg',
+            'O0020012':'fixed-permit-reg',
+            'O0020006':'fixed-emission-standard',
+          }
+          def official(url):
+            u=urllib.parse.urlparse(url)
+            if u.scheme!='https' or u.hostname!='law.moj.gov.tw':
+              raise RuntimeError('Non-official URL rejected: '+url)
+            return url
+          def fetch(url):
+            req=urllib.request.Request(official(url),headers={'User-Agent':'InspectionAssistant/5.1 law snapshot builder'})
+            with urllib.request.urlopen(req,timeout=120) as r:
+              data=r.read()
+              return data
+          def load_api(url):
+            raw=fetch(url)
+            if raw[:2]!=b'PK':
+              raise RuntimeError('MOJ API did not return ZIP: '+url)
+            with zipfile.ZipFile(io.BytesIO(raw)) as z:
+              names=[n for n in z.namelist() if n.lower().endswith('.json')]
+              if len(names)!=1: raise RuntimeError('Expected one JSON in '+url)
+              return json.loads(z.read(names[0]).decode('utf-8-sig'))
+          def clean(v):
+            return str(v or '').replace('\r\n','\n').strip()
+          def next_heading(path,text):
+            t=re.sub(r'[ \t]+',' ',clean(text))
+            if not t:return path
+            if t.startswith('第') and ('章' in t or '編' in t): return [t]
+            if t.startswith('第') and '節' in t: return ([path[0],t] if path else [t])
+            if t.startswith('第') and any(x in t for x in ('款','目')):
+              return ([path[0],path[1],t] if len(path)>=2 else [*path,t])[-3:]
+            return ([*path,t])[-3:]
+          def norm_url(base,url):
+            u=urllib.parse.urljoin(base,str(url or ''))
+            return official(u)
+          def safe_ext(name,url):
+            ext=os.path.splitext(urllib.parse.urlparse(url).path)[1].lower()
+            if not ext: ext=os.path.splitext(name)[1].lower()
+            if not re.fullmatch(r'\.[a-z0-9]{1,8}',ext or ''): ext='.bin'
+            return ext
+
+          law=load_api(API_LAW); order=load_api(API_ORDER)
+          laws=list(law.get('Laws') or [])+list(order.get('Laws') or [])
+          by={}
+          for row in laws:
+            url=str(row.get('LawURL') or '')
+            m=re.search(r'[?&]pcode=([^&]+)',url,re.I)
+            if m: by[m.group(1).upper()]=row
+          missing=[p for p in TARGETS if p not in by]
+          if missing: raise RuntimeError('Missing target laws: '+','.join(missing))
+
+          entries={}
+          asset_paths=[]
+          meta=[]
+          now=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
+          for pcode,eid in TARGETS.items():
+            row=by[pcode]
+            source_url=norm_url('https://law.moj.gov.tw/',row.get('LawURL'))
+            heading=[]
+            records=[]
+            for a in row.get('LawArticles') or []:
+              typ=str(a.get('ArticleType') or '')
+              text=clean(a.get('ArticleContent'))
+              if not text: continue
+              if typ=='C':
+                heading=next_heading(heading,text)
+                records.append({'type':'C','no':'','text':text,'headingPath':heading[:]})
+              else:
+                records.append({'type':'A','no':clean(a.get('ArticleNo')),'text':text,'headingPath':heading[:]})
+            attachments=[]
+            raw_att=row.get('LawAttachements',row.get('LawAttachments',[])) or []
+            for i,att in enumerate(raw_att,1):
+              if not att or not att.get('FileURL'): continue
+              name=str(att.get('FileName') or f'附件{i}')
+              surl=norm_url(source_url,att.get('FileURL'))
+              ext=safe_ext(name,surl)
+              rel=f'data/law-assets/{pcode}/{i:02d}{ext}'
+              path=os.path.join('out',rel)
+              os.makedirs(os.path.dirname(path),exist_ok=True)
+              data=fetch(surl)
+              with open(path,'wb') as f:f.write(data)
+              sha=hashlib.sha256(data).hexdigest()
+              attachments.append({'name':name,'sourceUrl':surl,'localPath':rel,'sha256':sha,'size':len(data)})
+              asset_paths.append('./'+rel)
+            entries[eid]={
+              'id':eid,'pcode':pcode,'name':str(row.get('LawName') or ''),
+              'foreword':clean(row.get('LawForeword')),'histories':str(row.get('LawHistories') or ''),
+              'amended':str(row.get('LawModifiedDate') or ''),'effectiveDate':str(row.get('LawEffectiveDate') or ''),
+              'effectiveNote':str(row.get('LawEffectiveNote') or ''),
+              'sourceName':'全國法規資料庫（法務部）','sourceUrl':source_url,
+              'sourceUpdateDate': law.get('UpdateDate') if pcode in {'O0040001','O0030001','O0050001','O0020001'} else order.get('UpdateDate'),
+              'downloadedAt':now,'snapshotStatus':'complete-official-api-with-attachments',
+              'articles':records,'attachments':attachments,
+              'attachmentNote':('附件／附表共 %d 件，已隨本版離線收錄。'%len(attachments)) if attachments else ''
+            }
+            meta.append({'id':eid,'pcode':pcode,'name':entries[eid]['name'],'amended':entries[eid]['amended'],'articles':sum(1 for x in records if x['type']=='A'),'attachments':len(attachments)})
+
+          snapshot={
+            'provenance':'PP-IA-41-7F3C9A21',
+            'version':'moj-official-snapshot-'+datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S'),
+            'verifiedAt':datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+            'sourcePolicy':'中央法規全文、法規名稱、修正日期及附件一律由 law.moj.gov.tw 全國法規資料庫官方 API 直接取得；發布版本內建快照，使用者不需自行更新。',
+            'officialApi':[API_LAW,API_ORDER],
+            'lawUpdateDate':law.get('UpdateDate',''),'orderUpdateDate':order.get('UpdateDate',''),
+            'entries':entries
+          }
+          os.makedirs('out/data',exist_ok=True)
+          with open('out/data/law-fulltext.js','w',encoding='utf-8',newline='\n') as f:
+            f.write("(function(root){'use strict';root.INSPECTION_LAW_FULLTEXT=Object.freeze(")
+            json.dump(snapshot,f,ensure_ascii=False,separators=(',',':'))
+            f.write(");})(window);\n")
+          with open('out/data/law-offline-assets.js','w',encoding='utf-8',newline='\n') as f:
+            f.write("self.INSPECTION_LAW_OFFLINE_ASSETS=")
+            json.dump(asset_paths,f,ensure_ascii=False,separators=(',',':'))
+            f.write(";\n")
+          with open('out/LAW-SNAPSHOT-META.json','w',encoding='utf-8') as f:
+            json.dump({'source':'https://law.moj.gov.tw/','lawUpdateDate':law.get('UpdateDate',''),'orderUpdateDate':order.get('UpdateDate',''),'generatedAt':now,'entries':meta},f,ensure_ascii=False,indent=2)
+          print(json.dumps(meta,ensure_ascii=False,indent=2))
+          PY
+      - name: Package snapshot
+        shell: bash
+        run: |
+          cd out
+          zip -r ../rc6-law-snapshot.zip .
+      - name: Upload snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc6-law-snapshot
+          path: rc6-law-snapshot.zip
+          if-no-files-found: error
+          retention-days: 1
