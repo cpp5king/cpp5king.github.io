@@ -16,7 +16,7 @@
 
   function resolveVersion(eventDate){
     const pack=root.WATER_STANDARD_RULE_PACK;
-    if(!pack)return {status:'packMissing',date:'',version:null,text:'Water Standard Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',date:'',version:null,text:'放流水標準規則尚未載入。'};
     const date=validDate(eventDate);
     if(!date){
       return {
@@ -34,7 +34,7 @@
     if(date<'2024-12-18'){
       return {
         status:'historicalVersionMissing',date,version:null,
-        text:'放流水標準：行為日期早於113年12月18日；本 Water Standard Rule Pack 尚未收錄該歷史版本，不以較新標準回溯判斷。'
+        text:'放流水標準：行為日期早於113年12月18日；本版放流水標準規則尚未收錄該歷史版本，不以較新標準回溯判斷。'
       };
     }
     return {
@@ -45,7 +45,7 @@
 
   function routeAppendix(input={}){
     const pack=root.WATER_STANDARD_RULE_PACK;
-    if(!pack)return {status:'packMissing',appendix:null,message:'Water Standard Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',appendix:null,message:'放流水標準規則尚未載入。'};
 
     if(input.waterSubjectType==='buildingSewage'){
       return {status:'routed',appendix:pack.buildingAppendix,basis:'建築物污水處理設施',message:'依目前主體類型，國家放流水標準基礎路由為附表十五。'};
@@ -77,7 +77,7 @@
       return {status:'routed',appendix,basis:'污水下水道系統',message:'依目前下水道系統類型，國家放流水標準基礎路由為附表'+appendix+'。'};
     }
 
-    return {status:'notApplicable',appendix:null,message:'目前主體類型不進入本 Water Standard Rule Pack 之附表路由。'};
+    return {status:'notApplicable',appendix:null,message:'目前主體類型不進入本 放流水標準規則 之附表路由。'};
   }
 
   function fnv1a32(str){

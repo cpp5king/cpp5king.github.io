@@ -1,7 +1,7 @@
 (function(root){
   'use strict';
 
-  const VERSION = '4.9.43';
+  const VERSION = '5.1.0';
   const PROVENANCE = 'PP-IA-41-7F3C9A21';
   let $app = null;
 
@@ -13,6 +13,7 @@
     },
     baseScreening: { status: '', unavailableReason: '', ph: '', temperature: '', industry: '', processes: [], records: [] },
     traceNodes: [],
+    sourceEntities: [],
     sources: [],
     currentInspection: null,
     inspections: [],
@@ -44,12 +45,97 @@
 
   const subjectTypes = [
     ['industry','水污法事業','依許可／核准資料進行 A～F 現場查核'],
-    ['sewer','污水下水道系統',root.WaterLaw?.uiText?.('sewerSubjectHelp','v2')||'沿用 A～F 現場事實；準用關係依目前 Rule Pack 顯示'],
+    ['sewer','污水下水道系統',root.WaterLaw?.uiText?.('sewerSubjectHelp','v2')||'沿用 A～F 現場事實；準用關係依目前法規規則顯示'],
     ['building','建築物污水處理設施','依設施、管理、紀錄、排放四主題查核'],
     ['other','非上述管制主體','先記現場行為，再整理可能法規方向']
   ];
 
+  function localDateTimeValue(date=new Date()){
+    const pad=n=>String(n).padStart(2,'0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+  function formatLocalDateTime(value){
+    const m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+    return m?`${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}`:String(value||'');
+  }
+  function inspectionDateTimeParts(value){
+    const m=String(value||'').match(/^(\d{4}-\d{2}-\d{2})(?:T(\d{2}:\d{2}))?/);
+    return {date:m?.[1]||'',time:m?.[2]||''};
+  }
+  function composeInspectionDateTime(date,time){
+    date=String(date||'').trim();time=String(time||'').trim();
+    if(date&&time)return `${date}T${time}`;
+    return date;
+  }
   function newId(prefix){ return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`; }
+  const sourceStatusOptions=Object.freeze([
+    ['suspected','疑似／待查證'],
+    ['supported','已有部分事實支持'],
+    ['confirmed','已確認來源'],
+    ['excluded','已排除'],
+    ['unknown','無法確認']
+  ]);
+  const sourceStatuses=new Set(sourceStatusOptions.map(x=>x[0]));
+  function normalizeSourceStatus(status){return sourceStatuses.has(status)?status:'suspected';}
+  function sourceStatusLabel(status){return (sourceStatusOptions.find(x=>x[0]===status)||[])[1]||'來源狀態未設定';}
+  function sourceById(id){return state.sourceEntities.find(x=>x.id===id)||null;}
+  function relationById(id){return state.sources.find(x=>x.id===id)||null;}
+  function relationsForNode(nodeId){return state.sources.filter(x=>x.nodeId===nodeId);}
+  function sourceDisplayName(relation){
+    const source=sourceById(relation?.sourceId);
+    const node=state.traceNodes.find(x=>x.id===relation?.nodeId);
+    return relation?.sourceName||relation?.sourceLocation||source?.name||source?.location||node?.location||'未命名來源';
+  }
+  function sourceStatusTag(status){
+    const cls=status==='confirmed'?'confirmed':status==='suspected'?'suspected':status==='supported'?'supported':status==='excluded'?'stopped':'unknown';
+    return `<span class="tag ${cls}">${esc(sourceStatusLabel(status))}</span>`;
+  }
+  function createSourceEntity(seed={}){
+    const source={id:seed.id||newId('source'),name:String(seed.name||''),location:String(seed.location||'')};
+    state.sourceEntities.push(source);return source;
+  }
+  function createSourceRelation(nodeId,sourceId,seed={}){
+    const source=sourceById(sourceId);
+    const relation={
+      id:seed.id||newId('relation'),nodeId:String(nodeId||''),sourceId:String(sourceId||''),
+      sourceName:String(seed.sourceName??source?.name??''),sourceLocation:String(seed.sourceLocation??source?.location??''),
+      status:normalizeSourceStatus(seed.status),reason:String(seed.reason||''),observation:String(seed.observation||''),
+      evidence:Array.isArray(seed.evidence)?[...seed.evidence]:[],evidenceOther:String(seed.evidenceOther||''),
+      verificationMethod:String(seed.verificationMethod||''),notes:String(seed.notes||'')
+    };
+    state.sources.push(relation);return relation;
+  }
+  function updateRelationSourceField(relation,key,value){
+    if(!relation||!['sourceName','sourceLocation'].includes(key))return;
+    relation[key]=String(value||'');
+    const source=sourceById(relation.sourceId);if(!source)return;
+    const linked=state.sources.filter(x=>x.sourceId===source.id);
+    const entityKey=key==='sourceName'?'name':'location';
+    if(linked.length<=1||!source[entityKey])source[entityKey]=relation[key];
+  }
+  function addNewSourceRelation(nodeId){
+    const node=state.traceNodes.find(x=>x.id===nodeId);
+    if(!node)return null;
+    const source=createSourceEntity({location:node.location||''});
+    return createSourceRelation(nodeId,source.id,{status:'suspected'});
+  }
+  function linkExistingSource(nodeId,sourceId){
+    if(!nodeId||!sourceId||!sourceById(sourceId))return null;
+    const existing=state.sources.find(x=>x.nodeId===nodeId&&x.sourceId===sourceId);
+    if(existing)return existing;
+    return createSourceRelation(nodeId,sourceId,{status:'suspected'});
+  }
+  function detachInspectionRelation(relationId){
+    const detach=i=>{if(i&&i.sourceRelationId===relationId){i.sourceRelationId='';i.sourceNodeId='';}};
+    state.inspections.forEach(detach);detach(state.currentInspection);
+  }
+  function removeSourceRelation(relationId){
+    const relation=relationById(relationId);if(!relation)return;
+    const sourceId=relation.sourceId;
+    detachInspectionRelation(relationId);
+    state.sources=state.sources.filter(x=>x.id!==relationId);
+    if(sourceId&&!state.sources.some(x=>x.sourceId===sourceId))state.sourceEntities=state.sourceEntities.filter(x=>x.id!==sourceId);
+  }
   function esc(s=''){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
   function ynu(value, name, labels={yes:'是',no:'否',unknown:'無法確認'}){
     return `<div class="choice-row">${Object.entries(labels).map(([v,l])=>`<label class="choice"><input type="radio" name="${name}" value="${v}" ${value===v?'checked':''}><span>${l}</span></label>`).join('')}</div>`;
@@ -175,7 +261,7 @@
   }
   function hasData(){
     const p = state.pollutionPoint;
-    return !!(state.caseInfo.behaviorDate || state.caseInfo.inspectionDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection || state.legalReviews.length);
+    return !!(state.caseInfo.behaviorDate || p.presence || p.phenomena.length || p.location || p.notes || state.baseScreening.status || state.traceNodes.length || state.inspections.length || state.currentInspection || state.legalReviews.length);
   }
   function setView(v){ state.view=v; root.scrollTo?.({top:0,behavior:'smooth'}); render(); }
 
@@ -186,6 +272,7 @@
     else if(state.view==='pollution') renderPollution();
     else if(state.view==='subject') renderSubject();
     else if(state.view==='summary') renderSummary();
+    else if(state.view==='law') renderLawAssessment();
     else if(state.view==='draft') renderDraft();
     bindCommon();
   }
@@ -193,6 +280,7 @@
   function bindCommon(){}
 
   function renderHome(){
+    const inspectionParts=inspectionDateTimeParts(state.caseInfo.inspectionDate);
     $app.innerHTML = `
       <section class="hero">
         <h2>水污染 V2</h2>
@@ -203,9 +291,9 @@
         <h3>案件日期與法規版本</h3>
         <div class="grid-2">
           <label class="field"><span class="field-label">行為發生日期</span><input class="text-input" type="date" id="caseBehaviorDate" value="${esc(state.caseInfo.behaviorDate)}"><span class="field-help">用於選擇適用法規版本；不明可留空，系統會標示「適用法規版本待確認」。</span></label>
-          <label class="field"><span class="field-label">稽查日期</span><input class="text-input" type="date" id="caseInspectionDate" value="${esc(state.caseInfo.inspectionDate)}"><span class="field-help">僅作案件紀錄，不替代行為發生日期。</span></label>
+          <label class="field"><span class="field-label">稽查日期／時間</span><div class="datetime-now-row"><input class="text-input" type="date" id="caseInspectionDate" value="${esc(inspectionParts.date)}"><input class="text-input" type="time" id="caseInspectionTime" value="${esc(inspectionParts.time)}"><button type="button" class="btn btn-ghost btn-now" id="caseInspectionNow">更新為現在</button></div><span class="field-help">開啟新案件時先帶入目前日期時間，可再人工調整；舊案件若原本只有日期，不會自行補造時間。</span></label>
         </div>
-        <div class="notice info">${esc(root.WaterLaw?.packInfo?.()?.packVersion?('Water Rules：'+root.WaterLaw.packInfo().packVersion+'（'+root.WaterLaw.packInfo().status+'）'):'Water Rules：未載入')}<br>${esc(root.WaterLaw?.resolveLawVersion?.(state.caseInfo.behaviorDate)?.message||'適用法規版本待確認')}</div>
+        <div class="notice info">${esc(root.WaterLaw?.packInfo?.()?.packVersion?('水污染規則版本：'+root.WaterLaw.packInfo().packVersion+'（'+root.WaterLaw.packInfo().status+'）'):'水污染規則版本：未載入')}<br>${esc(root.WaterLaw?.resolveLawVersion?.(state.caseInfo.behaviorDate)?.message||'適用法規版本待確認')}</div>
       </section>
       <section class="grid-2">
         <article class="card entry-card" id="enterPollution">
@@ -227,7 +315,10 @@
         <div class="btn-row"><button class="btn btn-secondary" id="homeSummary" ${hasData()?'':'disabled'}>整理目前內容</button></div>
       </section>`;
     const behaviorDate=document.getElementById('caseBehaviorDate');if(behaviorDate)behaviorDate.onchange=e=>{state.caseInfo.behaviorDate=e.target.value;renderHome();};
-    const inspectionDate=document.getElementById('caseInspectionDate');if(inspectionDate)inspectionDate.onchange=e=>{state.caseInfo.inspectionDate=e.target.value;};
+    const inspectionDate=document.getElementById('caseInspectionDate'),inspectionTime=document.getElementById('caseInspectionTime');
+    const saveInspectionDateTime=()=>{state.caseInfo.inspectionDate=composeInspectionDateTime(inspectionDate?.value,inspectionTime?.value);};
+    if(inspectionDate)inspectionDate.onchange=saveInspectionDateTime;if(inspectionTime)inspectionTime.onchange=saveInspectionDateTime;
+    const inspectionNow=document.getElementById('caseInspectionNow');if(inspectionNow)inspectionNow.onclick=()=>{state.caseInfo.inspectionDate=localDateTimeValue();const p=inspectionDateTimeParts(state.caseInfo.inspectionDate);if(inspectionDate)inspectionDate.value=p.date;if(inspectionTime)inspectionTime.value=p.time;};
     document.getElementById('enterPollution').onclick=()=>setView('pollution');
     document.getElementById('enterSubject').onclick=()=>{ if(!state.currentInspection) state.currentInspection=createInspection(); setView('subject'); };
     document.getElementById('homeSummary').onclick=()=>setView('summary');
@@ -329,7 +420,7 @@
 
   function addTraceNode(parentId){
     const siblings=state.traceNodes.filter(n=>n.parentId===parentId).length;
-    state.traceNodes.push({id:newId('node'),parentId,branchNo:siblings+1,type:'',location:'',hasFlow:'',directionKnown:'',directionText:'',notes:'',result:'',stopReason:'',stopNotes:'',screeningActive:false,screeningPh:'',screeningTemperature:'',screeningIndustry:'',screeningProcesses:[],screenings:[],sourceStatus:'',sourceName:'',evidence:[],evidenceOther:''});
+    state.traceNodes.push({id:newId('node'),parentId,branchNo:siblings+1,type:'',location:'',hasFlow:'',directionKnown:'',directionText:'',notes:'',result:'',stopReason:'',stopNotes:'',screeningActive:false,screeningPh:'',screeningTemperature:'',screeningIndustry:'',screeningProcesses:[],screenings:[]});
     renderPollution();
   }
   function nodeDepth(node){let d=0,p=node.parentId;while(p){d++;const pn=state.traceNodes.find(n=>n.id===p);p=pn?pn.parentId:null;}return Math.min(d,4);}
@@ -343,8 +434,13 @@
     return `${renderTraceNode(n)}${children.map(c=>renderNodeRecursive(c)).join('')}`;
   }
   function renderTraceNode(n){
-    const depth=nodeDepth(n), idx=nodeNumber(n);
-    const statusTag=n.sourceStatus==='confirmed'?'<span class="tag confirmed">已確認來源</span>':n.sourceStatus==='suspected'?'<span class="tag suspected">疑似來源</span>':n.sourceStatus==='excluded'?'<span class="tag stopped">已排除來源</span>':n.result==='stop'?'<span class="tag stopped">支線停止</span>':'';
+    const depth=nodeDepth(n), idx=nodeNumber(n), relations=relationsForNode(n.id);
+    const confirmed=relations.filter(x=>x.status==='confirmed').length;
+    const pending=relations.filter(x=>['suspected','supported','unknown'].includes(x.status)).length;
+    const excluded=relations.filter(x=>x.status==='excluded').length;
+    const statusTag=relations.length
+      ? `<span class="tag">來源 ${relations.length} 筆</span>${confirmed?`<span class="tag confirmed">已確認 ${confirmed}</span>`:''}${pending?`<span class="tag suspected">待查 ${pending}</span>`:''}${excluded?`<span class="tag stopped">已排除 ${excluded}</span>`:''}`
+      : n.result==='stop'?'<span class="tag stopped">支線停止</span>':'';
     const nodeTypeOptions=[['ditch','側溝'],['drain','排水溝'],['outfall','排水口'],['channel','渠道'],['pipe','管線'],['manhole','人孔／陰井'],['site','場址／場所'],['waterbody','水體'],['other','其他']];
     return `<article class="subcard trace-card level-${depth}" data-node-id="${n.id}">
       <div class="trace-head"><div><h4>節點 ${idx}${n.parentId?`｜支線 ${n.branchNo}`:''}</h4><div>${statusTag}</div></div><button class="btn btn-danger" data-remove-node="${n.id}">刪除此節點</button></div>
@@ -358,74 +454,96 @@
       <label class="field"><span class="field-label">節點補充</span><textarea class="text-area" data-node-field="notes" data-node="${n.id}">${esc(n.notes)}</textarea></label>
       ${(n.screeningActive||n.screenings.length)?`<div class="divider"></div><h4>此節點快篩</h4>${screeningTable(n.screenings,`node:${n.id}`,{ph:n.screeningPh||'',temperature:n.screeningTemperature||'',industry:n.screeningIndustry||'',processes:n.screeningProcesses||[]},n)}`:''}
       ${n.result==='stop'?`<div class="details"><label class="field"><span class="field-label">停止原因</span>${ynu(n.stopReason,`stop_${n.id}`,{excluded:'已排除',blocked:'無法繼續追查'})}</label><label class="field"><span class="field-label">排除／停止說明</span><textarea class="text-area" data-node-field="stopNotes" data-node="${n.id}">${esc(n.stopNotes)}</textarea></label></div>`:''}
-      ${n.result==='source'?renderSourceEditor(n):''}
+      ${renderNodeSources(n)}
       <div class="btn-row">
         <button class="btn btn-secondary" data-add-child="${n.id}">繼續往來源追</button>
         <button class="btn btn-secondary" data-add-child="${n.id}">新增另一支線</button>
         <button class="btn btn-ghost" data-add-node-screen="${n.id}">＋此處快篩</button>
         <button class="btn btn-ghost" data-stop-node="${n.id}">此支線停止追查</button>
-        <button class="btn btn-good" data-source-node="${n.id}">標記疑似來源</button>
       </div>
     </article>`;
   }
-  function renderSourceEditor(n){
-    return `<div class="details">
-      <h4>來源判斷</h4>
-      <label class="field"><span class="field-label">目前對此來源的判斷</span>${ynu(n.sourceStatus,`sourceStatus_${n.id}`,{suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})}</label>
-      <label class="field"><span class="field-label">來源名稱或場所</span><input class="text-input" data-node-field="sourceName" data-node="${n.id}" value="${esc(n.sourceName)}" placeholder="例如：○○股份有限公司"></label>
-      ${n.sourceStatus==='confirmed'?`<label class="field"><span class="field-label">來源確認依據</span>${checkboxList(n.evidence,evidenceOptions,`evidence_${n.id}`)}</label>${n.evidence.includes('other')?`<label class="field"><span class="field-label">其他依據</span><input class="text-input" data-node-field="evidenceOther" data-node="${n.id}" value="${esc(n.evidenceOther)}"></label>`:''}${n.evidence.length===1&&n.evidence[0]==='screening'?'<div class="notice warn">目前只勾選快篩輔助。快篩結果不宜單獨作為來源確認唯一依據；系統不會阻止儲存，仍由稽查員判斷。</div>':''}`:''}${n.sourceStatus==='excluded'?'<div class="notice info">此對象已排除為本次污染來源；若先前已建立對象查核，查核資料仍會保留。</div>':''}
+  function renderNodeSources(n){
+    const relations=relationsForNode(n.id);
+    const available=state.sourceEntities.filter(source=>!relations.some(r=>r.sourceId===source.id));
+    return `<div class="source-relations-block"><div class="source-relations-head"><div><h4>此支點的疑似來源</h4><div class="hint">同一支點可保留多個來源關係；確認其中一個，不會自動排除其他來源。</div></div><button class="btn btn-good" data-add-source-new="${n.id}">＋新增疑似來源</button></div>
+      ${relations.length?relations.map((relation,index)=>renderSourceRelationEditor(relation,index+1)).join(''):'<div class="empty compact">此支點尚未建立疑似來源。</div>'}
+      ${available.length?`<div class="source-link-existing"><select class="select-input" data-existing-source-select="${n.id}"><option value="">選擇既有來源對象</option>${available.map(source=>`<option value="${esc(source.id)}">${esc(source.name||source.location||'未命名來源')}</option>`).join('')}</select><button class="btn btn-ghost" data-link-existing-source="${n.id}">＋連結既有來源</button></div>`:''}
     </div>`;
+  }
+  function renderSourceRelationEditor(relation,index){
+    const source=sourceById(relation.sourceId)||{name:'',location:''};
+    const inspection=state.inspections.find(i=>i.sourceRelationId===relation.id);
+    return `<article class="source-relation-card" data-source-relation="${relation.id}">
+      <div class="trace-head"><div><h4>來源 ${index}｜${esc(sourceDisplayName(relation))}</h4><div>${sourceStatusTag(relation.status)}</div></div><button class="btn btn-danger" data-remove-source-relation="${relation.id}">移除此來源</button></div>
+      <div class="grid-2">
+        <label class="field"><span class="field-label">疑似來源對象</span><input class="text-input" data-source-relation-field="sourceName" data-relation="${relation.id}" value="${esc(relation.sourceName||source.name||'')}" placeholder="例如：○○股份有限公司"></label>
+        <label class="field"><span class="field-label">疑似來源位置</span><input class="text-input" data-source-relation-field="sourceLocation" data-relation="${relation.id}" value="${esc(relation.sourceLocation||source.location||'')}" placeholder="例如：○○路 123 號"></label>
+      </div>
+      <label class="field"><span class="field-label">目前狀態</span>${ynu(relation.status,`sourceRelationStatus_${relation.id}`,Object.fromEntries(sourceStatusOptions))}</label>
+      <label class="field"><span class="field-label">為何懷疑</span><textarea class="text-area source-text-area" data-source-relation-field="reason" data-relation="${relation.id}" placeholder="例如：水路方向、排水位置、陳述或其他線索">${esc(relation.reason)}</textarea></label>
+      <label class="field"><span class="field-label">現場觀察</span><textarea class="text-area source-text-area" data-source-relation-field="observation" data-relation="${relation.id}" placeholder="記錄此來源與支點之間可直接觀察到的事實">${esc(relation.observation)}</textarea></label>
+      <label class="field"><span class="field-label">查證依據／資料來源</span>${checkboxList(relation.evidence,evidenceOptions,`sourceEvidence_${relation.id}`)}</label>
+      ${relation.evidence.includes('other')?`<label class="field"><span class="field-label">其他查證依據</span><input class="text-input" data-source-relation-field="evidenceOther" data-relation="${relation.id}" value="${esc(relation.evidenceOther)}"></label>`:''}
+      ${relation.status==='confirmed'&&relation.evidence.length===1&&relation.evidence[0]==='screening'?'<div class="notice warn">目前只有快篩提供輔助支持。快篩結果不宜單獨作為來源確認唯一依據；系統不會自行排除其他來源。</div>':''}
+      <label class="field"><span class="field-label">查證方式</span><input class="text-input" data-source-relation-field="verificationMethod" data-relation="${relation.id}" value="${esc(relation.verificationMethod)}" placeholder="例如：沿水路追查、現場詢問、文件核對"></label>
+      <label class="field"><span class="field-label">備註</span><textarea class="text-area source-text-area" data-source-relation-field="notes" data-relation="${relation.id}">${esc(relation.notes)}</textarea></label>
+      <div class="btn-row"><button class="btn btn-primary" data-handoff-relation="${relation.id}">${inspection?'查看對象查核':'進行對象查核'}</button></div>
+    </article>`;
   }
 
   function bindTraceEvents(){
-    document.querySelectorAll('[data-node-field]').forEach(el=>{el.oninput=e=>{const n=state.traceNodes.find(x=>x.id===e.target.dataset.node);if(n){n[e.target.dataset.nodeField]=e.target.value;if(['sourceName','evidenceOther'].includes(e.target.dataset.nodeField))syncSources();}};});
+    document.querySelectorAll('[data-node-field]').forEach(el=>{el.oninput=e=>{const n=state.traceNodes.find(x=>x.id===e.target.dataset.node);if(n)n[e.target.dataset.nodeField]=e.target.value;};});
     state.traceNodes.forEach(n=>{
       document.querySelectorAll(`input[name="hasFlow_${n.id}"]`).forEach(el=>el.onchange=e=>{n.hasFlow=e.target.value;});
       document.querySelectorAll(`input[name="nodeDir_${n.id}"]`).forEach(el=>el.onchange=e=>{n.directionKnown=e.target.value;if(e.target.value!=='yes')n.directionText='';renderPollution();});
       document.querySelectorAll(`input[name="stop_${n.id}"]`).forEach(el=>el.onchange=e=>{n.stopReason=e.target.value;});
-      document.querySelectorAll(`input[name="sourceStatus_${n.id}"]`).forEach(el=>el.onchange=e=>{n.sourceStatus=e.target.value;syncSources();renderPollution();});
-      document.querySelectorAll(`input[name="evidence_${n.id}"]`).forEach(el=>el.onchange=()=>{n.evidence=[...document.querySelectorAll(`input[name="evidence_${n.id}"]:checked`)].map(x=>x.value);syncSources();renderPollution();});
       bindScreening(`node:${n.id}`,n.screenings,n);
+    });
+    document.querySelectorAll('[data-source-relation-field]').forEach(el=>el.oninput=e=>{const relation=relationById(e.target.dataset.relation);if(!relation)return;const key=e.target.dataset.sourceRelationField;if(key==='sourceName'||key==='sourceLocation')updateRelationSourceField(relation,key,e.target.value);else relation[key]=e.target.value;});
+    state.sources.forEach(relation=>{
+      document.querySelectorAll(`input[name="sourceRelationStatus_${relation.id}"]`).forEach(el=>el.onchange=e=>{relation.status=normalizeSourceStatus(e.target.value);renderPollution();});
+      document.querySelectorAll(`input[name="sourceEvidence_${relation.id}"]`).forEach(el=>el.onchange=()=>{relation.evidence=[...document.querySelectorAll(`input[name="sourceEvidence_${relation.id}"]:checked`)].map(x=>x.value);if(!relation.evidence.includes('other'))relation.evidenceOther='';renderPollution();});
     });
     document.querySelectorAll('[data-add-child]').forEach(b=>b.onclick=()=>addTraceNode(b.dataset.addChild));
     document.querySelectorAll('[data-add-node-screen]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.addNodeScreen);n.screeningActive=true;const y=root.scrollY||0;renderPollution();root.scrollTo?.({top:y});});
-    document.querySelectorAll('[data-stop-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.stopNode);n.result='stop';n.sourceStatus='';syncSources();renderPollution();});
-    document.querySelectorAll('[data-source-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.sourceNode);n.result='source';if(!n.sourceStatus)n.sourceStatus='suspected';syncSources();renderPollution();});
-    document.querySelectorAll('[data-remove-node]').forEach(b=>b.onclick=()=>{removeNodeCascade(b.dataset.removeNode);syncSources();renderPollution();});
+    document.querySelectorAll('[data-stop-node]').forEach(b=>b.onclick=()=>{const n=state.traceNodes.find(x=>x.id===b.dataset.stopNode);n.result='stop';renderPollution();});
+    document.querySelectorAll('[data-add-source-new]').forEach(b=>b.onclick=()=>{addNewSourceRelation(b.dataset.addSourceNew);const y=root.scrollY||0;renderPollution();root.scrollTo?.({top:y});});
+    document.querySelectorAll('[data-link-existing-source]').forEach(b=>b.onclick=()=>{const select=document.querySelector(`[data-existing-source-select="${b.dataset.linkExistingSource}"]`);if(select?.value){linkExistingSource(b.dataset.linkExistingSource,select.value);renderPollution();}});
+    document.querySelectorAll('[data-remove-source-relation]').forEach(b=>b.onclick=()=>{removeSourceRelation(b.dataset.removeSourceRelation);renderPollution();});
+    document.querySelectorAll('[data-handoff-relation]').forEach(b=>b.onclick=()=>openSourceInspection(b.dataset.handoffRelation));
+    document.querySelectorAll('[data-remove-node]').forEach(b=>b.onclick=()=>{removeNodeCascade(b.dataset.removeNode);renderPollution();});
   }
   function removeNodeCascade(id){
-    const ids=[id];let added=true;while(added){added=false;state.traceNodes.forEach(n=>{if(n.parentId&&ids.includes(n.parentId)&&!ids.includes(n.id)){ids.push(n.id);added=true;}});}state.traceNodes=state.traceNodes.filter(n=>!ids.includes(n.id));
+    const ids=[id];let added=true;while(added){added=false;state.traceNodes.forEach(n=>{if(n.parentId&&ids.includes(n.parentId)&&!ids.includes(n.id)){ids.push(n.id);added=true;}});}
+    state.sources.filter(r=>ids.includes(r.nodeId)).map(r=>r.id).forEach(removeSourceRelation);
+    state.traceNodes=state.traceNodes.filter(n=>!ids.includes(n.id));
   }
-  function syncSources(){
-    state.sources=state.traceNodes.filter(n=>n.result==='source'&&n.sourceStatus).map(n=>({nodeId:n.id,status:n.sourceStatus,name:n.sourceName,evidence:[...n.evidence],evidenceOther:n.evidenceOther}));
-  }
-  function sourceStatusLabel(status){
-    return ({suspected:'疑似來源，尚無法確認',confirmed:'已確認來源',excluded:'已排除'})[status]||'來源狀態未設定';
-  }
-  function renderSourceBox(s){
-    const n=state.traceNodes.find(x=>x.id===s.nodeId);
-    const evid=s.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]);
-    const existing=state.inspections.find(i=>i.sourceNodeId===s.nodeId);
-    const action=s.status==='excluded'
-      ? (existing?`<div class="btn-row"><button class="btn btn-ghost" data-handoff-source="${s.nodeId}">查看對象查核</button></div>`:'')
-      : `<div class="btn-row"><button class="btn btn-primary" data-handoff-source="${s.nodeId}">進行對象查核</button></div>`;
-    const detail=s.status==='confirmed'
+  function renderSourceBox(relation){
+    const n=state.traceNodes.find(x=>x.id===relation.nodeId);
+    const evid=relation.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]);
+    const existing=state.inspections.find(i=>i.sourceRelationId===relation.id);
+    const detail=relation.status==='confirmed'
       ? (evid.length?`確認依據：${esc(evid.join('、'))}`:'尚未記錄來源確認依據')
-      : s.status==='suspected'?'可先進入對象查核，以進一步確認或排除來源關聯。':'已排除為本次污染來源。';
-    return `<div class="source-box"><h4>${sourceStatusLabel(s.status)}｜${esc(s.name||`節點 ${n?nodeNumber(n.id):''}`)}</h4><p>${detail}</p>${action}</div>`;
+      : relation.status==='supported'?'已有部分事實支持，但仍需繼續查證。'
+      : relation.status==='suspected'?'仍屬疑似來源，可進入對象查核繼續確認。'
+      : relation.status==='excluded'?'此來源關係已排除；其他來源關係不受影響。':'目前仍無法確認此來源關係。';
+    return `<div class="source-box"><h4>${sourceStatusLabel(relation.status)}｜${esc(sourceDisplayName(relation)||`節點 ${n?nodeNumber(n.id):''}`)}</h4><p>${detail}</p><div class="hint">關係 ID：${esc(relation.id)}</div><div class="btn-row"><button class="btn ${relation.status==='excluded'?'btn-ghost':'btn-primary'}" data-handoff-source="${relation.id}">${existing?'查看對象查核':'進行對象查核'}</button></div></div>`;
+  }
+  function openSourceInspection(relationId){
+    const relation=relationById(relationId);if(!relation)return;
+    const existing=state.inspections.find(i=>i.sourceRelationId===relation.id);
+    state.currentInspection=existing||createInspection({sourceRelationId:relation.id,sourceNodeId:relation.nodeId,name:relation.sourceName||sourceDisplayName(relation)||''});
+    if(!existing)state.inspections.push(state.currentInspection);
+    setView('subject');
   }
   function bindSourceEvents(){
-    document.querySelectorAll('[data-handoff-source]').forEach(b=>b.onclick=()=>{
-      const s=state.sources.find(x=>x.nodeId===b.dataset.handoffSource);const existing=state.inspections.find(i=>i.sourceNodeId===s.nodeId);
-      state.currentInspection=existing||createInspection({sourceNodeId:s.nodeId,name:s.name});
-      if(!existing) state.inspections.push(state.currentInspection);
-      setView('subject');
-    });
+    document.querySelectorAll('[data-handoff-source]').forEach(b=>b.onclick=()=>openSourceInspection(b.dataset.handoffSource));
   }
 
   function createInspection(prefill={}){
     return {
-      id:newId('inspection'),sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',permitNotes:'',methods:[],
+      id:newId('inspection'),sourceRelationId:prefill.sourceRelationId||'',sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',permitNotes:'',methods:[],
       topics:{B:newTopic(),C:newTopic(),D:newTopic(),E:newTopic(),F:newTopic()},
       details:{
         // 舊欄位暫留，讓 4.9.38 匯出案件仍可讀取；4.9.43 UI 不再逐題要求填寫。
@@ -487,12 +605,14 @@
 
   function renderSubject(){
     const i=state.currentInspection||createInspection();state.currentInspection=i;
-    const sourceNode=i.sourceNodeId?state.traceNodes.find(n=>n.id===i.sourceNodeId):null;
-    const relationStatus=sourceNode?sourceNode.sourceStatus:'';
+    const sourceRelation=i.sourceRelationId?relationById(i.sourceRelationId):null;
+    const sourceNode=sourceRelation?state.traceNodes.find(n=>n.id===sourceRelation.nodeId):(i.sourceNodeId?state.traceNodes.find(n=>n.id===i.sourceNodeId):null);
+    const sourceEntity=sourceRelation?sourceById(sourceRelation.sourceId):null;
+    const relationStatus=sourceRelation?.status||'';
     $app.innerHTML=`
-      <div class="section-title"><div><h2>對象查核</h2><p>${i.sourceNodeId?'由污染排查的疑似／確認對象帶入；對象查核可作為確認或排除來源的查證手段。':'已知稽查對象可直接從這裡開始。'}</p></div><button class="btn btn-ghost" id="subjectHome">返回水污首頁</button></div>
-      ${sourceNode?`<div class="notice info source-link-notice"><strong>來源排查：${esc(i.name||sourceNode.sourceName||sourceNode.location||'未命名對象')}</strong><span>來源關聯：<b>${sourceStatusLabel(relationStatus)}</b></span><button class="btn btn-ghost" id="viewSource">查看來源排查</button></div>
-      <section class="card relation-card"><h3>來源關聯判斷</h3><p>可先完成對象查核，再依查核結果更新是否為本次污染來源。</p><label class="field"><span class="field-label">目前判斷</span>${ynu(relationStatus,'inspectionSourceStatus',{suspected:'仍無法確認',confirmed:'確認為來源',excluded:'排除此來源'})}</label>${relationStatus==='confirmed'&&!sourceNode.evidence.length?'<div class="notice warn">目前已標記為確認來源，但尚未記錄來源確認依據；可回「來源排查」補充。</div>':''}</section>`:''}
+      <div class="section-title"><div><h2>對象查核</h2><p>${sourceRelation?'由污染排查的單一來源關係帶入；本頁只會回寫這一條關係，不影響同支點其他來源。':'已知稽查對象可直接從這裡開始。'}</p></div><button class="btn btn-ghost" id="subjectHome">返回水污首頁</button></div>
+      ${sourceRelation?`<div class="notice info source-link-notice"><strong>來源排查：${esc(i.name||sourceRelation.sourceName||sourceRelation.sourceLocation||sourceEntity?.name||sourceEntity?.location||sourceNode?.location||'未命名對象')}</strong><span>來源關聯：<b>${sourceStatusLabel(relationStatus)}</b>｜${esc(sourceRelation.id)}</span><button class="btn btn-ghost" id="viewSource">查看來源排查</button></div>
+      <section class="card relation-card"><h3>來源關聯判斷</h3><p>更新只作用於目前這一條「支點 ↔ 來源」關係；確認或排除本來源，不會改動其他來源。</p><label class="field"><span class="field-label">目前判斷</span>${ynu(relationStatus,'inspectionSourceStatus',Object.fromEntries(sourceStatusOptions))}</label>${relationStatus==='confirmed'&&!sourceRelation.evidence.length?'<div class="notice warn">目前已標記為確認來源，但尚未記錄來源確認依據；可回「來源排查」補充。</div>':''}</section>`:''}
       <section class="card">
         <h3>確認管制主體</h3>
         <label class="field"><span class="field-label">稽查對象名稱／場所</span><input class="text-input" id="subjectName" value="${esc(i.name)}" placeholder="可先留白"></label>
@@ -517,7 +637,7 @@
       <label class="field"><span class="field-label">自由文字補充（選填）</span><textarea class="text-area" id="permitNotes" placeholder="例如：文件來源、現場說明或需後續確認事項">${esc(i.permitNotes||'')}</textarea></label>
       ${i.permitStatus==='yes'?'<div class="notice info">請自行查看現有許可／核准內容，再依 B～F 核對現場。系統只使用結構化事實進行規則配對，不解析自由文字。</div>':''}
       ${i.permitStatus==='unknown'?'<div class="notice warn">「無法確認」不等同無許可；整理頁會列為尚待確認。</div>':''}
-      ${isSewer?`<div class="notice info">${esc(root.WaterLaw?.uiText?.('sewerNotice','v2')||'污水下水道系統準用關係依目前 Rule Pack 顯示。')}</div>`:''}
+      ${isSewer?`<div class="notice info">${esc(root.WaterLaw?.uiText?.('sewerNotice','v2')||'污水下水道系統準用關係依目前法規規則顯示。')}</div>`:''}
     </section>
     ${topicCard('B','水量／流量','先選具體疑點；特殊細節以自由文字補充。',i)}
     ${topicCard('C','用電／設備運轉','只留下可辨識的運轉事實，不要求逐項抄錄設備資料。',i)}
@@ -564,15 +684,15 @@
     document.getElementById('subjectHome').onclick=()=>setView('home');document.getElementById('subjectBack').onclick=()=>setView('home');document.getElementById('subjectSummary').onclick=()=>{saveInspection();setView('summary');};
     const vs=document.getElementById('viewSource');if(vs)vs.onclick=()=>setView('pollution');
     document.querySelectorAll('input[name="inspectionSourceStatus"]').forEach(el=>el.onchange=e=>{
-      const n=state.traceNodes.find(x=>x.id===i.sourceNodeId);
-      if(!n)return;
-      n.sourceStatus=e.target.value;
-      syncSources();saveInspection();renderSubject();
+      const relation=relationById(i.sourceRelationId);
+      if(!relation)return;
+      relation.status=normalizeSourceStatus(e.target.value);
+      saveInspection();renderSubject();
     });
     document.getElementById('subjectName').oninput=e=>{
       i.name=e.target.value;
-      const n=state.traceNodes.find(x=>x.id===i.sourceNodeId);
-      if(n){n.sourceName=e.target.value;syncSources();}
+      const relation=relationById(i.sourceRelationId);
+      if(relation)updateRelationSourceField(relation,'sourceName',e.target.value);
     };
     document.querySelectorAll('input[name="subjectType"]').forEach(el=>el.onchange=e=>{i.subjectType=e.target.value;saveInspection();renderSubject();});
     document.querySelectorAll('input[name="permitStatus"]').forEach(el=>el.onchange=e=>{i.permitStatus=e.target.value;if(e.target.value!=='no')i.methods=[];if(e.target.value!=='yes')i.permitType='';renderSubject();});
@@ -626,7 +746,7 @@
     const out=[];const p=state.pollutionPoint;
     if(state.caseInfo.behaviorDate)out.push(`【時間】行為發生日期：${state.caseInfo.behaviorDate}。`);
     else out.push('【時間】行為發生日期尚未確認；適用法規版本待確認。');
-    if(state.caseInfo.inspectionDate)out.push(`【時間】稽查日期：${state.caseInfo.inspectionDate}。`);
+    if(state.caseInfo.inspectionDate)out.push(`【時間】稽查日期：${formatLocalDateTime(state.caseInfo.inspectionDate)}。`);
     if(p.presence) out.push(`【目視】污染現象目前${p.presence==='yes'?'仍存在':p.presence==='no'?'已未見':'無法確認是否仍存在'}。`);
     if(p.location) out.push(`【目視】污染點位置：${p.location}。`);
     if(p.phenomena.length||p.otherPhenomenon) out.push(`【目視】污染現象：${[...p.phenomena.map(phenomenonLabel),p.otherPhenomenon].filter(Boolean).join('、')}。`);
@@ -649,9 +769,20 @@
         (n.screenings||[]).map(r=>screeningAssist().normalizeRecord(r)).filter(r=>r.code||r.reaction).forEach(r=>{const d=screeningAssist().item(r.code);out.push(`【快篩】${loc} ${d?.label||r.code||'快篩項目'}：${screenReactionLabel(r.reaction)}。`);});
       }
       if(n.result==='stop'&&n.stopReason) out.push(`【目視】${n.location||`節點 ${nodeNumber(n.id)}`}支線${n.stopReason==='excluded'?'已排除':'無法繼續追查'}${n.stopNotes?`：${n.stopNotes}`:'。'}`);
-      if(n.sourceStatus==='suspected') out.push(`【現場研判】${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}標記為疑似來源，尚無法確認。`);
-      if(n.sourceStatus==='confirmed') out.push(`【現場研判】已確認來源為${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}；依據：${n.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]).join('、')||'未填'}。`);
-      if(n.sourceStatus==='excluded') out.push(`【現場研判】${n.sourceName||n.location||`節點 ${nodeNumber(n.id)}`}經查核後已排除為本次污染來源。`);
+    });
+    state.sources.forEach(relation=>{
+      const node=state.traceNodes.find(x=>x.id===relation.nodeId);
+      const name=relation.sourceName||relation.sourceLocation||sourceDisplayName(relation)||node?.location||`節點 ${node?nodeNumber(node.id):''}`;
+      const base=`${name}（來源關係 ${relation.id}）`;
+      if(relation.status==='suspected')out.push(`【現場研判】${base}列為疑似來源，尚待查證。`);
+      if(relation.status==='supported')out.push(`【現場研判】${base}已有部分事實支持，仍待進一步確認。`);
+      if(relation.status==='confirmed')out.push(`【現場研判】已確認${base}為本次來源；依據：${relation.evidence.map(v=>(evidenceOptions.find(x=>x[0]===v)||['',v])[1]).join('、')||'未填'}。`);
+      if(relation.status==='excluded')out.push(`【現場研判】${base}經查證後已排除；其他來源關係不受影響。`);
+      if(relation.status==='unknown')out.push(`【現場研判】${base}目前無法確認是否為來源。`);
+      if(relation.reason)out.push(`【現場研判】${base}疑似理由：${relation.reason}`);
+      if(relation.observation)out.push(`【目視】${base}現場觀察：${relation.observation}`);
+      if(relation.verificationMethod)out.push(`【查核】${base}查證方式：${relation.verificationMethod}`);
+      if(relation.notes)out.push(`【現場研判】${base}備註：${relation.notes}`);
     });
     const inspections=[...state.inspections];if(state.currentInspection&&!inspections.some(x=>x.id===state.currentInspection.id))inspections.push(state.currentInspection);
     inspections.forEach(i=>{
@@ -694,7 +825,7 @@
       const versions=[packs.core?.packVersion,packs.measure?.packVersion,packs.permit?.packVersion,packs.standard?.packVersion,packs.local?.packVersion].filter(Boolean).join('／');
       return '<div class="summary-item"><strong>第 '+esc(review.sequence)+' 次研判</strong><br>'
         +'行為日期：'+esc(review.behaviorDate||'尚未確認')+'<br>'
-        +'Rule Packs：'+esc(versions||'未記錄')+'<br>'
+        +'規則版本：'+esc(versions||'未記錄')+'<br>'
         +'<span class="muted small">'+esc(review.reviewedAt||'')+'</span></div>';
     }).join('')+'</div>';
   }
@@ -712,13 +843,26 @@
     return review;
   }
 
+  function renderLawAssessment(){
+    saveInspection();const fs=facts(), as=lawAssessment();
+    $app.innerHTML=`<div class="section-title"><div><h2>法規研判</h2><p>依目前已記錄事實整理可能法規與仍待確認事項；不自動認定違法。</p></div><button class="btn btn-ghost" id="lawHome">返回水污首頁</button></div>
+      <section class="card summary-section"><h3>目前可能法規</h3><div class="notice info">系統只做規則配對；實際適用仍須依行為日期、管制主體與完整事證確認。</div>${as.laws.length?`<div class="summary-list">${as.laws.map(x=>`<div class="summary-item"><strong>可能法條：${esc(x.law)}</strong><br><span>${esc(x.reason)}</span></div>`).join('')}</div>`:'<div class="empty">目前沒有足夠的結構化事實產生可能法規。</div>'}</section>
+      <section class="card summary-section"><h3>仍待確認事項</h3>${as.pending.length?`<div class="summary-list">${as.pending.map(x=>`<div class="summary-item">尚待確認：${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前沒有系統列出的尚待確認事項。</div>'}</section>
+      <section class="card summary-section"><h3>研判版本</h3><div class="notice info">需要保留本次研判時，可建立快照；重新研判會新增版本，不覆寫舊結果。</div>${reviewHistoryHtml()}<div class="btn-row"><button class="btn btn-secondary" id="lawSaveReview">保留本次研判快照</button></div></section>
+      <div class="sticky-actions"><button class="btn btn-ghost" id="lawBack">返回</button><button class="btn btn-secondary" id="lawSummary">整理目前內容</button></div>`;
+    document.getElementById('lawHome').onclick=()=>setView('home');
+    document.getElementById('lawBack').onclick=()=>setView('home');
+    document.getElementById('lawSummary').onclick=()=>setView('summary');
+    document.getElementById('lawSaveReview').onclick=()=>{preserveReview(fs,as);renderLawAssessment();};
+  }
+
   function renderSummary(){
     saveInspection();const fs=facts(), as=lawAssessment();
     $app.innerHTML=`<div class="section-title"><div><h2>整理目前內容</h2><p>不是結案；只把目前已經查到的內容整理出來。</p></div><button class="btn btn-ghost" id="summaryHome">返回水污首頁</button></div>
       <section class="card summary-section"><h3>1｜目前查核事實</h3>${fs.length?`<div class="summary-list">${fs.map(x=>`<div class="summary-item">${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前尚無可整理的查核事實。</div>'}${renderScreeningSummary()}</section>
       <section class="card summary-section"><h3>2｜目前可能法規</h3><div class="notice info">系統只做規則配對，不代表違規成立；最終適用由稽查員判斷。</div>${as.laws.length?`<div class="summary-list">${as.laws.map(x=>`<div class="summary-item"><strong>可能法條：${esc(x.law)}</strong><br><span>${esc(x.reason)}</span></div>`).join('')}</div>`:'<div class="empty">目前沒有足夠的結構化事實產生可能法規。</div>'}</section>
       <section class="card summary-section"><h3>3｜尚待確認</h3>${as.pending.length?`<div class="summary-list">${as.pending.map(x=>`<div class="summary-item">尚待確認：${esc(x)}</div>`).join('')}</div>`:'<div class="empty">目前沒有系統列出的尚待確認事項。</div>'}</section>
-      <section class="card summary-section"><h3>4｜法規研判版本</h3><div class="notice info">保留快照會記錄目前事實、法規研判，以及五個 Rule Pack 的版本與完整性資訊。之後重新研判會新增下一筆，不覆寫舊結果。</div>${reviewHistoryHtml()}<div class="btn-row"><button class="btn btn-secondary" id="saveReview">保留本次研判快照</button></div></section>
+      <section class="card summary-section"><h3>4｜法規研判版本</h3><div class="notice info">保留快照會記錄目前事實、法規研判，以及五組法規規則的版本與完整性資訊。之後重新研判會新增下一筆，不覆寫舊結果。</div>${reviewHistoryHtml()}<div class="btn-row"><button class="btn btn-secondary" id="saveReview">保留本次研判快照</button></div></section>
       <section class="card"><h3>稽查紀錄敘述草稿</h3><p>草稿只寫事實，不自動寫可能法條或違規研判。</p><div class="btn-row"><button class="btn btn-primary" id="makeDraft">產生稽查紀錄敘述草稿</button></div></section>
       <div class="sticky-actions"><button class="btn btn-ghost" id="summaryBack">返回</button><button class="btn btn-secondary" id="backPollution">污染排查</button>${state.currentInspection?'<button class="btn btn-secondary" id="backSubject">對象查核</button>':''}</div>`;
     document.getElementById('summaryHome').onclick=()=>setView('home');document.getElementById('summaryBack').onclick=()=>setView('home');document.getElementById('backPollution').onclick=()=>setView('pollution');const bs=document.getElementById('backSubject');if(bs)bs.onclick=()=>setView('subject');document.getElementById('saveReview').onclick=()=>{preserveReview(fs,as);renderSummary();};document.getElementById('makeDraft').onclick=()=>{state.draftText=makeDraftText(fs);setView('draft');};
@@ -737,10 +881,11 @@
 
   function reset(){
     state.view='home';
-    state.caseInfo={behaviorDate:'',inspectionDate:''};
+    state.caseInfo={behaviorDate:'',inspectionDate:localDateTimeValue()};
     state.pollutionPoint={presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
     state.baseScreening={status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
     state.traceNodes=[];
+    state.sourceEntities=[];
     state.sources=[];
     state.currentInspection=null;
     state.inspections=[];
@@ -749,11 +894,121 @@
     if($app) render();
   }
   const cloneState=value=>JSON.parse(JSON.stringify(value));
+  function migratedId(prefix,index,used){let id=`${prefix}_migrated_${index+1}`;let n=2;while(used.has(id))id=`${prefix}_migrated_${index+1}_${n++}`;used.add(id);return id;}
+  function migrateLegacySourceState(copy){
+    copy.traceNodes=Array.isArray(copy.traceNodes)?copy.traceNodes:[];
+    copy.sources=Array.isArray(copy.sources)?copy.sources:[];
+    copy.sourceEntities=Array.isArray(copy.sourceEntities)?copy.sourceEntities:[];
+    const nodeById=new Map(copy.traceNodes.map(n=>[n.id,n]));
+    const usedSourceIds=new Set(copy.sourceEntities.map(x=>x?.id).filter(Boolean));
+    const usedRelationIds=new Set(copy.sources.map(x=>x?.id).filter(Boolean));
+
+    // 5.0.0 的 sources 是由 traceNode 衍生出的單筆來源資料；5.0.1 起 sources 改為真正的支點↔來源 relation。
+    // 逐筆判斷可同時容忍「舊資料 + 已轉換資料」的混合 JSON，不以整包格式二選一。
+    const normalizedRelations=[];
+    copy.sources.forEach((item,index)=>{
+      if(!item||typeof item!=='object'||!item.nodeId)return;
+      const node=nodeById.get(item.nodeId);
+      if(!node)return;
+      if(item.id&&item.sourceId){
+        normalizedRelations.push({...item});
+        return;
+      }
+      const sourceId=migratedId('source',index,usedSourceIds);
+      const sourceName=String(item.sourceName??item.name??node.sourceName??'');
+      const sourceLocation=String(item.sourceLocation??item.location??node.location??'');
+      copy.sourceEntities.push({id:sourceId,name:sourceName,location:sourceLocation});
+      normalizedRelations.push({
+        id:migratedId('relation',index,usedRelationIds),nodeId:item.nodeId,sourceId,
+        sourceName,sourceLocation,status:normalizeSourceStatus(item.status||node.sourceStatus),
+        reason:String(item.reason||''),observation:String(item.observation||''),
+        evidence:Array.isArray(item.evidence)?item.evidence.slice():Array.isArray(node.evidence)?node.evidence.slice():[],
+        evidenceOther:String(item.evidenceOther??node.evidenceOther??''),
+        verificationMethod:String(item.verificationMethod||''),notes:String(item.notes||'')
+      });
+    });
+    copy.sources=normalizedRelations;
+
+    copy.traceNodes.forEach((node,index)=>{
+      const represented=copy.sources.some(r=>r.nodeId===node.id);
+      if(!represented&&node.result==='source'&&node.sourceStatus){
+        const sourceId=migratedId('source',copy.sourceEntities.length+index,usedSourceIds);
+        const sourceName=String(node.sourceName||'');
+        const sourceLocation=String(node.location||'');
+        copy.sourceEntities.push({id:sourceId,name:sourceName,location:sourceLocation});
+        copy.sources.push({
+          id:migratedId('relation',copy.sources.length+index,usedRelationIds),nodeId:node.id,sourceId,
+          sourceName,sourceLocation,status:normalizeSourceStatus(node.sourceStatus),reason:'',observation:'',
+          evidence:Array.isArray(node.evidence)?node.evidence.slice():[],evidenceOther:String(node.evidenceOther||''),verificationMethod:'',notes:''
+        });
+      }
+      delete node.sourceStatus;delete node.sourceName;delete node.evidence;delete node.evidenceOther;
+      if(node.result==='source')node.result='';
+    });
+
+    copy.sources=copy.sources.map((relation,index)=>{
+      const r={...relation};
+      if(!r.id)r.id=migratedId('relation',index,usedRelationIds);
+      let source=copy.sourceEntities.find(x=>x?.id===r.sourceId);
+      if(!r.sourceId||!source){
+        const sourceId=migratedId('source',copy.sourceEntities.length+index,usedSourceIds);
+        const sourceName=String(r.sourceName??r.name??'');
+        const sourceLocation=String(r.sourceLocation??r.location??nodeById.get(r.nodeId)?.location??'');
+        source={id:sourceId,name:sourceName,location:sourceLocation};
+        copy.sourceEntities.push(source);r.sourceId=sourceId;
+      }
+      r.sourceName=String(r.sourceName??r.name??source?.name??'');
+      r.sourceLocation=String(r.sourceLocation??r.location??source?.location??nodeById.get(r.nodeId)?.location??'');
+      if(source){
+        if(!source.name&&r.sourceName)source.name=r.sourceName;
+        if(!source.location&&r.sourceLocation)source.location=r.sourceLocation;
+      }
+      r.status=normalizeSourceStatus(r.status);r.reason=String(r.reason||'');r.observation=String(r.observation||'');
+      r.evidence=Array.isArray(r.evidence)?r.evidence.slice():[];r.evidenceOther=String(r.evidenceOther||'');
+      r.verificationMethod=String(r.verificationMethod||'');r.notes=String(r.notes||'');
+      delete r.name;delete r.location;
+      return r;
+    });
+    copy.sourceEntities=copy.sourceEntities.map((source,index)=>({
+      id:String(source?.id||migratedId('source',index,usedSourceIds)),
+      name:String(source?.name||''),location:String(source?.location||'')
+    }));
+
+    const relationForLegacyNode=nodeId=>{
+      const matches=copy.sources.filter(r=>r.nodeId===nodeId);
+      return matches.length===1?matches[0].id:'';
+    };
+    const migrateInspection=i=>{
+      if(!i||typeof i!=='object')return i;
+      if(!i.sourceRelationId&&i.sourceNodeId)i.sourceRelationId=relationForLegacyNode(i.sourceNodeId);
+      if(i.sourceRelationId){const relation=copy.sources.find(r=>r.id===i.sourceRelationId);if(relation)i.sourceNodeId=relation.nodeId;}
+      return i;
+    };
+    copy.inspections=(copy.inspections||[]).map(migrateInspection);
+    copy.currentInspection=migrateInspection(copy.currentInspection||null);
+    return copy;
+  }
   function validateState(next){
     if(!next||typeof next!=='object'||Array.isArray(next))throw new Error('Water V2 案件狀態格式無效。');
-    const copy=cloneState(next);
+    const copy=migrateLegacySourceState(cloneState(next));
     if(!copy.caseInfo||typeof copy.caseInfo!=='object'||Array.isArray(copy.caseInfo))throw new Error('Water V2 案件缺少日期資訊。');
-    for(const key of ['traceNodes','sources','inspections','legalReviews'])if(copy[key]!==undefined&&!Array.isArray(copy[key]))throw new Error('Water V2 案件陣列資料格式無效：'+key);
+    for(const key of ['traceNodes','sourceEntities','sources','inspections','legalReviews'])if(copy[key]!==undefined&&!Array.isArray(copy[key]))throw new Error('Water V2 案件陣列資料格式無效：'+key);
+    const nodeIds=new Set();
+    copy.traceNodes.forEach(node=>{if(!node?.id||nodeIds.has(node.id))throw new Error('Water V2 支點 ID 無效或重複。');nodeIds.add(node.id);});
+    const sourceIds=new Set();
+    copy.sourceEntities.forEach(source=>{if(!source?.id||sourceIds.has(source.id))throw new Error('Water V2 來源對象 ID 無效或重複。');sourceIds.add(source.id);});
+    const relationIds=new Set(), relationPairs=new Set();
+    copy.sources.forEach(relation=>{
+      if(!relation.id||relationIds.has(relation.id))throw new Error('Water V2 來源關係 ID 無效或重複。');
+      relationIds.add(relation.id);
+      if(!nodeIds.has(relation.nodeId))throw new Error('Water V2 來源關係找不到對應支點。');
+      if(!sourceIds.has(relation.sourceId))throw new Error('Water V2 來源關係找不到對應來源對象。');
+      const pair=`${relation.nodeId}::${relation.sourceId}`;
+      if(relationPairs.has(pair))throw new Error('Water V2 同一支點與來源對象出現重複關係。');
+      relationPairs.add(pair);
+    });
+    const verifyInspection=i=>{if(i?.sourceRelationId&&!relationIds.has(i.sourceRelationId))throw new Error('Water V2 對象查核找不到對應來源關係。');};
+    copy.inspections.forEach(verifyInspection);verifyInspection(copy.currentInspection);
     copy.legalReviews=(copy.legalReviews||[]).map(review=>{
       if(!root.WaterReview?.validate)throw new Error('WaterReview 尚未載入。');
       return root.WaterReview.validate(review);
@@ -768,6 +1023,7 @@
     state.pollutionPoint=copy.pollutionPoint||{presence:'',phenomena:[],otherPhenomenon:'',location:'',directionKnown:'',directionText:'',notes:''};
     state.baseScreening=copy.baseScreening||{status:'',unavailableReason:'',ph:'',temperature:'',industry:'',processes:[],records:[]};
     state.traceNodes=copy.traceNodes||[];
+    state.sourceEntities=copy.sourceEntities||[];
     state.sources=copy.sources||[];
     state.currentInspection=copy.currentInspection||null;
     state.inspections=copy.inspections||[];
@@ -779,8 +1035,11 @@
     if(!container) throw new Error('WaterV2UI mount target is required.');
     $app=container;
     $app.classList.add('water-v2-shell');
+    if(!state.caseInfo.inspectionDate)state.caseInfo.inspectionDate=localDateTimeValue();
     render();
   }
+  function showLaw(){saveInspection();setView('law');}
+  function showSummary(){saveInspection();setView('summary');}
   root.WaterV2UI=Object.freeze({
     version:VERSION,
     provenance:PROVENANCE,
@@ -789,6 +1048,8 @@
     snapshot,
     restore,
     validateState,
-    reset
+    reset,
+    showLaw,
+    showSummary
   });
 })(window);

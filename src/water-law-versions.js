@@ -19,7 +19,7 @@
 
   function resolvePermit(dateValue){
     if(!root.WaterPermitLaw?.resolveVersion){
-      return {date:'',status:'packMissing',permitRegime:'unknown',text:'許可審查：Water Permit Rule Pack 尚未載入。'};
+      return {date:'',status:'packMissing',permitRegime:'unknown',text:'許可審查：許可審查規則尚未載入。'};
     }
     const r=root.WaterPermitLaw.resolveVersion(dateValue);
     return {
@@ -32,7 +32,7 @@
     const permit=resolvePermit(dateValue);
     const measures=root.WaterMeasureLaw?.resolveVersion
       ? root.WaterMeasureLaw.resolveVersion(dateValue)
-      : {status:'packMissing',regime:'unknown',text:'水措管理：Water Measure Rule Pack 尚未載入。'};
+      : {status:'packMissing',regime:'unknown',text:'水措管理：水措管理規則尚未載入。'};
 
     return {
       date:permit.date||measures.date||'',

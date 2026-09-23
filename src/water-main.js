@@ -52,7 +52,7 @@
     out.waterLocalRuleStatusText=localRule.message+(root.WaterLocalLaw.precedenceMessage()?'\n'+root.WaterLocalLaw.precedenceMessage():'');
 
     const packInfo=root.WaterLaw.packInfo();
-    out.waterRulePackVersionText=packInfo?'Water Rules：'+packInfo.packVersion+'（'+packInfo.status+'）':'Water Rules：未載入';
+    out.waterRulePackVersionText=packInfo?'水污染規則版本：'+packInfo.packVersion+'（'+packInfo.status+'）':'水污染規則版本：未載入';
     const measurePackInfo=root.WaterMeasureLaw.packInfo();
     out.waterMeasureRulePackVersionText=measurePackInfo?'Water Measure Rules：'+measurePackInfo.packVersion+'（'+measurePackInfo.status+'）':'Water Measure Rules：未載入';
 

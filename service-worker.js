@@ -1,7 +1,8 @@
+importScripts('./data/law-offline-assets.js?v=5.1.0');
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='5.0.0';
-const CACHE_REVISION='release-5.0.0';
-const CACHE_NAME='inspection-assistant-5.0.0-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.1.0';
+const CACHE_REVISION='release-5.1.0';
+const CACHE_NAME='inspection-assistant-5.1.0-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -14,6 +15,9 @@ const APP_SHELL=[
   './src/mobile-multiselect.css'+V,
   './src/water-v2-ui.css'+V,
   './src/waste-v1-ui.css'+V,
+  './src/air-v1-ui.css'+V,
+  './src/law-reference-ui.css'+V,
+  './src/air-rule-ui.css'+V,
   './data/provenance.js'+V,
   './data/app-meta.js'+V,
   './data/texts/noise-common.js'+V,
@@ -39,6 +43,11 @@ const APP_SHELL=[
   './data/rules/noise-article9.js'+V,
   './data/water-rules.js'+V,
   './data/waste-rules.js'+V,
+  './data/air-v1-config.js'+V,
+  './data/law-library.js'+V,
+  './data/law-fulltext.js'+V,
+  './data/law-offline-assets.js'+V,
+  './data/air-rule-pack.js'+V,
   './data/water-measure-rules.js'+V,
   './data/water-permit-rules.js'+V,
   './data/water-standard-rules.js'+V,
@@ -87,10 +96,13 @@ const APP_SHELL=[
   './src/inspection-flow-ui.js'+V,
   './src/water-v2-ui.js'+V,
   './src/waste-v1-ui.js'+V,
+  './src/law-reference-ui.js'+V,
+  './src/air-rule-ui.js'+V,
+  './src/air-v1-ui.js'+V,
   './src/sentence-app.js'+V,
   './src/pwa.js'+V,
   './icons/icon-512.png'
-];
+].concat(self.INSPECTION_LAW_OFFLINE_ASSETS||[]);
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{

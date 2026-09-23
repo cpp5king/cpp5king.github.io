@@ -7,6 +7,7 @@ window.INSPECTION_CONFIG.templates.push({
   "version": "1.0.0",
   "formTitle": "依草稿順序選填",
   "instructions": "依現場事實選填；電子鼻數值為選填。勸導文字依防制設備選項自動加入，無設備時請選擇手冊交付情形。",
+  "relatedTemplates": [{"id":"restaurant-odor-sampling-pending","label":"周界異味採樣－待檢驗結果"}],
   "fields": [
     {
       "id": "date",

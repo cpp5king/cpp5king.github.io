@@ -16,9 +16,9 @@
       Object.freeze({
         authority:'環境部',
         title:'水污染防治措施及檢測申報管理辦法',
-        sourceId:'FL040734',
+        sourceId:'O0040054',
         revision:'2026-04-20',
-        url:'https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL040734'
+        url:'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0040054'
       })
     ]),
     lawVersions:Object.freeze([
@@ -26,7 +26,7 @@
         id:'WMR-2026-04-20-EFFECTIVE',
         effectiveFrom:'2026-04-20',
         effectiveTo:'2029-04-19',
-        sourceId:'FL040734',
+        sourceId:'O0040054',
         regime:'2026-04-20-effective-provisions',
         note:'115年4月20日修正；除另定施行日期者外，自發布日施行。'
       }),
@@ -34,7 +34,7 @@
         id:'WMR-2026-04-20-DEFERRED-FULL',
         effectiveFrom:'2029-04-20',
         effectiveTo:null,
-        sourceId:'FL040734',
+        sourceId:'O0040054',
         regime:'2026-04-20-full-deferred-window-passed',
         note:'依目前公布資料，部分另定施行項目自118年4月20日起進入施行時點；仍應確認其後有無修法。'
       })

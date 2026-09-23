@@ -18,7 +18,7 @@
 
   function resolveLawVersion(eventDate){
     const pack=root.WATER_RULE_PACK;
-    if(!pack)return {status:'packMissing',eventDate:'',version:null,message:'Water Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',eventDate:'',version:null,message:'水污染規則尚未載入。'};
     const date=validDate(eventDate);
     if(!date)return {status:'dateUnknown',eventDate:'',version:null,message:'行為發生日期尚未確認，適用法規版本待確認。'};
     const matches=(pack.lawVersions||[]).filter(v=>compareVersionDate(date,v.effectiveFrom,v.effectiveTo));

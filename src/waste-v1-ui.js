@@ -7,6 +7,20 @@
   const app=()=>host||document.getElementById('app');
   const esc=(s='')=>String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const val=(id)=>document.getElementById(id)?.value?.trim()||'';
+  const nowLocalDateTime=()=>{const d=new Date(),pad=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;};
+  const formatLocalDateTime=v=>{const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);return m?`${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}`:String(v||'');};
+  function preservationPlaceTimeParts(raw){
+    const text=String(raw||'').trim();
+    if(!text){const n=nowLocalDateTime();return {date:n.slice(0,10),time:n.slice(11,16),place:''};}
+    let m=text.match(/^(\d{4})[\/-](\d{2})[\/-](\d{2})[ T](\d{2}):(\d{2})(?:\s*[｜|，,]\s*)?(.*)$/);
+    if(m)return {date:`${m[1]}-${m[2]}-${m[3]}`,time:`${m[4]}:${m[5]}`,place:(m[6]||'').trim()};
+    m=text.match(/^(\d{4})[\/-](\d{2})[\/-](\d{2})(?:\s*[｜|，,]\s*)?(.*)$/);
+    if(m)return {date:`${m[1]}-${m[2]}-${m[3]}`,time:'',place:(m[4]||'').trim()};
+    m=text.match(/^(\d{2}):(\d{2})(?:\s*[｜|，,]\s*)?(.*)$/);
+    if(m)return {date:'',time:`${m[1]}:${m[2]}`,place:(m[3]||'').trim()};
+    return {date:'',time:'',place:text};
+  }
+  const composePreservationPlaceTime=(date,time,place)=>{const when=date&&time?formatLocalDateTime(`${date}T${time}`):(date||time||'');return [when,String(place||'').trim()].filter(Boolean).join('｜');};
   const checked=(name)=>[...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value);
   const one=(name)=>document.querySelector(`input[name="${name}"]:checked`)?.value||'';
   const options=(items,current='',blank='請選擇')=>`<option value="">${esc(blank)}</option>${items.map(x=>{const a=Array.isArray(x)?x:[x,x];return `<option value="${esc(a[0])}" ${current===a[0]?'selected':''}>${esc(a[1])}</option>`}).join('')}`;
@@ -27,7 +41,7 @@
   function render(){title();M.ensureState(state);L.ensureState(state);if(state.view==='home')renderHome();else if(state.view==='unknown')renderUnknown();else if(state.view==='known')renderKnown();else if(state.view==='law')renderLaw();else if(state.view==='summary')renderSummary();else renderHome();}
 
   function commonTools(){
-    return `<div class="actions-sticky"><button class="secondary" id="toolHome">首頁</button><button class="secondary" id="toolLaw" ${hasData()?'':'disabled'}>法規導航</button><button class="secondary" id="toolSummary" ${hasData()?'':'disabled'}>整理目前內容／結束本次查核</button><button class="ghost" id="toolExport" ${hasData()?'':'disabled'}>匯出案件 JSON</button><button class="ghost" id="toolImport">匯入案件 JSON</button><input type="file" id="importFile" accept="application/json,.json" hidden><button class="danger" id="toolReset">清空本次資料</button></div>`;
+    return `<div class="waste-local-tools"><button class="secondary" id="toolHome">返回廢棄物首頁</button></div>`;
   }
   function bindTools(){
     document.getElementById('toolHome')?.addEventListener('click',()=>setView('home'));
@@ -60,6 +74,7 @@
 
   function renderUnknown(){
     const s=state.sourceTrace;
+    const preservationPlaceTime=preservationPlaceTimeParts(state.preservation.placeTime);
     app().innerHTML=`
       <div class="section-title"><div><h2>來源待查</h2><p>第一優先是留下可能消失的現場事實；不因來源不明就推定任何人為行為人。</p></div><button class="secondary" id="toKnown">轉入對象查核</button></div>
       <div class="stepbar"><span class="step ${preservationDone()?'done':'active'}">1 事實保全</span><span class="step ${state.batches.length||state.environmentObservations.length?'done':'active'}">2 物質／環境</span><span class="step ${s.status?'done':'active'}">3 追來源</span><span class="step">4 可能後續方向</span></div>
@@ -68,7 +83,7 @@
         ${presField('車／機具','presVehicles',state.preservation.vehicles,'例如：ABC-1234 貨車、挖土機 1 部')}
         ${presField('物','presMaterials',state.preservation.materials,'例如：木材、塑膠、磚瓦混合物約 1 車')}
         ${presField('行為','presActions',state.preservation.actions,'例如：車輛正在卸載；挖土機推平')}
-        ${presField('位置／時間','presPlaceTime',state.preservation.placeTime,'例如：09:40，土地北側')}
+        <div class="field"><span class="label">位置／時間</span><div class="pres-place-time"><input id="presPlace" value="${esc(preservationPlaceTime.place)}" placeholder="例如：土地北側"><div class="pres-time-row"><input id="presDate" type="date" value="${esc(preservationPlaceTime.date)}"><input id="presTime" type="time" value="${esc(preservationPlaceTime.time)}"><button type="button" class="secondary" id="presNow">更新為現在</button></div></div><span class="hint">新增時先帶入目前日期時間；位置、日期與時間都可自行調整。舊資料只有時間時不會自行補造日期。</span></div>
         <div class="btn-row"><button id="savePres">更新現場保全</button></div>
       </section>
       <section class="card"><div class="record-head"><div><h3>2A｜廢棄物／物質：物質批次</h3><p class="muted">先做到現場可辨識層級；物質批次與環境觀察可各自獨立建立。</p></div><button id="addBatchUnknown">＋新增批次</button></div>${renderBatchesCompact()}</section>
@@ -82,7 +97,8 @@
       ${renderLawMiniBar()}
       ${renderSystemHints()}
       ${commonTools()}`;
-    document.getElementById('savePres').onclick=()=>{state.preservation={people:val('presPeople'),vehicles:val('presVehicles'),materials:val('presMaterials'),actions:val('presActions'),placeTime:val('presPlaceTime')};render();};
+    document.getElementById('presNow').onclick=()=>{const n=nowLocalDateTime(),date=document.getElementById('presDate'),time=document.getElementById('presTime');if(date)date.value=n.slice(0,10);if(time)time.value=n.slice(11,16);};
+    document.getElementById('savePres').onclick=()=>{state.preservation={people:val('presPeople'),vehicles:val('presVehicles'),materials:val('presMaterials'),actions:val('presActions'),placeTime:composePreservationPlaceTime(val('presDate'),val('presTime'),val('presPlace'))};render();};
     document.getElementById('addBatchUnknown').onclick=()=>batchDialog();
     document.getElementById('addEnvironmentUnknown').onclick=()=>environmentObservationDialog();
     document.getElementById('addPlaceUnknown').onclick=()=>placeDialog();
@@ -403,14 +419,16 @@
 
   function validateState(input){
     const copy=JSON.parse(JSON.stringify(input||{}));
-    if(!M.validateImport(copy))throw new Error('Waste 案件格式或 provenance 不符。');
+    if(!M.validateImport(copy))throw new Error('廢棄物案件格式或來源識別不符。');
     M.ensureState(copy);L.ensureState(copy);
     return copy;
   }
+  function showLaw(){setView('law');}
+  function showSummary(){setView('summary');}
   function snapshot(){return JSON.parse(JSON.stringify(state));}
   function restore(input){state=validateState(input);if(!state.view)state.view='home';if(host)render();return snapshot();}
   function reset(){state=M.createState();L.ensureState(state);if(host)render();}
   function mount(el){host=el;host.classList.add('waste-v017-host');render();}
   function unmount(){if(host){host.innerHTML='';host.classList.remove('waste-v017-host');}host=null;}
-  root.WasteV1UI=Object.freeze({version:M.VERSION,mount,unmount,hasData,snapshot,restore,reset,validateState});
+  root.WasteV1UI=Object.freeze({version:M.VERSION,mount,unmount,hasData,snapshot,restore,reset,validateState,showLaw,showSummary});
 })(typeof window==='undefined'?globalThis:window);
