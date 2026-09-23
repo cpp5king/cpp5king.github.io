@@ -1,0 +1,263 @@
+name: Build 5.1.0 release candidate
+
+on:
+  push:
+    branches:
+      - release-5.1.0
+    paths:
+      - .github/workflows/release-5.1-build.yml
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release-5.1.0
+          fetch-depth: 0
+
+      - name: Reassemble tested release source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release-upload/chunk*.b64 | base64 -d > /tmp/inspection-assistant-5.1.0.zip
+          unzip -t /tmp/inspection-assistant-5.1.0.zip >/dev/null
+          unzip -oq /tmp/inspection-assistant-5.1.0.zip -d .
+          rm -rf data/law-assets
+          mkdir -p data/law-assets tmp-law
+
+      - name: Fetch official MOJ law snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          get_zip() {
+            local out="$1"; shift
+            local urls=("$@")
+            local attempt=1
+            while [ "$attempt" -le 16 ]; do
+              local url="${urls[$(( (attempt-1) % ${#urls[@]} ))]}"
+              echo "MOJ download attempt $attempt: $url"
+              rm -f "$out.part"
+              curl --http1.1 -L --retry 1 --retry-all-errors --connect-timeout 20 --max-time 300                 -A "Mozilla/5.0 InspectionAssistant/5.1" -o "$out.part" "$url" || true
+              if unzip -t "$out.part" >/dev/null 2>&1; then
+                mv "$out.part" "$out"
+                return 0
+              fi
+              sleep $(( attempt < 6 ? attempt : 6 ))
+              attempt=$((attempt+1))
+            done
+            echo "Unable to obtain valid official MOJ ZIP: $out" >&2
+            return 1
+          }
+          get_zip tmp-law/law.zip "https://law.moj.gov.tw/api/ch/law/json" "https://law.moj.gov.tw/api/Ch/Law/JSON"
+          get_zip tmp-law/order.zip "https://law.moj.gov.tw/api/ch/order/json" "https://law.moj.gov.tw/api/Ch/Order/JSON"
+
+          python - <<'PY'
+          import json, os, re, urllib.parse, zipfile, hashlib, subprocess, time
+          from datetime import datetime, timezone
+
+          API_LAW='https://law.moj.gov.tw/api/ch/law/json'
+          API_ORDER='https://law.moj.gov.tw/api/ch/order/json'
+          TARGETS={
+            'O0040001':'water-act',
+            'O0040054':'water-measure-reg',
+            'O0040055':'water-permit-reg',
+            'O0040004':'effluent-standard',
+            'O0030001':'noise-act',
+            'O0030006':'noise-standard',
+            'O0050001':'waste-act',
+            'O0050036':'waste-rules',
+            'O0020001':'air-act',
+            'O0020036':'air-behavior-guideline',
+            'O0020058':'construction-air-reg',
+            'O0020127':'restaurant-air-reg',
+            'O0020012':'fixed-permit-reg',
+            'O0020006':'fixed-emission-standard',
+          }
+
+          def official(url):
+            u=urllib.parse.urlparse(url)
+            if u.scheme!='https' or u.hostname!='law.moj.gov.tw':
+              raise RuntimeError('Non-official URL rejected: '+url)
+            return url
+
+          def load_zip(path):
+            with zipfile.ZipFile(path) as z:
+              names=[n for n in z.namelist() if n.lower().endswith('.json')]
+              if len(names)!=1:
+                raise RuntimeError('Expected exactly one JSON in '+path)
+              return json.loads(z.read(names[0]).decode('utf-8-sig'))
+
+          def clean(v):
+            return str(v or '').replace('\r\n','\n').strip()
+
+          def next_heading(path,text):
+            t=re.sub(r'[ \t]+',' ',clean(text))
+            if not t:return path
+            if t.startswith('第') and ('章' in t or '編' in t): return [t]
+            if t.startswith('第') and '節' in t: return ([path[0],t] if path else [t])
+            if t.startswith('第') and any(x in t for x in ('款','目')):
+              return ([path[0],path[1],t] if len(path)>=2 else [*path,t])[-3:]
+            return ([*path,t])[-3:]
+
+          def norm_url(base,url):
+            return official(urllib.parse.urljoin(base,str(url or '')))
+
+          def safe_ext(name,url):
+            ext=os.path.splitext(name)[1].lower()
+            if not ext or not re.fullmatch(r'\.[a-z0-9]{1,8}',ext):
+              ext=os.path.splitext(urllib.parse.urlparse(url).path)[1].lower()
+            if not re.fullmatch(r'\.[a-z0-9]{1,8}',ext or ''):
+              ext='.bin'
+            return ext
+
+          def try_download(url,path,referer):
+            official(url)
+            for attempt in range(2):
+              tmp=path+'.part'
+              try:
+                subprocess.run([
+                  'curl','--http1.1','-L','--connect-timeout','15','--max-time','45',
+                  '-A','Mozilla/5.0 InspectionAssistant/5.1','-e',referer,
+                  '-o',tmp,url
+                ],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                with open(tmp,'rb') as f:
+                  head=f.read(2048).lstrip().lower()
+                size=os.path.getsize(tmp)
+                is_html=(head.startswith(b'<!doctype html') or head.startswith(b'<html') or
+                         b'<title>error</title>' in head or b'error occurred' in head)
+                if size>0 and not is_html:
+                  os.replace(tmp,path)
+                  return True
+              except Exception:
+                pass
+              try: os.remove(tmp)
+              except FileNotFoundError: pass
+              time.sleep(1)
+            return False
+
+          law=load_zip('tmp-law/law.zip')
+          order=load_zip('tmp-law/order.zip')
+          rows=list(law.get('Laws') or [])+list(order.get('Laws') or [])
+          by={}
+          for row in rows:
+            url=str(row.get('LawURL') or '')
+            m=re.search(r'[?&]pcode=([^&]+)',url,re.I)
+            if m: by[m.group(1).upper()]=row
+
+          missing=[p for p in TARGETS if p not in by]
+          if missing:
+            raise RuntimeError('Missing target laws: '+','.join(missing))
+
+          law_pcodes={'O0040001','O0030001','O0050001','O0020001'}
+          entries={}
+          offline_assets=[]
+          now=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
+
+          for pcode,eid in TARGETS.items():
+            row=by[pcode]
+            source_url=norm_url('https://law.moj.gov.tw/',row.get('LawURL'))
+            heading=[]
+            records=[]
+            for a in row.get('LawArticles') or []:
+              typ=str(a.get('ArticleType') or '')
+              text=clean(a.get('ArticleContent'))
+              if not text: continue
+              if typ=='C':
+                heading=next_heading(heading,text)
+                records.append({'type':'C','no':'','text':text,'headingPath':heading[:]})
+              else:
+                records.append({'type':'A','no':clean(a.get('ArticleNo')),'text':text,'headingPath':heading[:]})
+
+            attachments=[]
+            raw_att=row.get('LawAttachements',row.get('LawAttachments',[])) or []
+            for i,att in enumerate(raw_att,1):
+              if not att or not att.get('FileURL'): continue
+              name=str(att.get('FileName') or f'附件{i}')
+              surl=norm_url(source_url,att.get('FileURL'))
+              ext=safe_ext(name,surl)
+              rel=f'data/law-assets/{pcode}/{i:02d}{ext}'
+              path=rel
+              os.makedirs(os.path.dirname(path),exist_ok=True)
+              ok=try_download(surl,path,source_url)
+              item={'name':name,'sourceUrl':surl}
+              if ok:
+                with open(path,'rb') as f:data=f.read()
+                item.update({'localPath':rel,'sha256':hashlib.sha256(data).hexdigest(),'size':len(data)})
+                offline_assets.append('./'+rel)
+              attachments.append(item)
+
+            entries[eid]={
+              'id':eid,'pcode':pcode,'name':str(row.get('LawName') or ''),
+              'foreword':clean(row.get('LawForeword')),
+              'histories':str(row.get('LawHistories') or ''),
+              'amended':str(row.get('LawModifiedDate') or ''),
+              'effectiveDate':str(row.get('LawEffectiveDate') or ''),
+              'effectiveNote':str(row.get('LawEffectiveNote') or ''),
+              'sourceName':'全國法規資料庫（法務部）',
+              'sourceUrl':source_url,
+              'sourceUpdateDate':law.get('UpdateDate','') if pcode in law_pcodes else order.get('UpdateDate',''),
+              'downloadedAt':now,
+              'snapshotStatus':'official-api-release-snapshot',
+              'articles':records,
+              'attachments':attachments,
+              'attachmentNote':f'附件／附表共 {len(attachments)} 件；可成功取得者已隨本版離線收錄，其餘保留官方連結。' if attachments else ''
+            }
+
+          snapshot={
+            'provenance':'PP-IA-41-7F3C9A21',
+            'version':'moj-official-release-5.1.0-'+datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S'),
+            'verifiedAt':datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+            'sourcePolicy':'中央法規全文、法規名稱、修正日期及附件一律由 law.moj.gov.tw 全國法規資料庫官方 API 直接取得；發布版本內建快照，使用者不需自行更新。',
+            'officialApi':[API_LAW,API_ORDER],
+            'lawUpdateDate':law.get('UpdateDate',''),
+            'orderUpdateDate':order.get('UpdateDate',''),
+            'entries':entries
+          }
+
+          with open('data/law-fulltext.js','w',encoding='utf-8',newline='\n') as f:
+            f.write("(function(root){'use strict';root.INSPECTION_LAW_FULLTEXT=Object.freeze(")
+            json.dump(snapshot,f,ensure_ascii=False,separators=(',',':'))
+            f.write(");})(window);\n")
+
+          with open('data/law-offline-assets.js','w',encoding='utf-8',newline='\n') as f:
+            f.write("self.INSPECTION_LAW_OFFLINE_ASSETS=")
+            json.dump(offline_assets,f,ensure_ascii=False,separators=(',',':'))
+            f.write(";\n")
+
+          article_count=sum(sum(1 for a in e['articles'] if a['type']=='A') for e in entries.values())
+          print('Official laws:',len(entries),'articles:',article_count,'offline attachments:',len(offline_assets))
+          if len(entries)!=14:
+            raise RuntimeError('Expected 14 laws')
+          PY
+
+      - name: Release sanity checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e TEST-BUILD.txt
+          test ! -e TEST-REPORT.txt
+          grep -q "version:'5.1.0'" data/app-meta.js
+          grep -q "label:'稽查助手5.1.0'" data/app-meta.js
+          grep -q "build:'release-5.1.0'" data/app-meta.js
+          grep -q "CACHE_REVISION='release-5.1.0'" service-worker.js
+          grep -q '"name": "稽查助手5.1.0"' manifest.webmanifest
+          grep -q "PP-IA-41-7F3C9A21" data/app-meta.js
+          ! grep -R "5.1.0-local-rc8\|local-rc8" -n index.html manifest.webmanifest service-worker.js data/app-meta.js src/air-v1-ui.js src/water-v2-ui.js
+          for f in $(find data src -name '*.js' -type f); do node --check "$f" >/dev/null; done
+
+      - name: Commit assembled release
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .release-upload tmp-law
+          rm -f .github/workflows/release-5.1-build.yml
+          git config user.name "cpp5king"
+          git config user.email "328029305+cpp5king@users.noreply.github.com"
+          git add -A
+          git commit -m "Release candidate 5.1.0"
+          git push origin HEAD:release-5.1.0
