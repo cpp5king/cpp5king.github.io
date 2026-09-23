@@ -14,7 +14,8 @@ window.INSPECTION_CONFIG = {
     {"id":"air-open-burning","categoryId":"air","title":"露天燃燒","status":"active"},
     {"id":"noise-case","categoryId":"noise","title":"噪音案件","status":"active","directTemplateId":"noise-main"},
     {"id":"water-field-inspection","categoryId":"water","title":"現場稽查","status":"active","directTemplateId":"water-field"},
-    {"id":"water-inspection","categoryId":"water","title":"案件研判（完整母法）","status":"active","directTemplateId":"water-main"}
+    {"id":"water-inspection","categoryId":"water","title":"案件研判（完整母法）","status":"active","directTemplateId":"water-main"},
+    {"id":"waste-inspection","categoryId":"waste","title":"廢棄物現場稽查","status":"active"}
   ],
   "templateFiles": [
     {"id":"restaurant-odor-reference","file":"restaurant-odor.js"},
