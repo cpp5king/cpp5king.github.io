@@ -1,0 +1,31 @@
+.law-ref-overlay{position:fixed;inset:0;z-index:9999;background:rgba(20,32,38,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow:auto}
+.law-ref-panel{width:min(980px,100%);max-height:calc(100vh - 48px);overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.28)}
+.law-ref-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;position:sticky;top:-20px;background:#fff;padding:8px 0 12px;z-index:3;border-bottom:1px solid #dce6e2}.law-ref-head h2{margin:0 0 4px}.law-ref-head p{margin:0;color:#596b66;font-size:.92rem}
+.law-ref-notice,.law-ref-local-note{margin:14px 0;padding:12px 14px;border-radius:12px;background:#eef7f3;border:1px solid #cfe3da;color:#294d41}.law-ref-local-note{background:#fff8e8;border-color:#ead8a8;color:#654f1c}
+.law-ref-tabs{display:flex;gap:8px;margin:14px 0 10px}.law-ref-tabs button{padding:8px 14px}.law-ref-tabs button.active{box-shadow:inset 0 -3px 0 currentColor;font-weight:800}
+.law-ref-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:10px 0 14px}.law-ref-toolbar input[type=search]{width:100%;min-width:0}.law-ref-related-toggle{white-space:nowrap;padding:8px 10px;border:1px solid #d7e0dd;border-radius:10px;background:#fafcfb}
+.law-ref-entry{border:1px solid #d7e0dd;border-radius:12px;margin:10px 0;background:#fff;overflow:hidden}.law-ref-entry>summary{cursor:pointer;padding:14px 16px;display:flex;gap:10px;justify-content:space-between;align-items:center;background:#f7faf9}.law-ref-entry>summary span{font-size:.85rem;color:#65746f}.law-ref-body{padding:14px 16px}.law-ref-body>p{margin-top:0;color:#475853}
+.law-ref-article{padding:10px 12px;margin:8px 0;border-left:4px solid #7aa89a;background:#f8fbfa;border-radius:6px}.law-ref-article strong{display:block;margin-bottom:4px}.law-ref-link{display:inline-block;margin-top:10px;font-weight:700}.law-ref-meta{margin-top:10px;color:#6b7773;font-size:.82rem}
+.law-ref-related-box{padding:12px 14px;margin:0 0 12px;border-radius:12px;border:1px solid #d8c782;background:#fffbea}.law-ref-related-box>strong{display:inline-block;background:#765e00;color:#fff;border-radius:999px;padding:3px 9px;font-size:.78rem}.law-ref-related-title{font-weight:700;margin:8px 0}.law-ref-related-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.law-ref-related-grid b{font-size:.9rem}.law-ref-related-grid ul{margin:5px 0 0;padding-left:1.2rem}.law-ref-related-grid li{margin:3px 0}
+.law-ref-chapter{margin:10px 0;border:1px solid #e1e7e5;border-radius:10px;overflow:hidden}.law-ref-chapter>summary{padding:10px 12px;background:#f5f8f7;font-weight:800;cursor:pointer}.law-ref-chapter-body{padding:6px 12px 12px}.law-ref-full-article{padding:10px 0;border-bottom:1px solid #edf1ef}.law-ref-full-article:last-child{border-bottom:0}.law-ref-full-article h4{margin:0 0 6px}.law-ref-full-text{white-space:pre-wrap;line-height:1.65}.law-ref-fulltext-pending,.law-ref-empty,.law-ref-attachment-note{padding:12px 14px;border-radius:10px;background:#f6f7f7;border:1px solid #dde4e1;color:#495853}.law-ref-fulltext-pending p{margin:6px 0}.law-ref-attachment-note{margin-top:12px;background:#fff8e8;border-color:#ead8a8}
+@media(max-width:640px){.law-ref-overlay{padding:8px}.law-ref-panel{max-height:calc(100vh - 16px);padding:14px;border-radius:14px}.law-ref-head{top:-14px}.law-ref-entry>summary{align-items:flex-start;flex-direction:column;gap:4px}.law-ref-toolbar{grid-template-columns:1fr}.law-ref-related-toggle{white-space:normal}.law-ref-related-grid{grid-template-columns:1fr}.law-ref-tabs{position:sticky;top:55px;background:#fff;z-index:2;padding:5px 0}}
+
+.law-ref-foreword{margin:10px 0 14px;padding:10px 12px;border:1px solid var(--border,#d7dbe0);border-radius:10px;background:rgba(127,127,127,.06)}
+.law-ref-related-scope-note{margin:8px 0 12px;padding:9px 11px;border-left:4px solid currentColor;background:rgba(127,127,127,.06);font-size:.92rem}
+
+.law-ref-head-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.law-ref-update-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;padding:8px 10px;border-radius:9px}.law-ref-head-actions .secondary{white-space:nowrap}@media(max-width:640px){.law-ref-head-actions{width:100%;justify-content:flex-end}.law-ref-update-link{font-size:.9rem}}
+
+/* RC8: 噪音管制標準閱讀版表格；原始條文仍可展開核對。 */
+.law-ref-readable{display:grid;gap:12px;margin-top:8px}
+.law-ref-readable-note{padding:9px 11px;border:1px solid #cfded6;border-radius:10px;background:#f7faf8;color:#4c6255;font-size:.9rem}
+.law-ref-readable-prose{white-space:pre-wrap;line-height:1.7}
+.law-ref-table-title{margin:4px 0 0;font-size:1rem;color:#234f37}
+.law-ref-table-wrap{width:100%;overflow-x:auto;border:1px solid #cfded6;border-radius:12px;background:#fff}
+.law-ref-data-table{width:100%;min-width:680px;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.law-ref-data-table th,.law-ref-data-table td{border:1px solid #d6e2da;padding:9px 11px;text-align:center;vertical-align:middle;white-space:nowrap}
+.law-ref-data-table thead th{font-weight:800;background:#f2f8f4}
+.law-ref-data-table tbody th{font-weight:800;background:#fafcfb;text-align:left}
+.law-ref-original{margin-top:4px;border:1px dashed #c7d7cd;border-radius:10px;background:#fbfdfc}
+.law-ref-original>summary{cursor:pointer;padding:10px 12px;font-weight:800;color:#315d43}
+.law-ref-original-text{margin:0 12px 12px;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;font-size:.9rem;line-height:1.55}
+@media(max-width:700px){.law-ref-data-table{min-width:620px}.law-ref-data-table th,.law-ref-data-table td{padding:8px 9px}.law-ref-readable-note{font-size:.86rem}}

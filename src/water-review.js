@@ -105,7 +105,7 @@
     if(typeof review.mode!=='string'||!['template','water-v2'].includes(review.mode))throw new Error('法規研判快照模式無效。');
     if(!review.factsSnapshot||typeof review.factsSnapshot!=='object'||Array.isArray(review.factsSnapshot))throw new Error('法規研判快照缺少事實快照。');
     if(!review.assessment||typeof review.assessment!=='object'||Array.isArray(review.assessment))throw new Error('法規研判快照缺少研判結果。');
-    if(!review.packSnapshot||typeof review.packSnapshot!=='object'||Array.isArray(review.packSnapshot))throw new Error('法規研判快照缺少 Rule Pack 快照。');
+    if(!review.packSnapshot||typeof review.packSnapshot!=='object'||Array.isArray(review.packSnapshot))throw new Error('法規研判快照缺少規則版本快照。');
     return clone(review);
   }
 

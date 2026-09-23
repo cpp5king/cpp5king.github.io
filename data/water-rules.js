@@ -16,8 +16,8 @@
       Object.freeze({
         authority:'環境部',
         title:'水污染防治法',
-        sourceId:'FL015486',
-        url:'https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL015486'
+        sourceId:'O0040001',
+        url:'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0040001'
       })
     ]),
     lawVersions:Object.freeze([
@@ -25,7 +25,7 @@
         id:'WPA-2018-06-13',
         effectiveFrom:'2018-06-13',
         effectiveTo:null,
-        sourceId:'FL015486',
+        sourceId:'O0040001',
         ruleSet:'current'
       })
     ])

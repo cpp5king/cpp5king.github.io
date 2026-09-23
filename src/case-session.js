@@ -3,7 +3,7 @@
   const copy = value => JSON.parse(JSON.stringify(value));
   function create(config) {
     let state = { categoryId: "", caseTypeId: "", templateId: "", inputs: {}, outputs: null, stale: false };
-    function clearDraft() { state.inputs = {}; state.outputs = null; state.stale = false; delete state.legalReviews; delete state.waterV2State; }
+    function clearDraft() { state.inputs = {}; state.outputs = null; state.stale = false; delete state.legalReviews; delete state.waterV2State; delete state.wasteV1State; delete state.airV1State; }
     function template() {
       const found = config.templates.find(item => item.id === state.templateId);
       if (!found) throw new Error("請先選擇模板。");

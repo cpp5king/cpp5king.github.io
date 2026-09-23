@@ -16,12 +16,12 @@
         Object.freeze({
           authority:'環境部',
           title:'放流水標準',
-          sourceId:'FL015489',
+          sourceId:'O0040004',
           revision:'2024-12-18',
-          url:'https://oaout.moenv.gov.tw/law/LawContent.aspx?id=FL015489'
+          url:'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0040004'
         })
       ]),
-      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'379aceb7'}),
+      integrity:Object.freeze({algorithm:'fnv1a32-json',value:'567a45f7'}),
       limitations:Object.freeze([
         '本版僅提供版本與附表路由，不含各水質項目數值限值。',
         '特定業別、區域另定標準及地方加嚴標準應優先另行確認。',
@@ -33,7 +33,7 @@
         id:'WES-2024-12-18',
         effectiveFrom:'2024-12-18',
         effectiveTo:null,
-        sourceId:'FL015489',
+        sourceId:'O0040004',
         regime:'2024-12-18-current',
         note:'113年12月18日修正；本 Pack 僅處理版本與附表路由，不自動比較限值。'
       })

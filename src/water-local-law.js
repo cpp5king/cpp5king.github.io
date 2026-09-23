@@ -24,7 +24,7 @@
 
   function resolveArea(areaKey,eventDate){
     const pack=root.WATER_LOCAL_RULE_PACK;
-    if(!pack)return {status:'packMissing',standard:null,message:'Water Local Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',standard:null,message:'地方加嚴標準規則尚未載入。'};
     if(!areaKey){
       return {
         status:'areaUnknown',standard:null,
@@ -35,7 +35,7 @@
     if(!standard){
       return {
         status:'areaUnrecognized',standard:null,
-        message:'地方加嚴放流水標準：目前所選區域不在本 Rule Pack 已收錄清單；仍應查核所在地主管機關現行公告。'
+        message:'地方加嚴放流水標準：目前所選區域不在本規則已收錄清單；仍應查核所在地主管機關現行公告。'
       };
     }
     const date=validDate(eventDate);

@@ -16,7 +16,7 @@
 
   function resolveVersion(eventDate){
     const pack=root.WATER_MEASURE_RULE_PACK;
-    if(!pack)return {status:'packMissing',date:'',version:null,regime:'unknown',text:'Water Measure Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',date:'',version:null,regime:'unknown',text:'水措管理規則 尚未載入。'};
     const date=validDate(eventDate);
     if(!date){
       return {
@@ -35,7 +35,7 @@
     if(date<'2026-04-20'){
       return {
         status:'historicalVersionMissing',date,version:null,regime:'2025-01-20-or-earlier',
-        text:'水措管理：行為日期早於115年4月20日；本 Water Measure Rule Pack 尚未收錄該歷史版本，不以115年4月20日規則回溯判斷。'
+        text:'水措管理：行為日期早於115年4月20日；本版水措管理規則尚未收錄該歷史版本，不以115年4月20日規則回溯判斷。'
       };
     }
     return {

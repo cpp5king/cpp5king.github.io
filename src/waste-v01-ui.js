@@ -27,7 +27,7 @@
   function render(){title();M.ensureState(state);L.ensureState(state);if(state.view==='home')renderHome();else if(state.view==='unknown')renderUnknown();else if(state.view==='known')renderKnown();else if(state.view==='law')renderLaw();else if(state.view==='summary')renderSummary();else renderHome();}
 
   function commonTools(){
-    return `<div class="actions-sticky"><button class="secondary" id="toolHome">首頁</button><button class="secondary" id="toolLaw" ${hasData()?'':'disabled'}>法規導航</button><button class="secondary" id="toolSummary" ${hasData()?'':'disabled'}>整理目前內容／結束本次查核</button><button class="ghost" id="toolExport" ${hasData()?'':'disabled'}>匯出案件 JSON</button><button class="ghost" id="toolImport">匯入案件 JSON</button><input type="file" id="importFile" accept="application/json,.json" hidden><button class="danger" id="toolReset">清空本次資料</button></div>`;
+    return `<div class="waste-local-tools"><button class="secondary" id="toolHome">返回廢棄物首頁</button></div>`;
   }
   function bindTools(){
     document.getElementById('toolHome')?.addEventListener('click',()=>setView('home'));
@@ -370,14 +370,16 @@
 
   function validateState(input){
     const copy=JSON.parse(JSON.stringify(input||{}));
-    if(!M.validateImport(copy))throw new Error('Waste 案件格式或 provenance 不符。');
+    if(!M.validateImport(copy))throw new Error('廢棄物案件格式或來源識別不符。');
     M.ensureState(copy);L.ensureState(copy);
     return copy;
   }
+  function showLaw(){setView('law');}
+  function showSummary(){setView('summary');}
   function snapshot(){return JSON.parse(JSON.stringify(state));}
   function restore(input){state=validateState(input);if(!state.view)state.view='home';if(host)render();return snapshot();}
   function reset(){state=M.createState();L.ensureState(state);if(host)render();}
   function mount(el){host=el;host.classList.add('waste-v017-host');render();}
   function unmount(){if(host){host.innerHTML='';host.classList.remove('waste-v017-host');}host=null;}
-  root.WasteV1UI=Object.freeze({version:M.VERSION,mount,unmount,hasData,snapshot,restore,reset,validateState});
+  root.WasteV1UI=Object.freeze({version:M.VERSION,mount,unmount,hasData,snapshot,restore,reset,validateState,showLaw,showSummary});
 })(typeof window==='undefined'?globalThis:window);

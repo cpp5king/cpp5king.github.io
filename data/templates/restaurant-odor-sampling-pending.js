@@ -1,7 +1,7 @@
 // 文字來源：使用者提供的「周界異味採樣－待檢驗結果」參考紀錄及回覆。
 // 不含個案店名、公司名、日期、時間或袋數預設。程序依使用者核定為本模板固定文字。
 window.INSPECTION_CONFIG.templates.push({
-  id: "restaurant-odor-sampling-pending", categoryId: "air", caseTypeId: "odor-sampling-pending",
+  id: "restaurant-odor-sampling-pending", categoryId: "air", caseTypeId: "restaurant-odor",
   title: "周界異味採樣－待檢驗結果", version: "1.0.0",
   formTitle: "周界異味採樣資料",
   instructions: "本樣態以現場作業中為使用前提，限現場已執行周界異味採樣、採樣程序完成且檢驗結果尚未下達。請依實際資料填寫；稽查日期與採樣日期分開，本模板固定包含採樣位置、程序、拍照簽名及標準作業程序文字。",

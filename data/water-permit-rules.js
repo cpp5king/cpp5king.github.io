@@ -16,9 +16,9 @@
         Object.freeze({
           authority:'環境部',
           title:'水污染防治措施計畫及許可申請審查管理辦法',
-          sourceId:'GL005950',
+          sourceId:'O0040055',
           revision:'2026-03-24',
-          url:'https://oaout.moenv.gov.tw/Law/LawContent.aspx?id=GL005950'
+          url:'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0040055'
         })
       ]),
       integrity:Object.freeze({algorithm:'fnv1a32-json',value:'cb981d95'})

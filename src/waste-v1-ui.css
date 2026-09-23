@@ -92,3 +92,18 @@
 .waste-v017-host .revision-history summary{color:#6d5849}
 .waste-v017-host .timeline{border-left-color:#dfc9b5}
 .waste-v017-host .law-nav-hint .ghost,.waste-v017-host .howto summary,.waste-v017-host .related-facts summary,.waste-v017-host .rule-pack summary{color:#6f472d}
+
+
+/* 5.0.1-local-rc2: current-time helper for on-site preservation. */
+.waste-v017-host .pres-place-time{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);gap:10px;align-items:center}
+.waste-v017-host .pres-time-row{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.75fr) auto;gap:8px;align-items:center}
+.waste-v017-host .pres-time-row .secondary{white-space:nowrap}
+@media(max-width:760px){
+  .waste-v017-host .pres-place-time{grid-template-columns:1fr}
+  .waste-v017-host .pres-time-row{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr)}
+  .waste-v017-host .pres-time-row .secondary{grid-column:1/-1;width:100%}
+}
+
+/* RC8: 模組內只保留返回廢棄物首頁；共通法規／整理／清除移至全域固定操作列。 */
+.waste-v017-host .waste-local-tools{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:760px){.waste-v017-host .waste-local-tools button{width:100%}}

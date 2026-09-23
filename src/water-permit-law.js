@@ -16,7 +16,7 @@
 
   function resolveVersion(eventDate){
     const pack=root.WATER_PERMIT_RULE_PACK;
-    if(!pack)return {status:'packMissing',date:'',version:null,regime:'unknown',text:'Water Permit Rule Pack 尚未載入。'};
+    if(!pack)return {status:'packMissing',date:'',version:null,regime:'unknown',text:'許可審查規則 尚未載入。'};
     const date=validDate(eventDate);
     if(!date){
       return {
@@ -36,7 +36,7 @@
     if(date<'2024-01-11'){
       return {
         status:'historicalVersionMissing',date,version:null,regime:'historical-unloaded',
-        text:'許可審查：行為日期早於113年1月11日；本 Water Permit Rule Pack 尚未收錄該歷史版本，不以較新版本回溯判斷。'
+        text:'許可審查：行為日期早於113年1月11日；本版許可審查規則尚未收錄該歷史版本，不以較新版本回溯判斷。'
       };
     }
     return {

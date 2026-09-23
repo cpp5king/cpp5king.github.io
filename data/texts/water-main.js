@@ -47,7 +47,7 @@
       facilityFailure:'是否已確認廢（污）水處理設施發生故障，並主張／需檢核法定故障例外？',a59Repair:'是否立即修復或啟用備份裝置，並採減產、停產或其他應變？',a59Record:'是否立即記錄故障並依規定報備，且留存報備人員資料？',a59Recover:'是否於法定期限內恢復正常，或恢復前持續減少／停止生產服務？',a59Report5:'是否於法定期限內提出書面報告？',a59Causation:'故障與所違反之放流水標準是否具有直接關係？',a59SixMonths:'是否符合故障例外之重複發生限制？',
       surfacePollutionEvent:'是否已確認地面水體發生污染事件？',polluterIdentified:'是否已確認污染行為人？',investigationComplete:'最終檢核｜本次案件需要查證的事項是否已完成？',
 
-      behaviorDate:'行為發生日期（用於法規版本；不明可留空）',inspectionDate:'稽查日期（案件紀錄）',rulePackVersion:'Water Rule Pack 版本',coreLawVersion:'母法適用版本',measureRulePackVersion:'Water Measure Rule Pack 版本',measureLawVersion:'水措管理辦法適用版本',permitRulePackVersion:'Water Permit Rule Pack 版本',permitLawVersion:'許可審查辦法適用版本',standardRulePackVersion:'Water Standard Rule Pack 版本',standardLawVersion:'放流水標準適用版本',standardRoute:'放流水標準附表路由',localRulePackVersion:'Water Local Rule Pack 版本',localRuleStatus:'地方加嚴標準適用提醒',lawVersion:'子法版本／施行日判定（相容顯示）',
+      behaviorDate:'行為發生日期（用於法規版本；不明可留空）',inspectionDate:'稽查日期（案件紀錄）',rulePackVersion:'水污染規則版本',coreLawVersion:'母法適用版本',measureRulePackVersion:'水措管理規則版本',measureLawVersion:'水措管理辦法適用版本',permitRulePackVersion:'許可審查規則版本',permitLawVersion:'許可審查辦法適用版本',standardRulePackVersion:'放流水標準規則版本',standardLawVersion:'放流水標準適用版本',standardRoute:'放流水標準附表路由',localRulePackVersion:'地方加嚴標準規則版本',localRuleStatus:'地方加嚴標準適用提醒',lawVersion:'子法版本／施行日判定（相容顯示）',
       sublawSection:'子法核心檢核',
       sublawApprovedMeasures:'是否已取得並確認本案核准水措內容？',sublawOperationMatches:'現場製程、收集、處理、管線、槽體及最終去向是否與核准水措一致？',
       sublawRainCombined:'是否發現廢（污）水與雨水合流收集？',sublawRainException:'如有合流，是否已有主管機關核准之既設技術困難例外及防止直接排放設施？',
