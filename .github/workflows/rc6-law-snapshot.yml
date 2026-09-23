@@ -19,10 +19,30 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out/data/law-assets tmp
-          curl -fL --retry 8 --retry-all-errors --connect-timeout 20 --max-time 300 -A "InspectionAssistant/5.1 law snapshot builder" -o tmp/law.zip https://law.moj.gov.tw/api/ch/law/json
-          curl -fL --retry 8 --retry-all-errors --connect-timeout 20 --max-time 300 -A "InspectionAssistant/5.1 law snapshot builder" -o tmp/order.zip https://law.moj.gov.tw/api/ch/order/json
-          unzip -t tmp/law.zip >/dev/null
-          unzip -t tmp/order.zip >/dev/null
+          get_zip() {
+            local out="$1"; shift
+            local urls=("$@")
+            local attempt=1
+            while [ "$attempt" -le 16 ]; do
+              local url="${urls[$(( (attempt-1) % ${#urls[@]} ))]}"
+              echo "Download attempt $attempt: $url"
+              rm -f "$out.part"
+              curl --http1.1 -L --retry 2 --retry-all-errors --connect-timeout 20 --max-time 300 -A "Mozilla/5.0 InspectionAssistant/5.1" -o "$out.part" "$url" || true
+              if unzip -t "$out.part" >/dev/null 2>&1; then
+                mv "$out.part" "$out"
+                echo "Valid ZIP: $out ($(wc -c < "$out") bytes)"
+                return 0
+              fi
+              echo "Invalid/incomplete response: $(wc -c < "$out.part" 2>/dev/null || echo 0) bytes"
+              head -c 120 "$out.part" 2>/dev/null | xxd || true
+              sleep $(( attempt < 6 ? attempt : 6 ))
+              attempt=$((attempt+1))
+            done
+            echo "Unable to obtain valid official ZIP: $out" >&2
+            return 1
+          }
+          get_zip tmp/law.zip "https://law.moj.gov.tw/api/ch/law/json" "https://law.moj.gov.tw/api/Ch/Law/JSON"
+          get_zip tmp/order.zip "https://law.moj.gov.tw/api/ch/order/json" "https://law.moj.gov.tw/api/Ch/Order/JSON"
           python - <<'PY'
           import io, json, os, re, urllib.parse, zipfile, hashlib, subprocess
           from datetime import datetime, timezone
