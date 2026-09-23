@@ -9,7 +9,8 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);\n  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2-test-r2/);
+  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2-test-r3/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
