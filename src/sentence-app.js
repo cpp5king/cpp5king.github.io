@@ -100,6 +100,26 @@
       if(actions.length){const row=el('div','', 'ia-action-buttons');for(const a of actions)row.append(button(a.label,a.action,a.secondary!==false));panel.append(row);}
       overlay.append(panel);document.body.append(overlay);overlay.addEventListener('click',e=>{if(e.target===overlay)closeActionModal();});close.focus();
     }
+    function openHomeLawLibrary(){
+      actionModal('法規',body=>{
+        body.append(el('p','先選擇法規類別。此入口只供查閱法規，不會建立案件，也不會把任何事實自動帶入研判。','ia-action-note'));
+        const grid=el('div','', 'home-law-grid');
+        for(const item of [
+          {id:'water',label:'水污染'},
+          {id:'noise',label:'噪音'},
+          {id:'waste',label:'廢棄物'},
+          {id:'air',label:'空氣污染'}
+        ]){
+          const b=button(item.label,()=>{
+            closeActionModal();
+            root.LawReferenceUI?.open?.(item.id,{});
+          },true);
+          b.setAttribute('data-module',item.id);
+          grid.append(b);
+        }
+        body.append(grid);
+      });
+    }
     function displayTemplateValue(field,facts){
       const raw=facts?.[field.id];if(Array.isArray(raw)){
         if(!raw.length)return '';
@@ -150,6 +170,7 @@
       if (state.categoryId || hasInput()) nav.append(button('新增案件', clearCurrentCase, true));
       if (['water','noise','waste','air'].includes(state.categoryId) && root.LawReferenceUI?.open && viewMode!=='home') nav.append(button('法規', () => root.LawReferenceUI.open(state.categoryId,lawContext(state)), true));
       if (viewMode==='case' && (state.templateId || root.WasteV1UI?.hasData?.() || root.AirV1UI?.hasData?.())) nav.append(button('匯出案件', () => exportCase(), true));
+      if(viewMode==='home'&&root.LawReferenceUI?.open)nav.append(button('法規',openHomeLawLibrary,true));
       nav.append(button('匯入案件', () => importInput.click(), true));
       return nav;
     }
@@ -286,6 +307,7 @@
 
         const minor=el('div','', 'mobile-home-minor-actions');
         if(state.categoryId||hasInput())minor.append(button('新增案件',clearCurrentCase,true));
+        minor.append(button('法規',openHomeLawLibrary,true));
         minor.append(button('匯入案件',()=>importInput.click(),true));
         home.append(minor);
 
@@ -567,7 +589,7 @@
     const appVersionTitle=root.document?.querySelector?.('#app-version-title');
     if(appVersionTitle){
       const testSite=/\/test(?:\/|$)/.test(root.location?.pathname||'');
-      appVersionTitle.textContent=testSite?'稽查助手 5.2 測試版':appMeta.label;
+      appVersionTitle.textContent=testSite?'稽查助手 5.2.1 視覺測試版':appMeta.label;
     }
   }
   // 可供 DOM 整合測試呼叫，同一個入口在實際頁面自動啟動。

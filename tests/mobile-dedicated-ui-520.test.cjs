@@ -9,10 +9,10 @@ const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const html=read('index.html');
   const sw=read('service-worker.js');
-  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2\.0/);
-  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2\.0/);
-  assert.match(html,/src\/styles\.css\?v=5\.2\.0/);
-  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.0/);
+  assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2\.1/);
+  assert.match(html,/src\/mobile-wizard\.js\?v=5\.2\.1/);
+  assert.match(html,/src\/styles\.css\?v=5\.2\.1/);
+  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.1/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -84,7 +84,7 @@ test('5.2 mobile home keeps current case and module choices above the fold',()=>
   assert.match(app,/mobile-home-minor-actions/);
   assert.match(app,/📱 可加入主畫面離線使用/);
   assert.match(app,/matchMedia\?\.\('\(max-width:760px\)'\)/);
-  assert.match(app,/testSite\?'稽查助手 5\.2 測試版':appMeta\.label/);
+  assert.match(app,/testSite\?'稽查助手 5\.2\.1 視覺測試版':appMeta\.label/);
   assert.match(css,/5\.2 compact mobile home: keep primary actions above the fold/);
   assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(css,/main>\.mobile-install\{[\s\S]*?display:none!important/);
@@ -115,4 +115,40 @@ test('mobile intermediary shows Home New Law and Import directly without More me
   for(const label of ['首頁','新增案件','法規','匯入案件'])assert.match(app,new RegExp(`button\\('${label}'`));
   assert.doesNotMatch(app,/const more=el\('details','', 'mobile-stage-more'\)/);
   assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+});
+
+test('5.2.1 visual polish uses stone canvas and a graphite Home identity',()=>{
+  const css=read('src/styles.css');
+  assert.match(css,/5\.2\.1 visual polish: warm-stone canvas \+ graphite home identity/);
+  assert.match(css,/--ia-bg:#efede8/);
+  assert.match(css,/body\[data-module="home"\][\s\S]*?--module-color:#57534e/);
+  assert.match(css,/\.mobile-home-module-grid button\[data-module="air"\]/);
+  assert.match(css,/\.mobile-home-module-grid button\[data-module="water"\]/);
+  assert.match(css,/\.mobile-home-module-grid button\[data-module="noise"\]/);
+  assert.match(css,/\.mobile-home-module-grid button\[data-module="waste"\]/);
+  assert.match(css,/\.ia-mobile-flow-content[\s\S]*?background:#efede8!important/);
+  assert.match(css,/\.mobile-wizard-content,[\s\S]*?background:#efede8!important/);
+});
+
+test('5.2.1 Air update-now is attached to datetime fields instead of a standalone row',()=>{
+  const air=read('src/air-v1-ui.js');
+  const css=read('src/air-v1-ui.css');
+  assert.match(air,/function dateTimeField\(/);
+  assert.ok((air.match(/dateTimeField\(/g)||[]).length>=5);
+  assert.doesNotMatch(air,/air-row-actions[^\n]{0,220}更新為現在/);
+  assert.match(css,/air-datetime-row/);
+  assert.match(css,/air-now-btn/);
+  assert.match(air,/out\.version='5\.2\.1'/);
+});
+
+test('5.2.1 Home exposes a standalone law library chooser',()=>{
+  const app=read('src/sentence-app.js');
+  const css=read('src/styles.css');
+  assert.match(app,/function openHomeLawLibrary\(\)/);
+  assert.match(app,/先選擇法規類別/);
+  for(const id of ['water','noise','waste','air'])assert.match(app,new RegExp(`id:'${id}'`));
+  assert.match(app,/viewMode==='home'&&root\.LawReferenceUI\?\.open/);
+  assert.match(app,/minor\.append\(button\('法規',openHomeLawLibrary,true\)\)/);
+  assert.match(css,/5\.2\.1 Home law entry/);
+  assert.match(css,/\.home-law-grid/);
 });
