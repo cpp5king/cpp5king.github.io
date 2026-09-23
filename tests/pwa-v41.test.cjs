@@ -32,7 +32,7 @@ test('service worker App Shell 僅快取本機現有資源且版本同步',()=>{
   assert.match(sw,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(sw,/inspection-assistant-[^']+-pp-7f3c9a21/);
   assert.doesNotMatch(sw,/https?:\/\/(?!localhost|127\.0\.0\.1)/);
-  const assets=[...sw.matchAll(/'\.\/([^']*)'/g)].map(match=>match[1]).filter(Boolean);
+  const assets=[...sw.matchAll(/'\.\/([^']*)'/g)].map(match=>match[1]).filter(Boolean).map(asset=>asset.split('?')[0]);
   for(const asset of new Set(assets))assert.ok(fs.existsSync(path.join(root,asset)),`missing cached asset: ${asset}`);
 });
 
