@@ -40,7 +40,8 @@ test('5.1 homepage navigation and full-case clearing are separate actions',()=>{
   const app=read('src/sentence-app.js');
   assert.match(app,/首頁／案件大類/);
   assert.match(app,/viewMode='home'; render\(\)/);
-  assert.match(app,/新增案件／清除目前案件/);
+  assert.match(app,/button\('新增案件'/);
+  assert.doesNotMatch(app,/新增案件／清除目前案件/);
   assert.match(app,/clearCurrentCase/);
   assert.doesNotMatch(app,/首頁／案件大類[^\n]{0,120}clearCurrentCase/);
 });
@@ -48,7 +49,7 @@ test('5.1 homepage navigation and full-case clearing are separate actions',()=>{
 test('5.1 four modules expose consistent onsite actions',()=>{
   const app=read('src/sentence-app.js');
   const air=read('src/air-v1-ui.js');
-  for(const label of ['法規研判','整理目前內容','清除本流程']){
+  for(const label of ['法規研判','整理目前內容','回到最上面']){
     assert.ok((app.match(new RegExp(label,'g'))||[]).length>=3,label);
     assert.match(air,new RegExp(label));
   }
@@ -56,6 +57,17 @@ test('5.1 four modules expose consistent onsite actions',()=>{
   assert.match(read('src/water-v2-ui.js'),/showSummary/);
   assert.match(read('src/waste-v1-ui.js'),/showLaw/);
   assert.match(read('src/waste-v1-ui.js'),/showSummary/);
+});
+
+test('post-5.1 Air hides internal serial id and explains user-facing fields',()=>{
+  const air=read('src/air-v1-ui.js');
+  const css=read('src/air-v1-ui.css');
+  assert.doesNotMatch(air,/field\('空污系統稽查對象流水編號'/);
+  assert.match(air,/field\('管制編號（如有）'/);
+  assert.match(air,/固定污染源／製程項目別/);
+  assert.match(air,/const AIR_HELP=Object\.freeze/);
+  assert.match(air,/未知不等於否定/);
+  assert.match(css,/air-field-help/);
 });
 
 test('5.1 Air user-facing internal labels are localized',()=>{
