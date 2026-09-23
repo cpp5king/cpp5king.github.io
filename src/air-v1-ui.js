@@ -6,7 +6,7 @@ const clone=v=>JSON.parse(JSON.stringify(v));
 const uid=(prefix='id')=>`${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
 const nowLocal=()=>{const d=new Date();const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;};
 const blankFixed=()=>({
-  basic:{inspectionDateTime:nowLocal(),serial:'',name:'',location:'',itemType:'',industryCode:'',dioxin:'unknown',pollutants:[]},
+  basic:{inspectionDateTime:nowLocal(),serial:'',controlNo:'',name:'',location:'',itemType:'',industryCode:'',dioxin:'unknown',pollutants:[]},
   sources:[],observations:[],siteObjects:[],
   controls:{presence:'unreviewed',types:[],operation:'unreviewed',collection:'unreviewed',malfunctionReport:'unreviewed',description:''},
   emission:{mode:'unreviewed',pipeDescription:'',emitting:'unreviewed',visibleFlow:'unreviewed',afterControl:'unreviewed',abnormal:'unreviewed',fugitiveDescription:''},
@@ -21,7 +21,7 @@ const blankBurning=()=>({
   basic:{inspectionDateTime:nowLocal(),location:'',placeType:'unknown',burningState:'unknown',purpose:'unknown',purposeSource:'unknown',purposeNote:'',scale:'unknown',area:'',amount:'unknown'},
   materials:[],materialDescription:'',evidence:[],evidenceDescription:'',persons:[],observations:[],disposalLink:{enabled:false,batchRef:'',note:''},disposition:[],notes:''
 });
-const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.1.0',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
+const fresh=()=>({schema:'air-v1',schemaVersion:1,version:'5.1.1',provenance:PROVENANCE,activeMode:'',fixed:blankFixed(),construction:blankConstruction(),burning:blankBurning()});
 const isObj=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
 function deepMerge(base,input){
   if(Array.isArray(base))return Array.isArray(input)?clone(input):clone(base);
@@ -73,30 +73,80 @@ function normalizeState(input){
   for(const [article,x] of Object.entries(out.construction.articleChecks))for(const [defectId,fact] of Object.entries(x.defectFacts||{}))for(const ref of fact.refs||[]){if(!ref.observationId||!constructionObsIds.has(ref.observationId))throw new Error(`空氣污染案件關聯錯誤：第 ${article} 條缺失 ${defectId} 連到不存在的現場觀察 ${ref.observationId||'(空白)'}。`);}
   const configuredDefects=new Set();for(const a of CFG().construction?.articleChecks||[])for(const d of a.items||[])configuredDefects.add(`${a.article}:${d.id}`);
   for(const imp of out.construction.improvements){for(const link of imp.links||[]){if(!isObj(link)||!link.key)throw new Error(`空氣污染案件格式無效：改善／複查 ${imp.id} 的缺失關聯不完整。`);if(configuredDefects.size&&!configuredDefects.has(link.key))throw new Error(`空氣污染案件關聯錯誤：改善／複查 ${imp.id} 連到未知缺失 ${link.key}。`);}if(imp.afterObservationId&&!constructionObsIds.has(imp.afterObservationId))throw new Error(`空氣污染案件關聯錯誤：改善／複查 ${imp.id} 連到不存在的改善後現場觀察 ${imp.afterObservationId}。`);}
-  out.activeMode=String(input.activeMode||'');out.version='5.1.0';out.provenance=PROVENANCE;out.schema='air-v1';out.schemaVersion=1;return out;
+  out.activeMode=String(input.activeMode||'');out.version='5.1.1';out.provenance=PROVENANCE;out.schema='air-v1';out.schemaVersion=1;return out;
 }
 let state=fresh();let host=null;let mode='';
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=text;if(cls)n.className=cls;return n;}
+const AIR_HELP=Object.freeze({
+  '稽查日期時間':'記錄本次到場或查核時間；可用「更新為現在」帶入，必要時再修正。',
+  '管制編號（如有）':'僅在已知主管機關列管資料中的正式管制編號時填寫；不確定可留空，不要把系統流水號當成管制編號。',
+  '稽查對象／場所':'填寫本次查核的公私場所、工廠、工地或其他對象名稱；名稱尚未確認可先留空。',
+  '位置／地址':'記錄實際查核位置或地址；來源尚未確認時可先記現場位置。',
+  '固定污染源／製程項目別':'依列管、許可或現場可確認資料記錄主要固定污染源或製程項目；不確定時留空，後續再核對。',
+  '行業代碼／類別':'依列管資料或可確認的行業、製程分類填寫；不要只憑現場外觀自行推定。',
+  '是否涉及戴奧辛污染':'依製程、設備、原物料、燃料或列管／許可資料確認；資料不足選「尚待確認」。',
+  '本次現場實際觀察污染類別（可複選）':'只勾選本次實際觀察到或已有資料支持的污染類別；沒有觀察到不代表不存在。',
+  '來源所在方向':'記錄從觀察位置判斷的疑似來源方位；無法判斷可留空。',
+  '污染物／氣味移動方向':'依現場煙流、氣味、粉塵或氣流實際移動方向記錄；不確定時不要推定。',
+  '與疑似來源方向是否一致':'比較污染移動方向與疑似來源位置是否相符；資料不足選「尚待確認」。',
+  '與疑似來源氣味是否相似':'只有在可合理比較時記錄相似程度；無法比較選「尚待確認」。',
+  '是否有防制設備':'依現場設備、管線或許可資料確認；未查到不等於沒有。',
+  '當下運轉狀態':'記錄到場時設備或製程實際狀態；無法確認可選「本次未查／尚待確認」。',
+  '污染物收集狀況':'記錄污染物是否有被集氣、收集或導入防制設備；依現場可見管線及設備狀況確認。',
+  '排放方式':'記錄經排放管道、逸散或兩者皆有；尚未查清可保留未確認。',
+  '當下是否有排放':'只記錄到場當下是否觀察到排放；沒有看到不代表平時沒有排放。',
+  '是否可見煙流／氣流':'依現場目視結果記錄；目視不到時不要反推沒有污染物。',
+  '是否經防制設備後排放':'依實際管線與設備流程確認；不確定時保留未確認。',
+  '是否發現異常排放':'記錄本次是否有可描述的異常現象；如有應在後續欄位補充具體事實。',
+  '許可證狀態':'依主管機關資料或現場文件確認許可狀態；無法核對時選「本次未查」。',
+  '許可證資料是否取得':'表示本次是否已取得可供核對的許可內容，不代表許可有效與否。',
+  '是否需要進一步核對許可內容':'現場設備、製程、排放或操作情形與許可可能有關時，可進一步建立許可查核。',
+  '營建工程是否列管':'依列管資料或可確認的工程規模與類型核對；不確定時選「尚待確認」。',
+  '營建工程列管編號':'僅填主管機關列管資料中的正式工程列管編號；未知時留空。',
+  '管理辦法工程分級':'依適用管理辦法及工程資料確認，不確定時不要自行推定。',
+  '工程階段':'記錄到場時實際施工階段，用於理解當下可能的污染作業。',
+  '目前作業內容':'只勾選到場時正在進行或已有事實支持的作業。',
+  '到場狀態':'記錄到場時燃燒是否仍持續、僅剩餘燼／灰燼或其他狀態。',
+  '場所類型':'依燃燒發生地點的實際用途或環境填寫；不確定可選「尚待確認」。',
+  '燃燒用途／目的':'依現場陳述、跡證或其他資料記錄；不要僅由燃燒物種類自動推定用途。',
+  '燃燒物大類（可複選）':'只勾選現場可辨識或已有資料支持的燃燒物；不確定可在描述欄補充。',
+  '燃燒跡證（可複選）':'記錄灰燼、焦痕、餘燼、煙味等實際可見或可感知跡證。',
+  '是否承認燃燒':'記錄當事人陳述，不等同系統認定其為違規行為人。',
+  '現場處置（可複選）':'記錄本次實際採取的處置或改善行為，不自動代表案件已完成或違規成立。'
+});
+function helpFor(label){
+  if(!label)return '';
+  if(AIR_HELP[label])return AIR_HELP[label];
+  if(/備註|補充|說明|描述/.test(label))return '補充本次實際觀察、詢問或文件可支持的內容；不知道的事項不要自行補寫。';
+  if(/日期|時間/.test(label))return '依本次實際查核或觀察時間填寫；無法確認時可留空。';
+  if(/地址|位置|地號|方向/.test(label))return '依現場位置、圖資或可確認資料記錄；不確定時可先留空或註明待確認。';
+  if(/編號|字號|代碼/.test(label))return '依正式列管、許可或文件資料填寫；無法確認時留空，不自行編造。';
+  if(/可複選/.test(label))return '只選擇已有現場事實或資料支持的項目；沒有勾選不代表該情形一定不存在。';
+  if(/是否|狀態|結果|情形|運轉|排放/.test(label))return '依現場觀察、詢問或文件確認；資料不足時選「尚待確認／本次未查」，未知不等於否定。';
+  return '依本次現場可確認的事實填寫；無法確認時可留空或保留「尚待確認／本次未查」，不要自行推定。';
+}
+function appendHelp(container,label){const text=helpFor(label);if(text)container.append(el('small',text,'air-field-help'));}
 function btn(text,fn,secondary=false){const b=el('button',text,secondary?'air-secondary':'');b.type='button';b.addEventListener('click',fn);return b;}
 function section(title,description){const s=el('section','', 'air-section');s.append(el('h3',title));if(description)s.append(el('p',description,'air-muted'));return s;}
 function grid(cols=2){return el('div','',cols===3?'air-grid three':'air-grid');}
-function field(labelText,value,onChange,type='text',opts={}){const l=el('label','', 'air-field');l.append(el('span',labelText));const i=el(type==='textarea'?'textarea':'input');if(type!=='textarea')i.type=type;i.value=value??'';if(opts.placeholder)i.placeholder=opts.placeholder;if(opts.step)i.step=opts.step;if(opts.min!==undefined)i.min=opts.min;i.addEventListener('input',()=>onChange(i.value));l.append(i);return l;}
-function selectField(labelText,value,options,onChange){const l=el('label','', 'air-field');l.append(el('span',labelText));const s=el('select');for(const [v,t] of options){const o=el('option',t);o.value=v;if(v===value)o.selected=true;s.append(o);}s.addEventListener('change',()=>onChange(s.value));l.append(s);return l;}
-function checkGroup(title,values,options,onChange){const wrap=el('div');if(title)wrap.append(el('strong',title));const list=el('div','', 'air-checks');const current=new Set(values||[]);for(const option of options){const label=el('label','', 'air-check');const input=el('input');input.type='checkbox';input.checked=current.has(option);input.addEventListener('change',()=>{input.checked?current.add(option):current.delete(option);onChange([...current]);});label.append(input,el('span',option));list.append(label);}wrap.append(list);return wrap;}
+function field(labelText,value,onChange,type='text',opts={}){const l=el('label','', 'air-field');l.append(el('span',labelText));appendHelp(l,labelText);const i=el(type==='textarea'?'textarea':'input');if(type!=='textarea')i.type=type;i.value=value??'';if(opts.placeholder)i.placeholder=opts.placeholder;if(opts.step)i.step=opts.step;if(opts.min!==undefined)i.min=opts.min;i.addEventListener('input',()=>onChange(i.value));l.append(i);return l;}
+function selectField(labelText,value,options,onChange){const l=el('label','', 'air-field');l.append(el('span',labelText));appendHelp(l,labelText);const s=el('select');for(const [v,t] of options){const o=el('option',t);o.value=v;if(v===value)o.selected=true;s.append(o);}s.addEventListener('change',()=>onChange(s.value));l.append(s);return l;}
+function checkGroup(title,values,options,onChange){const wrap=el('div');if(title){wrap.append(el('strong',title));appendHelp(wrap,title);}const list=el('div','', 'air-checks');const current=new Set(values||[]);for(const option of options){const label=el('label','', 'air-check');const input=el('input');input.type='checkbox';input.checked=current.has(option);input.addEventListener('change',()=>{input.checked?current.add(option):current.delete(option);onChange([...current]);});label.append(input,el('span',option));list.append(label);}wrap.append(list);return wrap;}
 function yesNoUnknown(labelText,value,onChange,includeUnreviewed=true){const opts=[['unknown','尚待確認'],['yes','是'],['no','否']];if(includeUnreviewed)opts.push(['unreviewed','本次未查']);return selectField(labelText,value||'unknown',opts,onChange);}
 function removeById(arr,id){const idx=arr.findIndex(x=>x.id===id);if(idx>=0)arr.splice(idx,1);}
 function updateNow(target,key='inspectionDateTime'){target[key]=nowLocal();render();}
-function hasData(){const f=state.fixed,c=state.construction,b=state.burning;const constructionChecks=Object.values(c.articleChecks||{}).some(x=>x&&(x.status!=='unreviewed'||(x.selectedDefects||[]).length||x.note||x.alt?.content||x.alt?.used==='yes'));const fixedBasic=!!(f.basic.name||f.basic.location||f.basic.serial||f.basic.itemType||f.basic.industryCode||f.basic.pollutants.length||f.basic.dioxin!=='unknown'||f.controls.presence!=='unreviewed'||f.emission.mode!=='unreviewed'||f.permitBasic.status!=='unreviewed'||f.responsible.duty!=='unreviewed'||f.notes);const constructionBasic=!!(c.basic.name||c.basic.address||c.basic.listingNo||c.basic.listed!=='unknown'||c.basic.publicProject!=='unknown'||c.basic.externalGrade!=='unknown'||c.basic.legalGrade!=='unknown'||c.basic.stage!=='unknown'||c.basic.type||c.work.items.length||c.work.phase||c.work.other||c.advice||c.notes);const burningBasic=!!(b.basic.location||b.basic.placeType!=='unknown'||b.basic.burningState!=='unknown'||b.basic.purpose!=='unknown'||b.basic.scale!=='unknown'||b.basic.area||b.basic.amount!=='unknown'||b.materials.length||b.evidence.length||b.disposition.length||b.disposalLink.enabled||b.notes);return !!(fixedBasic||f.sources.length||f.observations.length||f.siteObjects.length||f.permits.length||constructionBasic||constructionChecks||c.pollutionObservations.length||c.improvements.length||burningBasic||b.persons.length||b.observations.length);}
+function scrollToTop(){window.scrollTo?.({top:0,behavior:'smooth'});}
+function hasData(){const f=state.fixed,c=state.construction,b=state.burning;const constructionChecks=Object.values(c.articleChecks||{}).some(x=>x&&(x.status!=='unreviewed'||(x.selectedDefects||[]).length||x.note||x.alt?.content||x.alt?.used==='yes'));const fixedBasic=!!(f.basic.name||f.basic.location||f.basic.controlNo||f.basic.serial||f.basic.itemType||f.basic.industryCode||f.basic.pollutants.length||f.basic.dioxin!=='unknown'||f.controls.presence!=='unreviewed'||f.emission.mode!=='unreviewed'||f.permitBasic.status!=='unreviewed'||f.responsible.duty!=='unreviewed'||f.notes);const constructionBasic=!!(c.basic.name||c.basic.address||c.basic.listingNo||c.basic.listed!=='unknown'||c.basic.publicProject!=='unknown'||c.basic.externalGrade!=='unknown'||c.basic.legalGrade!=='unknown'||c.basic.stage!=='unknown'||c.basic.type||c.work.items.length||c.work.phase||c.work.other||c.advice||c.notes);const burningBasic=!!(b.basic.location||b.basic.placeType!=='unknown'||b.basic.burningState!=='unknown'||b.basic.purpose!=='unknown'||b.basic.scale!=='unknown'||b.basic.area||b.basic.amount!=='unknown'||b.materials.length||b.evidence.length||b.disposition.length||b.disposalLink.enabled||b.notes);return !!(fixedBasic||f.sources.length||f.observations.length||f.siteObjects.length||f.permits.length||constructionBasic||constructionChecks||c.pollutionObservations.length||c.improvements.length||burningBasic||b.persons.length||b.observations.length);}
 function mount(target,nextMode){host=target;mode=nextMode||state.activeMode||'';state.activeMode=mode;render();}
-function render(){if(!host)return;host.replaceChildren();const rootEl=el('div','', 'air-v1');const hero=el('section','', 'air-hero');const title=mode==='air-fixed-source'?'固定污染源／一般空污':mode==='air-construction'?'營建工程':mode==='air-open-burning'?'露天燃燒':'空氣污染';hero.append(el('h2',title),el('p','先記現場事實，再由空氣污染法規研判整理可能法規方向、相反事實與待確認要件；系統不自動認定違法。','air-muted'));rootEl.append(hero);if(mode==='air-fixed-source')renderFixed(rootEl);else if(mode==='air-construction')renderConstruction(rootEl);else if(mode==='air-open-burning')renderBurning(rootEl);else rootEl.append(el('p','尚未選擇空氣污染流程。'));const sticky=el('div','', 'air-sticky');sticky.append(btn('法規研判',()=>root.AirRuleUI?.open?.({mode,state:clone(state)}),true),btn('整理目前內容',()=>showSummary(),true),btn('清除本流程',()=>{if(window.confirm('確定清除目前空污流程輸入？')){if(mode==='air-fixed-source')state.fixed=blankFixed();if(mode==='air-construction')state.construction=blankConstruction();if(mode==='air-open-burning')state.burning=blankBurning();render();}},true));rootEl.append(sticky);host.append(rootEl);}
-function summaryText(){if(mode==='air-fixed-source'){const f=state.fixed;return [`【固定污染源／一般空污】`,`稽查時間：${f.basic.inspectionDateTime||'未填'}`,`對象：${f.basic.name||'未填'} ${f.basic.location||''}`,`污染類別：${f.basic.pollutants.join('、')||'未填'}`,`來源對象：${f.sources.length} 筆`,`現場觀察紀錄：${f.observations.length} 筆`,`現場物件：${f.siteObjects.length} 筆`,`許可證深入查核：${f.permits.length} 張`,`防制設備：${labelMap(f.controls.presence)}`,`排放方式：${labelMap(f.emission.mode)}`].join('\n');}
+function render(){if(!host)return;host.replaceChildren();const rootEl=el('div','', 'air-v1');const hero=el('section','', 'air-hero');const title=mode==='air-fixed-source'?'固定污染源／一般空污':mode==='air-construction'?'營建工程':mode==='air-open-burning'?'露天燃燒':'空氣污染';hero.append(el('h2',title),el('p','先記現場事實，再由空氣污染法規研判整理可能法規方向、相反事實與待確認要件；系統不自動認定違法。','air-muted'));rootEl.append(hero);if(mode==='air-fixed-source')renderFixed(rootEl);else if(mode==='air-construction')renderConstruction(rootEl);else if(mode==='air-open-burning')renderBurning(rootEl);else rootEl.append(el('p','尚未選擇空氣污染流程。'));const sticky=el('div','', 'air-sticky');sticky.append(btn('法規研判',()=>root.AirRuleUI?.open?.({mode,state:clone(state)}),true),btn('整理目前內容',()=>showSummary(),true),btn('回到最上面',scrollToTop,true));rootEl.append(sticky);host.append(rootEl);}
+function summaryText(){if(mode==='air-fixed-source'){const f=state.fixed;return [`【固定污染源／一般空污】`,`稽查時間：${f.basic.inspectionDateTime||'未填'}`,`對象：${f.basic.name||'未填'} ${f.basic.location||''}`,`管制編號：${f.basic.controlNo||'未填'}`,`污染類別：${f.basic.pollutants.join('、')||'未填'}`,`來源對象：${f.sources.length} 筆`,`現場觀察紀錄：${f.observations.length} 筆`,`現場物件：${f.siteObjects.length} 筆`,`許可證深入查核：${f.permits.length} 張`,`防制設備：${labelMap(f.controls.presence)}`,`排放方式：${labelMap(f.emission.mode)}`].join('\n');}
 if(mode==='air-construction'){const c=state.construction;return [`【營建工程】`,`稽查時間：${c.basic.inspectionDateTime||'未填'}`,`工程：${c.basic.name||'未填'}`,`地址／地號：${c.basic.address||'未填'}`,`施工狀況：${c.basic.stage||'未填'}`,`目前作業：${c.work.items.join('、')||'未填'}`,`污染現場觀察：${c.pollutionObservations.length} 筆`,`管理辦法缺失總點數：${constructionTotal()} 點`,`改善／複查：${c.improvements.length} 筆`].join('\n');}
 const b=state.burning;return [`【露天燃燒】`,`稽查時間：${b.basic.inspectionDateTime||'未填'}`,`位置：${b.basic.location||'未填'}`,`燃燒狀態：${b.basic.burningState}`,`燃燒物：${b.materials.join('、')||'未填'}`,`燃燒跡證：${b.evidence.join('、')||'未填'}`,`疑似／確認行為人：${b.persons.length} 筆`,`現場觀察紀錄：${b.observations.length} 筆`,`廢棄物連結：${b.disposalLink.enabled?'已標記':'未標記'}`].join('\n');}
 function showSummary(){const existing=host.querySelector('.air-summary');existing?.remove();const s=section('目前內容摘要','此摘要僅整理已輸入事實，不是正式稽查紀錄，也不代表違規成立。');s.classList.add('air-summary');const pre=el('div',summaryText(),'air-summary-pre');s.append(pre);host.querySelector('.air-v1')?.insertBefore(s,host.querySelector('.air-sticky'));s.scrollIntoView({behavior:'smooth',block:'start'});}
 function labelMap(v){return ({yes:'是',no:'否',unknown:'尚待確認',unreviewed:'本次未查',present:'有設備',none:'無設備',pipe:'經排放管道',fugitive:'未經排放管道逸散',both:'兩者皆有',normal:'正常運轉',stopped:'未運轉',fault:'故障'})[v]||v||'未填';}
 
 function renderFixed(rootEl){const f=state.fixed;
-  const basic=section('基本紀錄','以現場輔助為主；身分資料可填可不填，不完整不阻止後續查核。');const g=grid(3);g.append(field('稽查日期時間',f.basic.inspectionDateTime,v=>f.basic.inspectionDateTime=v,'datetime-local'),field('空污系統稽查對象流水編號',f.basic.serial,v=>f.basic.serial=v),field('稽查對象／場所',f.basic.name,v=>f.basic.name=v),field('位置／地址',f.basic.location,v=>f.basic.location=v),field('固污項目別',f.basic.itemType,v=>f.basic.itemType=v),field('行業代碼／類別',f.basic.industryCode,v=>f.basic.industryCode=v));basic.append(g);const nowRow=el('div','', 'air-row-actions');nowRow.append(btn('更新為現在',()=>updateNow(f.basic),true));basic.append(nowRow,yesNoUnknown('是否涉及戴奧辛污染',f.basic.dioxin,v=>{f.basic.dioxin=v;}),checkGroup('本次現場實際觀察污染類別（可複選）',f.basic.pollutants,CFG().pollutants||[],v=>{f.basic.pollutants=v;render();}));rootEl.append(basic);
+  const basic=section('基本紀錄','以現場輔助為主；身分資料可填可不填，不完整不阻止後續查核。');const g=grid(3);g.append(field('稽查日期時間',f.basic.inspectionDateTime,v=>f.basic.inspectionDateTime=v,'datetime-local'),field('管制編號（如有）',f.basic.controlNo,v=>f.basic.controlNo=v),field('稽查對象／場所',f.basic.name,v=>f.basic.name=v),field('位置／地址',f.basic.location,v=>f.basic.location=v),field('固定污染源／製程項目別',f.basic.itemType,v=>f.basic.itemType=v),field('行業代碼／類別',f.basic.industryCode,v=>f.basic.industryCode=v));basic.append(g);const nowRow=el('div','', 'air-row-actions');nowRow.append(btn('更新為現在',()=>updateNow(f.basic),true));basic.append(nowRow,yesNoUnknown('是否涉及戴奧辛污染',f.basic.dioxin,v=>{f.basic.dioxin=v;}),checkGroup('本次現場實際觀察污染類別（可複選）',f.basic.pollutants,CFG().pollutants||[],v=>{f.basic.pollutants=v;render();}));rootEl.append(basic);
   renderSources(rootEl,f);renderFixedObservations(rootEl,f);renderSiteObjects(rootEl,f);renderControls(rootEl,f);renderEmission(rootEl,f);renderPermit(rootEl,f);renderResponsible(rootEl,f);
   const note=section('其他現場事實');note.append(field('備註',f.notes,v=>f.notes=v,'textarea'));rootEl.append(note);
 }

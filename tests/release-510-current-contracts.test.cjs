@@ -6,15 +6,15 @@ const vm=require('node:vm');
 const ROOT=path.join(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 
-test('5.1 formal metadata keeps provenance and no RC marker',()=>{
+test('5.1.1 formal metadata keeps provenance and no RC marker',()=>{
   const context=vm.createContext({window:{}});
   vm.runInContext(read('data/app-meta.js'),context);
   const meta=context.window.INSPECTION_APP_META;
-  assert.equal(meta.version,'5.1.0');
-  assert.equal(meta.label,'稽查助手5.1.0');
-  assert.equal(meta.build,'release-5.1.0');
+  assert.equal(meta.version,'5.1.1');
+  assert.equal(meta.label,'稽查助手5.1.1');
+  assert.equal(meta.build,'release-5.1.1');
   assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
-  for(const p of ['index.html','manifest.webmanifest','service-worker.js','data/app-meta.js'])assert.doesNotMatch(read(p),/local-rc8|5\.1\.0-local/);
+  for(const p of ['index.html','manifest.webmanifest','service-worker.js','data/app-meta.js'])assert.doesNotMatch(read(p),/local-rc8|5\.1\.0-local|5\.1\.1-local/);
 });
 
 test('5.1 four modules and Air four paths are active',()=>{
@@ -25,6 +25,20 @@ test('5.1 four modules and Air four paths are active',()=>{
   const air=Array.from(c.caseTypes).filter(x=>x.categoryId==='air');
   assert.deepEqual(Array.from(air,x=>x.id),['air-fixed-source','air-construction','restaurant-odor','air-open-burning']);
   assert.equal(air.find(x=>x.id==='restaurant-odor').directTemplateId,'restaurant-odor-reference');
+});
+
+test('post-5.1 Waste has a real case entry and routes directly to Waste UI',()=>{
+  const context=vm.createContext({window:{}});
+  vm.runInContext(read('data/templates/catalog.js'),context);
+  const c=context.window.INSPECTION_CONFIG;
+  const waste=c.caseTypes.find(x=>x.id==='waste-inspection');
+  assert.ok(waste);
+  assert.equal(waste.categoryId,'waste');
+  assert.equal(waste.status,'active');
+  const app=read('src/sentence-app.js');
+  assert.match(app,/item\.id === 'waste-inspection'/);
+  assert.match(app,/category\.id === 'waste'/);
+  assert.match(app,/root\.WasteV1UI\?\.mount/);
 });
 
 test('5.1 Air routing sends three structured paths to Air V1 and restaurant to template flow',()=>{
@@ -40,7 +54,8 @@ test('5.1 homepage navigation and full-case clearing are separate actions',()=>{
   const app=read('src/sentence-app.js');
   assert.match(app,/首頁／案件大類/);
   assert.match(app,/viewMode='home'; render\(\)/);
-  assert.match(app,/新增案件／清除目前案件/);
+  assert.match(app,/button\('新增案件'/);
+  assert.doesNotMatch(app,/新增案件／清除目前案件/);
   assert.match(app,/clearCurrentCase/);
   assert.doesNotMatch(app,/首頁／案件大類[^\n]{0,120}clearCurrentCase/);
 });
@@ -48,7 +63,7 @@ test('5.1 homepage navigation and full-case clearing are separate actions',()=>{
 test('5.1 four modules expose consistent onsite actions',()=>{
   const app=read('src/sentence-app.js');
   const air=read('src/air-v1-ui.js');
-  for(const label of ['法規研判','整理目前內容','清除本流程']){
+  for(const label of ['法規研判','整理目前內容','回到最上面']){
     assert.ok((app.match(new RegExp(label,'g'))||[]).length>=3,label);
     assert.match(air,new RegExp(label));
   }
@@ -56,6 +71,17 @@ test('5.1 four modules expose consistent onsite actions',()=>{
   assert.match(read('src/water-v2-ui.js'),/showSummary/);
   assert.match(read('src/waste-v1-ui.js'),/showLaw/);
   assert.match(read('src/waste-v1-ui.js'),/showSummary/);
+});
+
+test('post-5.1 Air hides internal serial id and explains user-facing fields',()=>{
+  const air=read('src/air-v1-ui.js');
+  const css=read('src/air-v1-ui.css');
+  assert.doesNotMatch(air,/field\('空污系統稽查對象流水編號'/);
+  assert.match(air,/field\('管制編號（如有）'/);
+  assert.match(air,/固定污染源／製程項目別/);
+  assert.match(air,/const AIR_HELP=Object\.freeze/);
+  assert.match(air,/未知不等於否定/);
+  assert.match(css,/air-field-help/);
 });
 
 test('5.1 Air user-facing internal labels are localized',()=>{
