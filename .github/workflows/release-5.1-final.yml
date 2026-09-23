@@ -128,21 +128,7 @@ jobs:
           for f in $(find data src -name '*.js' -type f); do node --check "$f" >/dev/null; done
           node tests/run-active-tests.cjs
 
-          # PWA app-shell references must exist
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          sw=Path('service-worker.js').read_text(encoding='utf-8')
-          refs=re.findall(r"'\./([^']+?)'\+V|"'\./([^']+?)'",sw)
-          missing=[]
-          for pair in refs:
-            p=next((x for x in pair if x),None)
-            if p and '?' not in p and not Path(p).exists(): missing.append(p)
-          if missing: raise SystemExit('missing app-shell files: '+', '.join(sorted(set(missing))))
-          print('PWA static file check passed')
-          PY
-
-      - name: Commit final source to release branch
+          # PWA local-asset existence is covered by tests/pwa-v41.test.cjs above.\n          echo 'PWA static file check covered by regression suite'\n\n      - name: Commit final source to release branch
         shell: bash
         run: |
           set -euo pipefail
