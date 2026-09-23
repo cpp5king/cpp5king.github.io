@@ -1,8 +1,8 @@
 importScripts('./data/law-offline-assets.js?v=5.2.0');
 const PROVENANCE='PP-IA-41-7F3C9A21';
 const VERSION='5.2.0';
-const CACHE_REVISION='release';
-const CACHE_NAME='inspection-assistant-5.2.0-pp-7f3c9a21-'+CACHE_REVISION;
+const CACHE_REVISION='test-site-5.2.1-visual-r2';
+const CACHE_NAME='inspection-assistant-test-5.2.1-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -121,7 +121,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(keys.filter(key=>key.startsWith('inspection-assistant-')&&!key.startsWith('inspection-assistant-test-')&&key!==CACHE_NAME).map(key=>caches.delete(key)));
+    await Promise.all(keys.filter(key=>key.startsWith('inspection-assistant-test-')&&key!==CACHE_NAME).map(key=>caches.delete(key)));
     await self.clients.claim();
   })());
 });

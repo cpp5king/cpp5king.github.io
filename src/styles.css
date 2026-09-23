@@ -1114,3 +1114,121 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
   }
   .mobile-stage-more{display:none!important}
 }
+
+
+/* 5.2.1 visual polish: warm-stone canvas + graphite home identity */
+:root{
+  --ia-bg:#efede8;
+  --ia-surface:#ffffff;
+  --ia-border:#d8d4cc;
+  --ia-border-strong:#bdb8ae
+}
+body{
+  background:linear-gradient(180deg,#f3f1ec 0%,#ebe8e2 100%)!important
+}
+header,main,footer{background:transparent}
+
+/* Home is a neutral system entrance, not a fifth pollution module. */
+body[data-module="home"]{
+  --module-color:#57534e;
+  --module-strong:#44403c;
+  --module-soft:#ebe8e2;
+  --module-text:#3e3c38;
+  --module-border:#c9c3b8
+}
+body[data-module="home"] header h1,
+body[data-module="home"] h1,
+body[data-module="home"] h2,
+body[data-module="home"] h3{color:#353431}
+body[data-module="home"] .badge{
+  background:#e9e6e0;
+  color:#4b4945;
+  border-color:#cec8be
+}
+body[data-module="home"] .mobile-home-current,
+body[data-module="home"] .mobile-home-modules{
+  border-color:#d6d0c7;
+  box-shadow:0 4px 15px rgba(63,59,52,.055)
+}
+body[data-module="home"] .mobile-home-current>button,
+body[data-module="home"] .mobile-home-minor-actions button,
+body[data-module="home"] #app>nav.actions button:not([data-module]){
+  border-color:#57534e!important;
+  background:linear-gradient(180deg,#68645e,#57534e)!important;
+  color:#fff!important;
+  box-shadow:0 4px 12px rgba(66,62,56,.13)!important
+}
+body[data-module="home"] .mobile-home-install-help{
+  background:#f7f5f1;
+  border-color:#d7d1c7;
+  color:#5f5b54
+}
+
+/* Category identity remains visible on the Home screen. */
+body[data-module="home"] .mobile-home-module-grid button[data-module="air"]{
+  background:linear-gradient(180deg,#3b9968,#2e8b57)!important;border-color:#2e8b57!important;color:#fff!important
+}
+body[data-module="home"] .mobile-home-module-grid button[data-module="water"]{
+  background:linear-gradient(180deg,#438fee,#2f7de1)!important;border-color:#2f7de1!important;color:#fff!important
+}
+body[data-module="home"] .mobile-home-module-grid button[data-module="noise"]{
+  background:linear-gradient(180deg,#8b5cf6,#7c3aed)!important;border-color:#7c3aed!important;color:#fff!important
+}
+body[data-module="home"] .mobile-home-module-grid button[data-module="waste"]{
+  background:linear-gradient(180deg,#9b6b48,#8b5e3c)!important;border-color:#8b5e3c!important;color:#fff!important
+}
+
+/* The system canvas is stone; white is reserved for cards and fields. */
+@media(max-width:760px){
+  body:has(.ia-mobile-flow-shell),
+  body:has(.sentence-form[data-mobile-wizard="yes"]),
+  body[data-view="category"],
+  body[data-view="template"]{
+    background:#efede8!important
+  }
+  .ia-mobile-flow-shell{
+    background:transparent!important
+  }
+  .ia-mobile-flow-content{
+    background:#efede8!important
+  }
+  .sentence-form[data-mobile-wizard="yes"]{
+    background:transparent!important
+  }
+  .mobile-wizard-content,
+  .mobile-wizard-result{
+    background:#efede8!important
+  }
+  .mobile-stage-shell{
+    background:transparent
+  }
+}
+
+
+/* 5.2.1 Home law entry */
+.home-law-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px
+}
+.home-law-grid button{
+  min-height:46px;
+  box-shadow:none
+}
+.home-law-grid button[data-module="water"]{border-color:#2f7de1;color:#173a63;background:#edf6ff}
+.home-law-grid button[data-module="noise"]{border-color:#7c3aed;color:#4c1d95;background:#f3e8ff}
+.home-law-grid button[data-module="waste"]{border-color:#8b5e3c;color:#5a3a27;background:#f7efe8}
+.home-law-grid button[data-module="air"]{border-color:#2e8b57;color:#1f5f3d;background:#eaf6ef}
+@media(max-width:760px){
+  .mobile-home-minor-actions:has(button:nth-child(3)){
+    grid-template-columns:repeat(3,minmax(0,1fr))
+  }
+  .mobile-home-minor-actions:has(button:nth-child(3)) button{
+    font-size:.76rem;
+    padding-left:5px;
+    padding-right:5px
+  }
+  .home-law-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .home-law-grid button{width:100%;min-height:50px}
+}
