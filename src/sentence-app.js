@@ -202,6 +202,33 @@
       document.body?.setAttribute?.('data-module', viewMode==='home' ? 'home' : (category?.id || 'home'));
 
       if(viewMode==='home'){
+        const mobileHome=!!window.matchMedia?.('(max-width:760px)')?.matches;
+        if(!mobileHome){
+          app.append(navigation(state));
+          if(state.categoryId){
+            const kept=el('section','', 'panel');
+            kept.append(el('h2','目前案件仍保留'));
+            kept.append(el('p',`${category?.title||'目前模組'}的輸入仍在本次頁面記憶體中；回首頁不會清除資料。`));
+            kept.append(button('返回目前案件',()=>{viewMode='case';render();}));
+            app.append(kept);
+          }
+          app.append(el('h2','選擇案件大類'));
+          const desktopList=el('div','', 'actions');
+          for(const item of config.categories){
+            const isCurrent=item.id===state.categoryId;
+            const entry=button(item.title+(isCurrent?'（目前案件）':'')+(item.status==='development'?'（開發中）':''),()=>{
+              if(isCurrent){viewMode='category';render();return;}
+              destructiveNavigate(()=>session.selectCategory(item.id),'category');
+            });
+            entry.setAttribute('data-module',item.id);
+            entry.disabled=item.status!=='active';
+            desktopList.append(entry);
+          }
+          app.append(desktopList);
+          app.querySelector('h2')?.focus?.();
+          return;
+        }
+
         const home=el('section','', 'mobile-home-shell');
         if(state.categoryId){
           const current=el('section','', 'mobile-home-current');
