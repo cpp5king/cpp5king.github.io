@@ -567,7 +567,7 @@
     const appVersionTitle=root.document?.querySelector?.('#app-version-title');
     if(appVersionTitle){
       const testSite=/\/test(?:\/|$)/.test(root.location?.pathname||'');
-      appVersionTitle.textContent=testSite?'稽查助手 5.2 測試版':appMeta.label;
+      appVersionTitle.textContent=testSite?'稽查助手 5.2.1 視覺測試版':appMeta.label;
     }
   }
   // 可供 DOM 整合測試呼叫，同一個入口在實際頁面自動啟動。
