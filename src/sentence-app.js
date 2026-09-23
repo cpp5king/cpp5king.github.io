@@ -156,14 +156,6 @@
     function isMobileViewport(){
       return !!window.matchMedia?.('(max-width:760px)')?.matches;
     }
-    function canExportCurrentCase(state=session.snapshot()){
-      if(!state?.categoryId)return false;
-      if(state.templateId)return true;
-      if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.())return true;
-      if(state.categoryId==='waste'&&root.WasteV1UI?.hasData?.())return true;
-      if(state.categoryId==='air'&&root.AirV1UI?.hasData?.())return true;
-      return false;
-    }
     function mobileIntermediaryHeader(state,category,title,subtitle=''){
       const shell=el('section','', 'mobile-stage-shell');
 
