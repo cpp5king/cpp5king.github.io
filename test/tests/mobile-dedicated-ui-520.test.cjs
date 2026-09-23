@@ -11,8 +11,8 @@ test('5.2 dedicated mobile flow is loaded and cached offline',()=>{
   const sw=read('service-worker.js');
   assert.match(html,/src\/mobile-inspection-flow\.js\?v=5\.2\.0/);
   assert.match(html,/src\/mobile-wizard\.js\?v=5\.2\.0/);
-  assert.match(html,/src\/styles\.css\?v=5\.2\.1-test-r1/);
-  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.1-test-r1/);
+  assert.match(html,/src\/styles\.css\?v=5\.2\.1-test-r2/);
+  assert.match(html,/src\/sentence-app\.js\?v=5\.2\.1-test-r2/);
   assert.match(sw,/src\/mobile-inspection-flow\.js/);
 });
 
@@ -139,4 +139,16 @@ test('5.2.1 Air update-now is attached to datetime fields instead of a standalon
   assert.match(css,/air-datetime-row/);
   assert.match(css,/air-now-btn/);
   assert.match(air,/out\.version='5\.2\.0'/);
+});
+
+test('5.2.1 Home exposes a standalone law library chooser',()=>{
+  const app=read('src/sentence-app.js');
+  const css=read('src/styles.css');
+  assert.match(app,/function openHomeLawLibrary\(\)/);
+  assert.match(app,/先選擇法規類別/);
+  for(const id of ['water','noise','waste','air'])assert.match(app,new RegExp(`id:'${id}'`));
+  assert.match(app,/viewMode==='home'&&root\.LawReferenceUI\?\.open/);
+  assert.match(app,/minor\.append\(button\('法規',openHomeLawLibrary,true\)\)/);
+  assert.match(css,/5\.2\.1 Home law entry/);
+  assert.match(css,/\.home-law-grid/);
 });
