@@ -156,36 +156,24 @@
     function isMobileViewport(){
       return !!window.matchMedia?.('(max-width:760px)')?.matches;
     }
-    function canExportCurrentCase(state=session.snapshot()){
-      if(!state?.categoryId)return false;
-      if(state.templateId)return true;
-      if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.())return true;
-      if(state.categoryId==='waste'&&root.WasteV1UI?.hasData?.())return true;
-      if(state.categoryId==='air'&&root.AirV1UI?.hasData?.())return true;
-      return false;
-    }
     function mobileIntermediaryHeader(state,category,title,subtitle=''){
       const shell=el('section','', 'mobile-stage-shell');
-      const top=el('div','', 'mobile-stage-top');
-      top.append(button('首頁',()=>{viewMode='home';render();},true));
+
+      const nav=el('nav','', 'mobile-stage-quicknav');
+      nav.setAttribute('aria-label','手機快速導覽');
+      nav.append(
+        button('首頁',()=>{viewMode='home';render();},true),
+        button('新增案件',clearCurrentCase,true),
+        button('法規',()=>root.LawReferenceUI?.open?.(state.categoryId,lawContext(state)),true),
+        button('匯入案件',()=>importInput.click(),true)
+      );
+      shell.append(nav);
+
       const identity=el('div','', 'mobile-stage-identity');
       identity.append(el('strong',category?.title||'稽查助手'));
       if(subtitle)identity.append(el('span',subtitle));
-      top.append(identity);
-      if(state.caseTypeId||state.templateId||hasInput())top.append(button('目前案件',()=>{viewMode='case';render();},true));
+      shell.append(identity);
 
-      const more=el('details','', 'mobile-stage-more');
-      const moreSummary=el('summary','更多');
-      const actions=el('div','', 'mobile-stage-more-actions');
-      if(state.categoryId||hasInput())actions.append(button('新增案件',clearCurrentCase,true));
-      if(['water','noise','waste','air'].includes(state.categoryId)&&root.LawReferenceUI?.open){
-        actions.append(button('法規',()=>root.LawReferenceUI.open(state.categoryId,lawContext(state)),true));
-      }
-      if(canExportCurrentCase(state))actions.append(button('匯出案件',()=>exportCase(),true));
-      actions.append(button('匯入案件',()=>importInput.click(),true));
-      more.append(moreSummary,actions);
-      top.append(more);
-      shell.append(top);
       const heading=el('div','', 'mobile-stage-heading');
       heading.append(el('h2',title));
       shell.append(heading);

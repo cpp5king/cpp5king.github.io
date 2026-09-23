@@ -1077,3 +1077,40 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
     font-size:.82rem
   }
 }
+
+
+/* 5.2 intermediary quick nav: Home / New / Law / Import */
+@media(max-width:760px){
+  .mobile-stage-quicknav{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px
+  }
+  .mobile-stage-quicknav button{
+    width:100%;
+    min-height:38px;
+    padding:6px 4px;
+    border-radius:9px;
+    box-shadow:none;
+    font-size:.72rem;
+    line-height:1.2;
+    white-space:nowrap
+  }
+  .mobile-stage-shell>.mobile-stage-identity{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    padding:0 2px;
+    line-height:1.25
+  }
+  .mobile-stage-shell>.mobile-stage-identity strong{
+    font-size:.92rem;
+    color:var(--module-text,#173a63)
+  }
+  .mobile-stage-shell>.mobile-stage-identity span{
+    margin:0;
+    font-size:.7rem;
+    color:#718092
+  }
+  .mobile-stage-more{display:none!important}
+}
