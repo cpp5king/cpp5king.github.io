@@ -73,7 +73,7 @@ test('到場未運轉只記錄未運轉，不反推聲音不具持續性',()=>{
   assert.equal(out.noiseRouteText,'到場時未運轉／未發生');
   assert.equal(out.noiseContinuity,'yes');
   assert.equal(out.noise522ShowMeasurement,'no');
-  assert.doesNotMatch(out.noiseGuide,/不具持續性/);
+  assert.match(out.noiseGuide,/不得推論為聲音不具持續性/);
 });
 
 test('量測類型為複選且全頻與低頻結果獨立，不產生整體合格不合格',()=>{
