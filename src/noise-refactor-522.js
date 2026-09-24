@@ -291,12 +291,12 @@
       noise522Never:'no',
       noise522ShowContinuity:'yes',noise522ShowMeasurability:'yes',noise522ShowPlace:'no',noise522ShowPlaceLegal:'no',
       noise522ShowSource:'no',noise522ShowEquipment:'no',noise522ShowSourceOther:'no',noise522ShowTargetChoice:'no',noise522ShowTargetManual:'no',
-      noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
+      noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowSingleFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowZoneSimple:'no',
       noise522ShowBoundaryKind:'no',noise522ShowRoadFacts:'no',noise522ShowBoundaryPair:'no',noise522ShowNonUrbanFourth:'no',
       noise522TargetText:'',noise522FactSummary:'',noise522Article8Text:'',noise522Article9Text:'',noise522PendingText:'',
       noiseMeasureResultFull:'',noiseMeasureResultLow:'',noiseRouteText:'',noiseGuide:'',noiseValidation:'',noiseRecord:'',noiseReply:'',
-      noiseBlocked:'yes',noiseOutcomeId:'',noiseShowA8Exception:'no',noiseShowGeneralMethod:'no',noiseShowBgFull:'no',noiseShowBgLow:'no',
+      noiseBlocked:'yes',noiseOutcomeId:'',noiseShowA8Exception:'no',noiseShowGeneralMethod:'no',noiseShowSpeakerMode:'no',noiseShowBgFull:'no',noiseShowBgLow:'no',
       noiseShowBgLmax:'no',noiseShowConstructionLmax:'no',noiseShowFullPoint:'no',noiseShowSpeakerLocation:'no',noiseShowWeather:'no'
     };
   }
@@ -369,6 +369,7 @@
     out.noise522ShowConcurrentFacts='yes';
     const fullSelected=selected(input.noiseMeasureBands,'full'),lowSelected=selected(input.noiseMeasureBands,'low');
     out.noise522ShowFull=yes(fullSelected);
+    out.noise522ShowSingleFull=yes(fullSelected&&target.id!=='construction'&&target.id!=='renovation');
     out.noise522ShowConstructionFull=yes(fullSelected&&(target.id==='construction'||target.id==='renovation'));
     out.noise522ShowLow=yes(lowSelected);
     out.noise522ShowMeasurementPlace=yes(fullSelected);
@@ -417,6 +418,7 @@
       preserve.forEach(k=>{if(legacy[k]!==undefined)out[k]=legacy[k];});
     }
     out.noiseShowGeneralMethod=yes(fullSelected&&['factory','business','otherFacility'].includes(target.id));
+    out.noiseShowSpeakerMode=yes(fullSelected&&target.id==='speaker');
     out.noiseShowConstructionLmax='no';
 
     const assessment=measurementAssessment(input,target,zone.zones);
@@ -524,7 +526,7 @@
     for(const f of t.fields||[])if(oldInteractive.has(f.id))f.displayWhen=hidden;
 
     const sourceField=t.fields.find(f=>f.id==='noiseSource');if(sourceField)sourceField.displayWhen=hidden;
-    const generalValue=t.fields.find(f=>f.id==='noiseValueFull');if(generalValue)generalValue.displayWhen=show('noise522ShowFull');
+    const generalValue=t.fields.find(f=>f.id==='noiseValueFull');if(generalValue)generalValue.displayWhen=show('noise522ShowSingleFull');
     const leq=t.fields.find(f=>f.id==='noiseValueLeq');if(leq)leq.displayWhen=show('noise522ShowConstructionFull');
     const lmax=t.fields.find(f=>f.id==='noiseValueLmax');if(lmax)lmax.displayWhen=show('noise522ShowConstructionFull');
     const low=t.fields.find(f=>f.id==='noiseValueLow');if(low)low.displayWhen=show('noise522ShowLow');
@@ -535,7 +537,7 @@
     const flags=[
       'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowPlaceLegal','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
-      'noise522ShowFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
+      'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
       'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowNonUrbanFourth'
     ].map(id=>computed(id,id));
     const optionsTargets=Object.values(rules.targets).map(x=>({id:x.id,label:x.label}));
@@ -607,7 +609,7 @@
       steps:[
         {id:'article6',title:'第6條前置分流',help:'先確認聲音的持續性與可有效量測性。任一為否即不進一般第9條量測主流程。',fields:['noiseContinuity','noiseMeasurability']},
         {id:'target',title:'場所、音源與查核對象',help:'場所與音源分開記錄，由固定規則形成查核對象；有多條合法路徑時再由稽查員選擇。',fields:['noisePlaceType','noisePlaceOtherText','noisePlaceLegalClass','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
-        {id:'measurement',title:'現場量測',help:'音源正在發生時先保全量測證據；系統不與噪音計連動，也不顯示假計時。',fields:['noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseWeatherText','noiseWind','noiseGeneralSpecialAssessment','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow']},
+        {id:'measurement',title:'現場量測',help:'音源正在發生時先保全量測證據；系統不與噪音計連動，也不顯示假計時。',fields:['noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseWeatherText','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow']},
         {id:'facts',title:'量測期間補充現場事實',help:'量測期間可補現場行為、使用分區、道路／交界及其他觀察，不必等這些資料全部填完才開始量測。',fields:['noiseDate','noiseTime','noiseSubject','noiseBehavior','noiseBoundaryInvolved','noiseLandUseType','noiseNonUrbanFourth','noiseZoneLegalOverride','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseBoundaryZonePair','noiseObservation']},
         {id:'law',title:'法規研判與待查事項',help:'第8條與第9條分開呈現；正式草稿只依主要處理路徑產生。',fields:['noiseA8ExceptionSummary','noise522Article8Text','noise522Article9Text','noise522PendingText','noise522FactSummary','noiseRouteText','noiseResultText']}
       ]
