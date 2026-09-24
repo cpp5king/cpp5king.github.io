@@ -23,10 +23,10 @@ function loadRuntime(){
 }
 const base={
   noiseContinuity:'yes',noiseMeasurability:'yes',noiseDate:'2026-09-24',noiseTime:'23:00',
-  noiseSubject:'測試場所',noiseDirectZone:'2',noiseBoundaryInvolved:'no',noiseTargetRunning:'yes'
+  noiseSubject:'測試場所',noiseA8SourceZone:'2',noiseTargetRunning:'yes'
 };
 
-test('5.2.5 量測不再先選類型，直接顯示量測欄位',()=>{
+test('5.2.6 量測不再先選類型，直接顯示量測欄位',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   assert.equal(t.fields.some(x=>x.id==='noiseMeasureBands'),false);
@@ -71,15 +71,13 @@ test('第8條無例外禁止行為成立時不進量測',()=>{
   assert.match(out.noise522Article8Text,/無公告例外條件/);
 });
 
-test('第8條先確認妨害安寧，未確認前不提前進量測',()=>{
+test('第8條主流程不再重複詢問是否妨害生活環境安寧',()=>{
   const root=loadRuntime();
-  const out=root.NoiseMain.prepare({
-    ...base,noisePlaceType:'business',noiseSourceCategory:'equipment',
-    noiseBehavior:'vehicleBusiness'
-  });
-  assert.equal(out.noise522ShowA8Disturbance,'yes');
-  assert.equal(out.noise522ShowMeasurement,'no');
-  assert.equal(out.noiseRouteText,'第8條妨害安寧事實待查');
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  assert.equal(t.fields.some(x=>x.id==='noiseA8Disturbance'),false);
+  const out=root.NoiseMain.prepare({...base,noiseBehavior:'vehicleBusiness'});
+  assert.equal(out.noiseRouteText,'第8條公告禁止行為成立');
+  assert.equal(out.noise522ShowA8Disturbance,'no');
 });
 
 test('第8條有例外且同時屬第9條時先保全量測',()=>{
@@ -98,8 +96,8 @@ test('有例外案件完成量測後才顯示例外查核',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseBehavior:'construction',noiseA8Disturbance:'yes',
-    noiseMeasurementPlace:'boundary',noiseRain:'no',noiseWind:'1',
+    noiseBehavior:'construction',
+    noiseMeasurementPlace:'boundary',noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',noiseRain:'no',noiseWind:'1',
     noiseValueLeq:'40',noiseValueLmax:'60'
   });
   assert.equal(out.noiseRouteText,'第8條例外事項待查');
@@ -111,8 +109,8 @@ test('第8條例外成立後使用已保全資料續走第9條',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseBehavior:'construction',noiseA8Disturbance:'yes',
-    noiseMeasurementPlace:'boundary',noiseRain:'no',noiseWind:'1',
+    noiseBehavior:'construction',
+    noiseMeasurementPlace:'boundary',noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',noiseRain:'no',noiseWind:'1',
     noiseValueLeq:'40',noiseValueLmax:'60',
     noiseA8Ex_construction_emergency:'yes'
   });
@@ -125,8 +123,8 @@ test('第8條例外不成立時以第8條作主要處理',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseBehavior:'construction',noiseA8Disturbance:'yes',
-    noiseMeasurementPlace:'boundary',noiseRain:'no',noiseWind:'1',
+    noiseBehavior:'construction',
+    noiseMeasurementPlace:'boundary',noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',noiseRain:'no',noiseWind:'1',
     noiseValueLeq:'40',noiseValueLmax:'60',
     noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'no'
   });
@@ -139,7 +137,7 @@ test('第9條只判斷實際填入的量測項目',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noiseTime:'13:00',noisePlaceType:'business',noiseSourceCategory:'equipment',
-    noiseBehavior:'none',noiseMeasurementPlace:'complainant',noiseValueFull:'40'
+    noiseBehavior:'none',noiseMeasurementPlace:'complainant',noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',noiseValueFull:'40'
   });
   assert.equal(out.noiseMeasureResultFull,'未高於適用標準');
   assert.equal(out.noiseMeasureResultLow,'');
@@ -198,7 +196,7 @@ test('第8條例外成立後不因場所身分自動跳第9條',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseBehavior:'fireworks',noiseA8Disturbance:'yes',
+    noiseBehavior:'fireworks',
     noiseA8Ex_fireworks_government:'yes'
   });
   assert.equal(out.noise522ShowMeasurement,'no');
@@ -207,14 +205,14 @@ test('第8條例外成立後不因場所身分自動跳第9條',()=>{
   assert.equal(out.noiseOutcomeId,'article8.excluded');
 });
 
-test('5.2.5 主流程欄位順序先第8條，再第6條與第9條',()=>{
+test('5.2.6 主流程欄位順序先第8條，再第6條與第9條',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const pos=id=>t.fields.findIndex(x=>x.id===id);
-  assert.ok(pos('noiseDirectZone')<pos('noiseBehavior'));
+  assert.ok(pos('noiseA8SourceZone')<pos('noiseBehavior'));
   assert.ok(pos('noiseBehavior')<pos('noiseContinuity'));
   assert.ok(pos('noiseContinuity')<pos('noisePlaceType'));
-  assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));
+  assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));\n  assert.ok(pos('noiseMeasurementPlace')<pos('noiseA9BoundaryInvolved'));
   assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps.map(x=>x.id).slice(0,5))),['basic','article8-site','article6','target','measurement']);
 });
 
@@ -240,7 +238,7 @@ test('第8條選無上述行為後才進一般第6條第9條流程',()=>{
 test('非第9條直接連結之第8條行為例外成立後結束本聲音查核',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
-    ...base,noiseBehavior:'fireworks',noiseA8Disturbance:'yes',
+    ...base,noiseBehavior:'fireworks',
     noiseA8Ex_fireworks_festival:'yes',
     noisePlaceType:'construction',noiseSourceCategory:'other'
   });
@@ -250,11 +248,61 @@ test('非第9條直接連結之第8條行為例外成立後結束本聲音查核
   assert.equal(out.noise522ShowPlace,'no');
 });
 
-test('版本為5.2.5且離線殼不再使用5.2.2檔號',()=>{
+test('第8條音源所在地管制區與第9條量測適用管制區為兩個獨立欄位',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const a8=t.fields.find(x=>x.id==='noiseA8SourceZone');
+  const a9=t.fields.find(x=>x.id==='noiseA9DirectZone');
+  assert.equal(a8.label,'音源／第8條行為所在地噪音管制區');
+  assert.equal(a9.label,'第9條量測位置所在地噪音管制區');
+  assert.notEqual(a8.id,a9.id);
+  const measurement=t.mobileWizard.steps.find(x=>x.id==='measurement');
+  assert.ok(measurement.fields.indexOf('noiseMeasurementPlace')<measurement.fields.indexOf('noiseA9BoundaryInvolved'));
+});
+
+test('第8條第4類不會被第9條沿用；量測點第2類時第9條套第2類標準',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noiseTime:'13:00',noiseA8SourceZone:'4',noisePlaceType:'business',noiseSourceCategory:'equipment',
+    noiseBehavior:'none',noiseMeasurementPlace:'complainant',
+    noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',
+    noiseValueFull:'60',noiseBgFullMode:'uncooperative'
+  });
+  assert.equal(out.noise522A9ZoneText,'第9條量測適用管制區：第2類');
+  assert.equal(out.noiseMeasureResultFull,'高於適用標準');
+  assert.equal(out.noiseOutcomeId,'article9.exceeded');
+});
+
+test('只有第8條管制區而未確認第9條量測管制區時不得直接套標準',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noiseTime:'13:00',noiseA8SourceZone:'4',noisePlaceType:'business',noiseSourceCategory:'equipment',
+    noiseBehavior:'none',noiseMeasurementPlace:'complainant'
+  });
+  assert.equal(out.noiseRouteText,'第9條量測適用管制區');
+  assert.equal(out.noise522ShowA9Zone,'yes');
+  assert.equal(out.noiseMeasureResultFull,'');
+});
+
+test('6至15公尺道路之第9條非交通噪音仍依音源所在側管制區套標準',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noiseTime:'13:00',noiseA8SourceZone:'2',noisePlaceType:'business',noiseSourceCategory:'equipment',
+    noiseBehavior:'none',noiseMeasurementPlace:'boundary',
+    noiseA9BoundaryInvolved:'yes',noiseA9BoundaryKind:'road',noiseA9RoadWidth:'8',
+    noiseA9RoadSideAZone:'2',noiseA9RoadSideBZone:'4',noiseA9RoadSourceSide:'b',noiseA9RoadPointSide:'a',
+    noiseRain:'no',noiseWind:'1',noiseValueFull:'60'
+  });
+  assert.equal(out.noise522A9ZoneText,'第9條量測適用管制區：第4類');
+  assert.equal(out.noiseMeasureResultFull,'未高於適用標準');
+  assert.equal(out.noiseOutcomeId,'article9.compliant');
+});
+
+test('版本為5.2.6且離線殼不再使用5.2.2檔號',()=>{
   const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sw=fs.readFileSync(path.join(ROOT,'service-worker.js'),'utf8');
   const meta=fs.readFileSync(path.join(ROOT,'data/app-meta.js'),'utf8');
   assert.doesNotMatch(index,/v=5\.2\.2/);
-  assert.match(sw,/VERSION='5\.2\.5'/);
-  assert.match(meta,/version:'5\.2\.5'/);
+  assert.match(sw,/VERSION='5\.2\.6'/);
+  assert.match(meta,/version:'5\.2\.6'/);
 });
