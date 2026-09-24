@@ -61,7 +61,7 @@
   }
   function zoneInput(input){
     const out={...input};
-    if(input.noiseBoundaryInvolved==='no'){
+    if(input.noiseBoundaryInvolved!=='yes'){
       const direct=validZone(input.noiseDirectZone)?input.noiseDirectZone:'';
       if(direct){
         out.noiseZoneMode='direct';
@@ -190,14 +190,36 @@
     const lowReady=!low||num(input.noiseValueLow)!==null;
     return fullReady&&lowReady;
   }
-  function a8State(input,zones,evidence,out){
-    const actId=rules.article8Act(input);
-    if(!actId)return {status:'none',text:'第8條：依目前已填現場行為，未形成第8條公告禁止行為候選。'};
-    const act=(root.NOISE_ARTICLE8_RULES?.acts||[]).find(x=>x.id===actId);
-    if(!act)return {status:'pending',text:'第8條：現場行為已有紀錄，但對應公告規則尚未載入。'};
-    if(!text(input.noiseDate)||!timeValid(input.noiseTime)||!zones.length)return {status:'pending',act,text:'第8條：待補稽查日期、時間及管制區後研判公告時段。'};
+  function a8CandidateActs(input,zones){
+    if(!text(input.noiseDate)||!timeValid(input.noiseTime)||!zones.length)return [];
+    if(!['yes','no'].includes(input.noiseBoundaryInvolved))return [];
     const holiday=holidayState(input);
-    if(!holiday)return {status:'pending',act,text:'第8條：例假日／上班日狀態尚待確認。'};
+    if(!holiday)return [];
+    return (root.NOISE_ARTICLE8_RULES?.acts||[]).filter(act=>{
+      if(act.id==='exhaust')return false;
+      return zones.some(zone=>!!core.actApplicable?.(act,zone,input.noiseTime,holiday));
+    });
+  }
+  function applyA8CandidateFlags(out,input,zones){
+    const candidates=a8CandidateActs(input,zones);
+    out.noise522ShowA8Behavior=yes(candidates.length>0);
+    for(const act of root.NOISE_ARTICLE8_RULES?.acts||[]){
+      out['noise522A8Candidate_'+act.id]=yes(candidates.some(x=>x.id===act.id));
+    }
+    return candidates;
+  }
+  function a8State(input,zones,evidence,out){
+    const candidates=a8CandidateActs(input,zones);
+    if(!text(input.noiseDate)||!timeValid(input.noiseTime)||!zones.length||!['yes','no'].includes(input.noiseBoundaryInvolved)){
+      return {status:'pending',text:'第8條：待確認稽查日期、時間、噪音管制區及道路／交界情形後，再判斷是否需進行第8條現場行為查核。'};
+    }
+    if(!candidates.length)return {status:'none',text:'第8條：依目前日期、時間及噪音管制區，未形成公告禁止行為候選。'};
+    if(!input.noiseBehavior)return {status:'behaviorPending',candidates,text:'第8條：目前時段及管制區存在公告禁止行為候選，請完成第8條現場行為查核。'};
+    if(input.noiseBehavior==='none')return {status:'none',candidates,text:'第8條：已查核，現場無目前時段及管制區所列公告禁止行為。'};
+    const actId=rules.article8Act(input);
+    const act=candidates.find(x=>x.id===actId);
+    if(!act)return {status:'none',candidates,text:'第8條：目前所選現場行為不屬本時段及管制區之公告禁止行為候選。'};
+    const holiday=holidayState(input);
     const states=zones.map(zone=>!!core.actApplicable?.(act,zone,input.noiseTime,holiday));
     if(states.every(x=>!x))return {status:'notApplicable',act,text:'第8條：本案現場行為未落入目前日期、時間及管制區之公告禁止條件。'};
     if(states.some(Boolean)&&!states.every(Boolean))return {status:'pending',act,text:'第8條：交界兩區之公告適用結果不同，尚待依實際管制區事實確認。'};
@@ -252,7 +274,8 @@
     if(selected(input.noiseMeasureBands,'low')&&num(input.noiseValueLow)!==null)parts.push('低頻測定值為'+fmt(input.noiseValueLow)+'分貝');
     const bg=backgroundClause(input,target,assessment);
     const location=pointText(input,selected(input.noiseMeasureBands,'low')&&!selected(input.noiseMeasureBands,'full'));
-    const weather=outdoor&&text(input.noiseWeatherText)?'量測時天候'+text(input.noiseWeatherText)+(num(input.noiseWind)!==null?'，風速為'+fmt(input.noiseWind)+'m/s，':'，'):'';
+    const rainText=input.noiseRain==='yes'?'天雨':input.noiseRain==='no'?'無雨':text(input.noiseWeatherText)?'天候'+text(input.noiseWeatherText):'';
+    const weather=outdoor&&rainText?'量測時'+rainText+(num(input.noiseWind)!==null?'，風速為'+fmt(input.noiseWind)+'m/s，':'，'):'';
     const mixed=[];
     if(fullStatus)mixed.push('全頻測定結果'+statusLabels[fullStatus]);
     if(lowStatus)mixed.push('低頻測定結果'+statusLabels[lowStatus]);
@@ -274,14 +297,14 @@
       if(selected(input.noiseMeasureBands,'full')){
         if(!text(input.noiseFullStart)||!text(input.noiseFullEnd))items.push('全頻量測開始／結束時間');
         if(!input.noiseMeasurementPlace)items.push('全頻量測地點');
-        if(input.noiseMeasurementPlace==='boundary'&&(!text(input.noiseWeatherText)||num(input.noiseWind)===null))items.push('室外天候／風速');
+        if(input.noiseMeasurementPlace==='boundary'&&(!['yes','no'].includes(input.noiseRain)&&!text(input.noiseWeatherText)||num(input.noiseWind)===null))items.push('是否天雨／風速');
         if(!assessment.full?.status&&assessment.full?.progress)items.push('全頻判定所需資料');
       }
       if(selected(input.noiseMeasureBands,'low')){
         if(!text(input.noiseLowStart)||!text(input.noiseLowEnd))items.push('低頻量測開始／結束時間');
         if(!assessment.low?.status&&assessment.low?.progress)items.push('低頻判定所需資料');
       }
-      if(!input.noiseBehavior)items.push('現場行為');
+      if(a8?.status==='behaviorPending')items.push('第8條現場行為查核');
     }
     if(a8?.status==='exceptionPending')items.push('第8條例外事項');
     return [...new Set(items)];
@@ -301,7 +324,8 @@
       noise522ShowSource:'no',noise522ShowEquipment:'no',noise522ShowSourceOther:'no',noise522ShowTargetChoice:'no',noise522ShowTargetManual:'no',
       noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowSingleFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowZoneSimple:'no',
-      noise522ShowBoundaryKind:'no',noise522ShowRoadFacts:'no',noise522ShowBoundaryPair:'no',
+      noise522ShowBoundaryKind:'no',noise522ShowRoadFacts:'no',noise522ShowBoundaryPair:'no',noise522ShowA8Behavior:'no',
+      ...Object.fromEntries((root.NOISE_ARTICLE8_RULES?.acts||[]).map(act=>['noise522A8Candidate_'+act.id,'no'])),
       noise522TargetText:'',noise522FactSummary:'',noise522Article8Text:'',noise522Article9Text:'',noise522PendingText:'',
       noiseMeasureResultFull:'',noiseMeasureResultLow:'',noiseRouteText:'',noiseGuide:'',noiseValidation:'',noiseRecord:'',noiseReply:'',
       noiseBlocked:'yes',noiseOutcomeId:'',noiseShowA8Exception:'no',noiseShowGeneralMethod:'no',noiseShowSpeakerMode:'no',noiseShowBgFull:'no',noiseShowBgLow:'no',
@@ -313,20 +337,33 @@
   }
   function prepareNoArticle9(input,out){
     out.noise522ShowConcurrentFacts='yes';
-    out.noise522ShowZoneSimple=yes(input.noiseBoundaryInvolved==='no');
+    out.noise522ShowZoneSimple='yes';
     out.noise522ShowBoundaryKind=yes(input.noiseBoundaryInvolved==='yes');
     out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
     out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
     out.noise522TargetText='未形成第9條管制對象';
     out.noise522Article9Text='第9條：本案不屬工廠（場）、娛樂場所、營業場所、營建工程，且不屬本府依第9條第1項第6款公告之場所、工程及設施，本路徑不適用第9條量測標準。';
     const zone=zoneState(input);
-    if(!input.noiseBehavior){
-      out.noise522Article8Text='第8條：尚待確認現場行為。';
-      out.noise522PendingText='待查／待補：現場行為'+(zone.status==='pending'?'、噪音管制區':'')+'。';
+    applyA8CandidateFlags(out,input,zone.zones);
+    if(!validZone(input.noiseDirectZone)){
+      out.noise522Article8Text='第8條：待確認噪音管制區後，再判斷目前時段是否存在公告禁止行為候選。';
+      out.noise522PendingText='待查／待補：噪音管制區。';
       out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
-      return setStage(out,'第9條公告不適用 → 第8條待確認','第9條公告管制對象已排除；請繼續確認現場行為是否命中第8條公告禁止行為。','請確認現場行為。');
+      return setStage(out,'第9條公告不適用 → 管制區待確認','第9條公告管制對象已排除；請先確認噪音管制區。','請確認噪音管制區。');
+    }
+    if(!['yes','no'].includes(input.noiseBoundaryInvolved)){
+      out.noise522Article8Text='第8條：待確認道路／交界情形後，再判斷目前時段是否存在公告禁止行為候選。';
+      out.noise522PendingText='待查／待補：是否涉及道路或不同噪音管制區交界。';
+      out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
+      return setStage(out,'第9條公告不適用 → 道路／交界待確認','請確認本案是否涉及道路或不同噪音管制區交界。','請確認道路／交界情形。');
     }
     const a8=a8State(input,zone.zones,true,out);
+    if(a8.status==='behaviorPending'){
+      out.noise522Article8Text=a8.text;
+      out.noise522PendingText='待查／待補：第8條現場行為查核。';
+      out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
+      return setStage(out,'第9條公告不適用 → 第8條現場行為待查',a8.text,'請完成第8條現場行為查核。');
+    }
     out.noise522Article8Text=a8.text||'';
     out.noise522PendingText=zone.status==='pending'?'待查／待補：噪音管制區。':'待查／待補：無。';
     out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
@@ -436,6 +473,9 @@
 
     out.noise522ShowMeasurement='yes';
     out.noise522ShowConcurrentFacts='yes';
+    out.noise522ShowZoneSimple='yes';
+    const zone=zoneState(input);
+    applyA8CandidateFlags(out,input,zone.zones);
     const fullSelected=selected(input.noiseMeasureBands,'full'),lowSelected=selected(input.noiseMeasureBands,'low');
     out.noise522ShowFull=yes(fullSelected);
     out.noise522ShowSingleFull=yes(fullSelected&&target.id!=='construction'&&target.id!=='renovation');
@@ -443,7 +483,6 @@
     out.noise522ShowLow=yes(lowSelected);
     out.noise522ShowMeasurementPlace=yes(fullSelected);
     out.noise522ShowWeather=yes(fullSelected&&input.noiseMeasurementPlace==='boundary');
-    out.noise522ShowZoneSimple=yes(input.noiseBoundaryInvolved==='no');
     out.noise522ShowBoundaryKind=yes(input.noiseBoundaryInvolved==='yes');
     out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
     out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
@@ -461,7 +500,6 @@
       return out;
     }
 
-    const zone=zoneState(input);
     const forwarded={...zone.mapped,
       noiseNature:'measurable',noiseSpecial:'ordinary',noiseA8Act:'none',noiseA8Disturbance:'',
       noiseA9Type:target.a9Type,noiseFacility:target.facilityId||rules.announcedFacility(input),
@@ -562,7 +600,16 @@
     if(before.noiseTargetRunning!==after.noiseTargetRunning&&after.noiseTargetRunning!=='yes'){
       clear(['noiseMeasureBands','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
     }
-    if(before.noiseMeasurementPlace!==after.noiseMeasurementPlace)clear(['noiseWind']);
+    if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime||before.noiseDirectZone!==after.noiseDirectZone||
+       before.noiseBoundaryInvolved!==after.noiseBoundaryInvolved||before.noiseBoundaryKind!==after.noiseBoundaryKind||
+       before.noiseBoundaryZonePair!==after.noiseBoundaryZonePair||before.noiseRoadWidth!==after.noiseRoadWidth||
+       before.noiseRoadSideAZone!==after.noiseRoadSideAZone||before.noiseRoadSideBZone!==after.noiseRoadSideBZone||
+       before.noiseRoadSourceSide!==after.noiseRoadSourceSide||before.noiseRoadPointSide!==after.noiseRoadPointSide||
+       before.noiseBoundaryDistance!==after.noiseBoundaryDistance||before.noiseRoadOriginalFourth!==after.noiseRoadOriginalFourth||
+       before.noiseRoadAdjacentFirst!==after.noiseRoadAdjacentFirst||before.noiseZoneLegalOverride!==after.noiseZoneLegalOverride){
+      clear(['noiseBehavior']);
+    }
+    if(before.noiseMeasurementPlace!==after.noiseMeasurementPlace)clear(['noiseWind','noiseRain']);
     if(selected(before.noiseGeneralSpecialAssessment,'periodic')&&!selected(after.noiseGeneralSpecialAssessment,'periodic')){
       clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText']);
     }
@@ -580,7 +627,10 @@
     const missing='（尚未確認）';
     const field=(id,label,type,extra={})=>({id,label,type,missing,...extra});
     const computed=(id,label,display=false,displayWhen=null)=>({id,label,type:'computed',missing,display,...(displayWhen?{displayWhen}:{})});
-    const select=(id,label,options,displayWhen)=>field(id,label,'select',{allowCustom:false,options:options.map(x=>({id:x.id||x[0],label:x.label||x[1],value:x.label||x[1]})),...(displayWhen?{displayWhen}:{})});
+    const select=(id,label,options,displayWhen)=>field(id,label,'select',{allowCustom:false,options:options.map(x=>({
+      id:x.id||x[0],label:x.label||x[1],value:x.label||x[1],
+      ...(x.when?{when:x.when}:{}),...(x.disabled?{disabled:true}:{})
+    })),...(displayWhen?{displayWhen}:{})});
     const checklist=(id,label,items,displayWhen)=>field(id,label,'checklist',{items:items.map(x=>({id:x.id||x[0],label:x.label||x[1],value:x.label||x[1]})),separator:'、',emptyValue:'',...(displayWhen?{displayWhen}:{})});
     const show=id=>({field:id,value:'yes'});
     const ynu=[['yes','是'],['no','否'],['unknown','尚無法確認']];
@@ -606,10 +656,15 @@
       'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
-      'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair'
+      'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowA8Behavior',
+      ...(root.NOISE_ARTICLE8_RULES?.acts||[]).map(act=>'noise522A8Candidate_'+act.id)
     ].map(id=>computed(id,id));
     const optionsTargets=Object.values(rules.targets).map(x=>({id:x.id,label:x.label}));
     const announcedEquipment=rules.announcedItems||rules.equipment;
+    const a8BehaviorOptions=rules.behaviors.filter(x=>x.article8Act||x.id==='none').map(x=>({
+      ...x,
+      ...(x.article8Act?{when:{field:'noise522A8Candidate_'+x.article8Act,value:'yes'}}:{})
+    }));
     const newFields=[
       ...flags,
       field('noiseSubject','查核對象／場所／工程名稱','text'),
@@ -625,18 +680,8 @@
       select('noiseTargetChoice','本案可有不同查核方式，請依陳情對象及現場實際情況選擇',optionsTargets,show('noise522ShowTargetChoice')),
       select('noiseTargetManual','查核對象（無法由固定規則唯一形成時由稽查員確認）',optionsTargets,show('noise522ShowTargetManual')),
       select('noiseTargetRunning','目前查核對象是否正在運轉／發生？',yn,show('noise522ShowRunning')),
-      select('noiseBehavior','現場行為',rules.behaviors,show('noise522ShowConcurrentFacts')),
-      checklist('noiseMeasureBands','量測類型',[['full','全頻噪音'],['low','低頻噪音']],show('noise522ShowMeasurement')),
-      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],show('noise522ShowMeasurementPlace')),
-      field('noiseMeasurementPlaceDetail','位置描述','text',{displayWhen:show('noise522ShowMeasurement')}),
-      field('noiseFullStart','全頻量測開始時間','time',{displayWhen:show('noise522ShowFull')}),
-      field('noiseFullEnd','全頻量測結束時間','time',{displayWhen:show('noise522ShowFull')}),
-      field('noiseLowStart','低頻量測開始時間','time',{displayWhen:show('noise522ShowLow')}),
-      field('noiseLowEnd','低頻量測結束時間','time',{displayWhen:show('noise522ShowLow')}),
-      field('noiseWeatherText','室外量測天候','text',{displayWhen:show('noise522ShowWeather')}),
-      field('noiseObservation','其他現場觀察（選填）','textarea',{displayWhen:show('noise522ShowConcurrentFacts'),required:false}),
-      select('noiseBoundaryInvolved','本量測位置是否涉及道路或不同噪音管制區交界？',yn,show('noise522ShowConcurrentFacts')),
       select('noiseDirectZone','噪音管制區',[['1','第1類'],['2','第2類'],['3','第3類'],['4','第4類'],['pending','尚待確認']],show('noise522ShowZoneSimple')),
+      select('noiseBoundaryInvolved','本量測位置是否涉及道路或不同噪音管制區交界？',yn,show('noise522ShowConcurrentFacts')),
       select('noiseBoundaryKind','道路／交界類型',[['road','道路'],['zoneBoundary','不同噪音管制區交界']],show('noise522ShowBoundaryKind')),
       field('noiseRoadName','道路名稱','text',{displayWhen:show('noise522ShowRoadFacts')}),
       field('noiseRoadWidth','道路寬度（公尺）','number',{min:0,displayWhen:show('noise522ShowRoadFacts')}),
@@ -651,6 +696,19 @@
       select('noiseBoundaryZonePair','交界涉及之兩類噪音管制區',[
         ['1-2','第1類＋第2類'],['1-3','第1類＋第3類'],['1-4','第1類＋第4類'],['2-3','第2類＋第3類'],['2-4','第2類＋第4類'],['3-4','第3類＋第4類']
       ],show('noise522ShowBoundaryPair')),
+      select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,show('noise522ShowA8Behavior')),
+      checklist('noiseMeasureBands','量測類型',[['full','全頻噪音'],['low','低頻噪音']],show('noise522ShowMeasurement')),
+      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],show('noise522ShowMeasurementPlace')),
+      field('noiseMeasurementPlaceDetail','位置描述','text',{displayWhen:show('noise522ShowMeasurement')}),
+      field('noiseFullStart','全頻量測開始時間','time',{displayWhen:show('noise522ShowFull')}),
+      field('noiseFullEnd','全頻量測結束時間','time',{displayWhen:show('noise522ShowFull')}),
+      field('noiseLowStart','低頻量測開始時間','time',{displayWhen:show('noise522ShowLow')}),
+      field('noiseLowEnd','低頻量測結束時間','time',{displayWhen:show('noise522ShowLow')}),
+      select('noiseRain','是否天雨？',yn,show('noise522ShowWeather')),
+      field('noiseObservation','補充現場事實（選填）','textarea',{
+        displayWhen:show('noise522ShowConcurrentFacts'),required:false,
+        placeholder:'僅填寫其他欄位未涵蓋、可能有助後續研判之客觀現場情形。'
+      }),
       computed('noiseMeasureResultFull','全頻量測結果',true,show('noise522ShowFull')),
       computed('noiseMeasureResultLow','低頻量測結果',true,show('noise522ShowLow')),
       computed('noise522FactSummary','現場稽查摘要',true,show('noise522ShowConcurrentFacts')),
@@ -675,8 +733,8 @@
         {id:'basic',title:'案件基本資料',help:'先記錄查核對象／場所／工程名稱及本次稽查日期、時間，後續第8條、第9條研判與紀錄草稿直接引用。',fields:['noiseSubject','noiseDate','noiseTime']},
         {id:'article6',title:'第6條前置分流',help:'確認聲音的持續性與可有效量測性。任一為否即不進一般第9條量測主流程。',fields:['noiseContinuity','noiseMeasurability']},
         {id:'target',title:'場所、音源與查核對象',help:'直接選擇法規上的場所／工程屬性；前四類場所由場所直接形成第9條主要路徑。非上述場所／工程則直接核對本府公告項目；以上皆非時停止第9條公告路徑，再確認第8條。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
-        {id:'measurement',title:'現場量測',help:'先記錄現場行為，再依實際噪音計操作保全量測證據；現場行為未完成時不阻擋先量測。',fields:['noiseBehavior','noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseWeatherText','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow']},
-        {id:'facts',title:'量測期間補充現場事實',help:'量測期間可補噪音管制區、道路／交界及其他觀察；其他現場觀察為選填，不影響量測或法規研判。',fields:['noiseBoundaryInvolved','noiseDirectZone','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseZoneLegalOverride','noiseBoundaryZonePair','noiseObservation']},
+        {id:'site',title:'管制區與第8條查核',help:'先選噪音管制區，再確認是否涉及道路或不同管制區交界；只有目前日期、時間與管制區存在第8條候選時，才顯示第8條現場行為查核。',fields:['noiseDirectZone','noiseBoundaryInvolved','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseZoneLegalOverride','noiseBoundaryZonePair','noiseBehavior']},
+        {id:'measurement',title:'現場量測',help:'音源正在發生時先保全量測證據；室外量測以「是否天雨」及風速記錄量測條件。',fields:['noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseRain','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow','noiseObservation']},
         {id:'law',title:'法規研判與待查事項',help:'第8條與第9條分開呈現；正式草稿只依主要處理路徑產生。',fields:['noiseA8ExceptionSummary','noise522Article8Text','noise522Article9Text','noise522PendingText','noise522FactSummary','noiseRouteText','noiseResultText']}
       ]
     };
