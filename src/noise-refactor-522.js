@@ -243,15 +243,17 @@
       return {zone:row.zone,metric};
     }).filter(x=>x.metric&&x.metric.raw!==null&&x.metric.raw!==undefined);
     if(!rows.length)return '';
-    const first=rows[0].metric,parts=['測定值 '+fmt(first.raw)+' dB(A)'];
-    if(first.background!==null&&first.background!==undefined){
-      parts.push('背景值 '+fmt(first.background)+' dB(A)');
-      if(first.diff!==null&&first.diff!==undefined)parts.push('差值 '+fmt(first.diff)+' dB');
-      if(first.diff>=3&&first.diff<10&&first.corrected!==null&&first.corrected!==undefined)parts.push('修正後 '+fmt(first.corrected)+' dB(A)');
-      else if(first.diff>=10)parts.push('差值達10 dB以上，不需修正');
-    }else if(first.needsBackground&&first.correctionMode==='uncooperative'){
+    const first=rows[0].metric;
+    const correctionMetric=rows.map(x=>x.metric).find(x=>x.background!==null&&x.background!==undefined||x.needsBackground)||first;
+    const parts=['測定值 '+fmt(first.raw)+' dB(A)'];
+    if(correctionMetric.background!==null&&correctionMetric.background!==undefined){
+      parts.push('背景值 '+fmt(correctionMetric.background)+' dB(A)');
+      if(correctionMetric.diff!==null&&correctionMetric.diff!==undefined)parts.push('差值 '+fmt(correctionMetric.diff)+' dB');
+      if(correctionMetric.diff>=3&&correctionMetric.diff<10&&correctionMetric.corrected!==null&&correctionMetric.corrected!==undefined)parts.push('修正後 '+fmt(correctionMetric.corrected)+' dB(A)');
+      else if(correctionMetric.diff>=10)parts.push('差值達10 dB以上，不需修正');
+    }else if(correctionMetric.needsBackground&&correctionMetric.correctionMode==='uncooperative'){
       parts.push('背景音量無法配合量測，未修正');
-    }else if(first.needsBackground&&!first.status){
+    }else if(correctionMetric.needsBackground&&!correctionMetric.status){
       parts.push('背景音量尚待確認');
     }
     const verdicts=rows.map(({zone,metric})=>{
@@ -358,13 +360,13 @@
         (diff>=10?'以上，不需修正':diff>=3&&corrected!==null&&corrected!==undefined?'，修正後為'+fmt(corrected)+'分貝':'，差值小於3dB'));
     };
     if(input.noiseBgFullMode==='measured'){
-      pushBg(target.id==='construction'||target.id==='renovation'?'均能音量':'全頻',target.id==='construction'||target.id==='renovation'?input.noiseValueLeq:input.noiseValueFull,input.noiseBgFull,assessment.leq?.details?.[0]);
+      pushBg(target.id==='construction'||target.id==='renovation'?'均能音量':'全頻',target.id==='construction'||target.id==='renovation'?input.noiseValueLeq:input.noiseValueFull,input.noiseBgFull,assessment.leq?.details?.find(x=>x?.needsBackground)||assessment.leq?.details?.[0]);
     }
     if((target.id==='construction'||target.id==='renovation')&&input.noiseBgLmaxMode==='measured'){
-      pushBg('最大音量',input.noiseValueLmax,input.noiseBgLmax,assessment.lmax?.details?.[0]);
+      pushBg('最大音量',input.noiseValueLmax,input.noiseBgLmax,assessment.lmax?.details?.find(x=>x?.needsBackground)||assessment.lmax?.details?.[0]);
     }
     if(input.noiseBgLowMode==='measured'){
-      pushBg('低頻',input.noiseValueLow,input.noiseBgLow,assessment.low?.details?.[0]);
+      pushBg('低頻',input.noiseValueLow,input.noiseBgLow,assessment.low?.details?.find(x=>x?.needsBackground)||assessment.low?.details?.[0]);
     }
     return parts.join('；');
   }
@@ -1087,12 +1089,13 @@
         {id:'measurement',title:'第9條量測',help:'先選實際量測地點，再另行判定第9條量測適用管制區；一般情形依量測位置所在地，涉及道路或交界時依公告特殊規則處理。之後再填實際量測值。',fields:[
           'noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseA9BoundaryInvolved','noiseA9DirectZone','noiseA9BoundaryKind','noiseA9RoadName','noiseA9RoadWidth',
           'noiseA9RoadSideAZone','noiseA9RoadSideBZone','noiseA9RoadSourceSide','noiseA9RoadPointSide','noiseA9BoundaryDistance','noiseA9RoadOriginalFourth',
-          'noiseA9RoadAdjacentFirst','noiseA9ZoneLegalOverride','noiseA9BoundaryZonePair','noise522A9ZoneText',
+          'noiseA9RoadAdjacentFirst','noiseA9ZoneLegalOverride','noiseA9BoundaryZonePair','noise522A9ZoneText','noise522StandardText',
           'noiseRain','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText',
-          'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow','noiseObservation'
+          'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow',
+          'noise522MeasureDetailLeq','noise522MeasureDetailLmax','noise522MeasureDetailLow','noiseObservation'
         ]},
         {id:'article8-exceptions',title:'第8條例外查核',help:'只有第8條與第9條確定是同一個聲音且需先保全證據時，量測完成後才查例外；其他第8條行為直接查例外。',fields:[...Array.from(exceptionIds)]},
-        {id:'law',title:'結果與法規研判',help:'集中顯示量測結果、現場摘要、第8條、第9條與待查事項。',fields:['noiseMeasureResultFull','noiseMeasureResultLow','noise522FactSummary','noise522Article8Text','noise522Article9Text','noise522PendingText']}
+        {id:'law',title:'結果與法規研判',help:'集中顯示現場摘要、第8條、第9條與待查事項；量測標準、背景、修正值及各指標結果已於量測步驟即時顯示。',fields:['noise522FactSummary','noise522Article8Text','noise522Article9Text','noise522PendingText']}
       ]
     };
     t.quickActions={...(t.quickActions||{}),summaryField:null};
