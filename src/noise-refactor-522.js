@@ -326,6 +326,36 @@
     const zoneText=zones.length===1?zoneLabel(zones[0]):zones.map(zoneLabel).join('、');
     return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往所陳地點，經查該址為'+text(input.noiseSubject)+'，位處本府公告之'+zoneText+'噪音管制區，現場於公告禁止時段'+a8.act.label+'，已違反噪音管制法第8條暨本府現行公告相關規定，本局依法告發並令其立即停止改善。';
   }
+  function a8ExceptionReason(a8){
+    const summary=text(a8?.exception?.summary||'');
+    if(!summary)return '公告所列例外情形';
+    return summary
+      .replace(/^公告例外成立：/,'')
+      .replace(/^公告所列例外條件均已確認成立。?$/,'公告所列例外條件')
+      .replace(/。$/,'');
+  }
+  function draftA8Excluded(input,a8){
+    if(!a8?.act||a8.status!=='excluded'||!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime))return '';
+    return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查現場有'+a8.act.label+'，惟查符合本府公告之例外情形（'+a8ExceptionReason(a8)+'），故本次未認有違反噪音管制法第8條規定之情形。';
+  }
+  function draftA8NotApplicable(input,a8){
+    if(!a8?.act||!['notApplicable','noDisturbance'].includes(a8.status)||!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime))return '';
+    return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查現場有'+a8.act.label+'，經核對稽查日期、時間、音源／行為所在地噪音管制區及本府公告內容，該行為未落入公告禁止之條件，故本次未認有違反噪音管制法第8條規定之情形。';
+  }
+  function draftArticle6(input,continuity,measurability){
+    if(!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime))return '';
+    let nature='';
+    if(continuity==='no'&&measurability==='no')nature='不具持續性且不易量測';
+    else if(continuity==='no')nature='不具持續性';
+    else if(measurability==='no')nature='不易量測';
+    if(!nature)return '';
+    return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，所陳噪音因屬'+nature+'之性質，依噪音管制法第6條規定，由警察機關依有關法規處理。';
+  }
+  function draftNoArticle9(input){
+    if(!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime)||!text(input.noiseSubject))return '';
+    const source=sourceLabel(input)||'尚待確認';
+    return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，現場主要噪音來源為'+source+'，惟經核對場所、工程、設施及音源性質，尚非屬噪音管制法第9條所定管制對象，本次未進行噪音管制標準量測。';
+  }
   function draftA9(input,target,assessment,zones){
     if(!text(input.noiseSubject)||!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime)||!zones.length)return '';
     const fullStatus=assessment.full?.status||'',lowStatus=assessment.low?.status||'';
@@ -464,8 +494,10 @@
     if(a8.status==='excluded'){
       out.noiseRouteText='第8條例外成立';
       out.noiseGuide=a8.text+'\n本次查核之同一聲音不另因場所身分自動轉入第9條量測。';
-      out.noiseValidation='';
-      out.noiseBlocked='no';
+      out.noiseRecord=draftA8Excluded(input,a8);
+      out.noiseReply='';
+      out.noiseBlocked=out.noiseRecord?'no':'yes';
+      out.noiseValidation=out.noiseRecord?'':'第8條例外已成立，但紀錄基本資料不足。';
       out.noiseOutcomeId='article8.excluded';
       out.noiseResultText='第8條公告例外成立；本次第8條聲音查核完成。';
       return out;
@@ -473,8 +505,10 @@
     if(a8.status==='noDisturbance'||a8.status==='notApplicable'){
       out.noiseRouteText='第8條未成立';
       out.noiseGuide=a8.text+'\n本次查核之同一聲音未形成直接第9條量測路徑。';
-      out.noiseValidation='';
-      out.noiseBlocked='no';
+      out.noiseRecord=draftA8NotApplicable(input,a8);
+      out.noiseReply='';
+      out.noiseBlocked=out.noiseRecord?'no':'yes';
+      out.noiseValidation=out.noiseRecord?'':'第8條未成立，但紀錄基本資料不足。';
       out.noiseOutcomeId='article8.not-established';
       out.noiseResultText='本次第8條聲音查核未成立。';
       return out;
@@ -490,8 +524,10 @@
     out.noise522PendingText='待查／待補：無。';
     out.noiseRouteText='未形成第9條管制對象';
     out.noiseGuide=(out.noise522Article8Text?out.noise522Article8Text+'\n':'')+out.noise522Article9Text;
-    out.noiseValidation='';
-    out.noiseBlocked='no';
+    out.noiseRecord=draftNoArticle9(input);
+    out.noiseReply='';
+    out.noiseBlocked=out.noiseRecord?'no':'yes';
+    out.noiseValidation=out.noiseRecord?'':'未形成第9條管制對象，但請補填查核對象／場所／工程名稱以產生紀錄草稿。';
     out.noiseOutcomeId='noise.no-article9-route';
     out.noiseResultText='依目前查得事實，本次聲音未形成第9條量測路徑。';
     return out;
@@ -636,10 +672,13 @@
     if(continuity==='no'||measurability==='no'){
       out.noiseRouteText='第6條型態／警察機關處理方向';
       out.noiseGuide='本案未形成第8條處理路徑，且聲音不具持續性或不易進行有效量測，不進入環保局一般第9條量測主流程；依噪音管制法第6條型態及權責方向處理。';
-      out.noiseValidation='';
-      out.noiseBlocked='no';
+      out.noiseRecord=draftArticle6(input,continuity,measurability);
+      out.noiseReply='';
+      out.noiseBlocked=out.noiseRecord?'no':'yes';
+      out.noiseValidation=out.noiseRecord?'':'第6條分流已完成，但紀錄基本資料不足。';
       out.noise522Article8Text=a8?.text||'';
       out.noise522FactSummary='第6條前置分流：'+(continuity==='no'?'不具持續性':'')+((continuity==='no'&&measurability==='no')?'；':'')+(measurability==='no'?'不易有效量測':'')+'。';
+      out.noiseOutcomeId='article6.police-direction';
       return out;
     }
     if(continuity!=='yes'||measurability!=='yes'){
@@ -950,8 +989,8 @@
     t.fields.push(...movedExceptions,...resultFields);
     t.title='噪音稽查－事實／量測／法規分層測試版';
     t.formTitle='噪音案件';
-    t.version='5.2.7';
-    t.moduleVersion='5.2.7';
+    t.version='5.2.8';
+    t.moduleVersion='5.2.8';
     t.previewOnlyMessage='尚有必要事實或法規研判資料未完成；現場事實與已輸入量測資料均保留。';
     t.mobileWizard={
       ariaLabel:'噪音手機逐步流程',brandLabel:'稽查助手',brandSlogan:'先保全現場證據，再完成法規研判',fallbackTitle:'其他必要事項',
