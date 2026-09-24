@@ -275,8 +275,8 @@ test('特殊評定只有一般場所類型顯示，營建與擴音不顯示',()=
   });
   assert.equal(out.noiseShowGeneralMethod,'no');
   out=root.NoiseMain.prepare({
-    ...measured,noisePlaceType:'nonListed',noiseSourceCategory:'speaker',noiseEquipmentType:'',
-    noiseTargetChoice:'speaker',noiseValueFull:'40',noiseSpeakerMode:'fixed'
+    ...measured,noisePlaceType:'nonListed',noiseSourceCategory:'speaker',noiseEquipmentType:'none',
+    noiseValueFull:'40',noiseSpeakerMode:'fixed'
   });
   assert.equal(out.noiseShowGeneralMethod,'no');
   assert.equal(out.noiseShowSpeakerMode,'yes');
