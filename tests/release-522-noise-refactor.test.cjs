@@ -74,28 +74,60 @@ test('一般案件直接選第1至4類噪音管制區或尚待確認，不再要
   assert.doesNotMatch(out.noiseValidation||'',/使用分區/);
 });
 
-test('其他現場觀察明確標示選填且空白不阻擋量測或法規研判',()=>{
+test('補充現場事實明確標示選填且空白不阻擋量測或法規研判',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const observation=t.fields.find(x=>x.id==='noiseObservation');
-  assert.equal(observation.label,'其他現場觀察（選填）');
+  assert.equal(observation.label,'補充現場事實（選填）');
   assert.equal(observation.required,false);
+  assert.match(observation.placeholder,/其他欄位未涵蓋/);
   const out=root.NoiseMain.prepare({...measured,noiseObservation:'',noiseValueFull:'40'});
-  assert.doesNotMatch(out.noiseValidation||'',/其他現場觀察/);
-  assert.doesNotMatch(out.noise522PendingText||'',/其他現場觀察/);
+  assert.doesNotMatch(out.noiseValidation||'',/補充現場事實/);
+  assert.doesNotMatch(out.noise522PendingText||'',/補充現場事實/);
 });
 
-test('現場行為位於量測類型與量測地點之前，且不作為開始量測的硬性阻擋',()=>{
+test('噪音管制區排在道路交界之前，第8條查核再排在量測之前',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const ids=t.fields.map(x=>x.id);
+  assert.ok(ids.indexOf('noiseDirectZone')<ids.indexOf('noiseBoundaryInvolved'));
+  assert.ok(ids.indexOf('noiseBoundaryInvolved')<ids.indexOf('noiseBehavior'));
   assert.ok(ids.indexOf('noiseBehavior')<ids.indexOf('noiseMeasureBands'));
   assert.ok(ids.indexOf('noiseBehavior')<ids.indexOf('noiseMeasurementPlace'));
-  const measurement=t.mobileWizard.steps.find(x=>x.id==='measurement');
-  assert.equal(measurement.fields[0],'noiseBehavior');
-  const out=root.NoiseMain.prepare({...base,noiseBehavior:''});
+  const site=t.mobileWizard.steps.find(x=>x.id==='site');
+  assert.equal(site.fields[0],'noiseDirectZone');
+  assert.equal(site.fields[1],'noiseBoundaryInvolved');
+  assert.equal(site.fields.at(-1),'noiseBehavior');
+});
+
+test('第8條現場行為只在目前日期時間與管制區存在公告候選時顯示',()=>{
+  const root=loadRuntime();
+  let out=root.NoiseMain.prepare({
+    ...base,noiseDate:'2026-09-24',noiseTime:'13:00',noiseDirectZone:'2',noiseBoundaryInvolved:'no'
+  });
+  assert.equal(out.noise522ShowA8Behavior,'no');
+  out=root.NoiseMain.prepare({
+    ...base,noiseDate:'2026-09-24',noiseTime:'23:00',noiseDirectZone:'2',noiseBoundaryInvolved:'no'
+  });
+  assert.equal(out.noise522ShowA8Behavior,'yes');
+  assert.equal(out.noise522A8Candidate_instrument,'yes');
+  assert.equal(out.noise522A8Candidate_construction,'yes');
+  assert.equal(out.noise522A8Candidate_exhaust,'no');
   assert.equal(out.noise522ShowMeasurement,'yes');
   assert.match(out.noiseValidation,/量測類型/);
+});
+
+test('第8條查核選單只提供目前可適用候選與無上述行為',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const behavior=t.fields.find(x=>x.id==='noiseBehavior');
+  assert.equal(behavior.label,'第8條現場行為查核');
+  const instrument=behavior.options.find(x=>x.id==='instrument');
+  const none=behavior.options.find(x=>x.id==='none');
+  const other=behavior.options.find(x=>x.id==='other');
+  assert.deepEqual(JSON.parse(JSON.stringify(instrument.when)),{field:'noise522A8Candidate_instrument',value:'yes'});
+  assert.ok(none);
+  assert.equal(other,undefined);
 });
 
 test('非上述場所工程進入主管機關公告內容，前四類場所不重複詢問',()=>{
@@ -266,7 +298,7 @@ test('室外風速大於5m/s使第9條無法有效判定，但不阻斷第8條�
   const root=loadRuntime();
   const input={
     noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'6',
+    noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseRain:'no',noiseWind:'6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
     noiseBoundaryInvolved:'no',noiseDirectZone:'2',
     noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'no'
@@ -283,7 +315,7 @@ test('第8條例外成立後使用已保全的第9條量測資料繼續研判',(
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
-    noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'1.6',
+    noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseRain:'no',noiseWind:'1.6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
     noiseBoundaryInvolved:'no',noiseDirectZone:'2',noiseFullStart:'23:01',noiseFullEnd:'23:04',
     noiseValueLeq:'68.4',noiseValueLmax:'82.1',noiseBgFullMode:'measured',noiseBgFull:'54.2',
@@ -320,6 +352,33 @@ test('特殊評定只有一般場所類型顯示，營建與擴音不顯示',()=
   });
   assert.equal(out.noiseShowGeneralMethod,'no');
   assert.equal(out.noiseShowSpeakerMode,'yes');
+});
+
+test('室外量測天候改為是否天雨直接選項，不再使用自由文字天候欄位',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const rain=t.fields.find(x=>x.id==='noiseRain');
+  assert.ok(rain);
+  assert.equal(rain.label,'是否天雨？');
+  assert.equal(rain.type,'select');
+  assert.deepEqual(JSON.parse(JSON.stringify(rain.options.map(x=>x.label))),['是','否']);
+  assert.equal(t.choiceStyle,'cards');
+  assert.equal(t.fields.some(x=>x.id==='noiseWeatherText'),false);
+  const measurement=t.mobileWizard.steps.find(x=>x.id==='measurement');
+  assert.ok(measurement.fields.indexOf('noiseRain')<measurement.fields.indexOf('noiseWind'));
+});
+
+test('室外量測未回答是否天雨或風速時才列待補，室內量測不誤列',()=>{
+  const root=loadRuntime();
+  let out=root.NoiseMain.prepare({
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'business',noiseSourceCategory:'equipment',
+    noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',
+    noiseDate:'2026-09-24',noiseTime:'13:00',noiseSubject:'測試場所',noiseBoundaryInvolved:'no',noiseDirectZone:'2',
+    noiseFullStart:'13:01',noiseFullEnd:'13:04',noiseValueFull:'40'
+  });
+  assert.match(out.noise522PendingText,/是否天雨／風速/);
+  out=root.NoiseMain.prepare({...measured,noiseBehavior:'none',noiseValueFull:'40'});
+  assert.doesNotMatch(out.noise522PendingText||'',/是否天雨／風速/);
 });
 
 test('量測地點介面只保留周界外與陳情人指定之住居所兩個主要選項',()=>{
