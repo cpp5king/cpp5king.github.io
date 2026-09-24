@@ -576,6 +576,12 @@
     out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
     out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
 
+    const evidence=sourceEvidence(input,target);
+    const a8=a8State(input,zone.zones,evidence,out);
+    out.noise522Article8Text=a8.text||'';
+    const facts=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'查核對象：'+target.label,'運轉／發生：是'];
+    if(text(input.noiseMeasurementPlaceDetail))facts.push('位置描述：'+text(input.noiseMeasurementPlaceDetail));
+    out.noise522FactSummary=facts.join('\n');
     out.noise522ShowA8Disturbance=yes(!!a8.act&&!['none','notApplicable'].includes(a8.status));
 
     if(a8.status==='behaviorPending'||a8.status==='disturbancePending'||a8.status==='pending'){
@@ -652,14 +658,8 @@
     out.noiseShowBgLow=yes(lowSelected&&assessment.low.needsBackground);
     out.noise522Article9Text='第9條：'+(resultSummary(assessment)||'量測結果尚未輸入；實際未量測之項目可留白。');
 
-    const evidence=sourceEvidence(input,target);
-    const a8=a8State(input,zone.zones,evidence,out);
-    out.noise522Article8Text=a8.text||'';
     const pending=pendingItems(input,target,zone,assessment,a8);
     out.noise522PendingText=pending.length?'待查／待補：'+pending.join('、'):'待查／待補：無。';
-    const facts=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'查核對象：'+target.label,'運轉／發生：是'];
-    if(text(input.noiseMeasurementPlaceDetail))facts.push('位置描述：'+text(input.noiseMeasurementPlaceDetail));
-    out.noise522FactSummary=facts.join('\n');
     out.noiseResultText=resultSummary(assessment)||'量測結果尚未輸入；實際未量測之項目可留白。';
 
     const a9Draft=draftA9(input,target,assessment,zone.zones);
