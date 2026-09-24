@@ -36,8 +36,9 @@
   }
   function sourceLabel(input){
     if(input.noiseSourceCategory==='equipment'){
-      const row=rules.equipment.find(x=>x.id===input.noiseEquipmentType);
-      return text(input.noiseSourceDescription)||row?.label||'機械設備';
+      const row=(rules.announcedItems||rules.equipment).find(x=>x.id===input.noiseEquipmentType);
+      const announcedLabel=row&&['facility','renovation'].includes(row.kind)?row.label:'';
+      return text(input.noiseSourceDescription)||announcedLabel||'機械設備';
     }
     const row=rules.sources.find(x=>x.id===input.noiseSourceCategory);
     return text(input.noiseSourceDescription)||row?.label||'';
@@ -303,6 +304,58 @@
   function setStage(out,route,guide,validation){
     out.noiseRouteText=route;out.noiseGuide=guide;out.noiseValidation=validation||guide;out.noiseBlocked='yes';return out;
   }
+  function prepareNoArticle9(input,out){
+    out.noise522ShowConcurrentFacts='yes';
+    out.noise522ShowZoneSimple=yes(input.noiseBoundaryInvolved==='no');
+    out.noise522ShowBoundaryKind=yes(input.noiseBoundaryInvolved==='yes');
+    out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
+    out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
+    out.noise522ShowNonUrbanFourth=yes(input.noiseBoundaryInvolved==='no'&&input.noiseLandUseType==='nonUrban');
+    out.noise522TargetText='未形成第9條管制對象';
+    out.noise522Article9Text='第9條：本案不屬工廠（場）、娛樂場所、營業場所、營建工程，且不屬本府依第9條第1項第6款公告之場所、工程及設施，本路徑不適用第9條量測標準。';
+    const zone=zoneState(input);
+    if(!input.noiseBehavior){
+      out.noise522Article8Text='第8條：尚待確認現場行為。';
+      out.noise522PendingText='待查／待補：現場行為'+(zone.status==='pending'?'、使用分區／噪音管制區':'')+'。';
+      out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
+      return setStage(out,'第9條公告不適用 → 第8條待確認','第9條公告管制對象已排除；請繼續確認現場行為是否命中第8條公告禁止行為。','請確認現場行為。');
+    }
+    const a8=a8State(input,zone.zones,true,out);
+    out.noise522Article8Text=a8.text||'';
+    out.noise522PendingText=zone.status==='pending'?'待查／待補：使用分區／噪音管制區。':'待查／待補：無。';
+    out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
+    if(a8.status==='established'){
+      out.noiseRouteText='第8條公告禁止行為成立';
+      out.noiseGuide=a8.text+'\n'+out.noise522Article9Text;
+      out.noiseRecord=draftA8(input,a8,zone.zones);
+      out.noiseReply='';
+      out.noiseBlocked=out.noiseRecord?'no':'yes';
+      out.noiseValidation=out.noiseRecord?'':'第8條已成立，請補填查核對象／場所／工程名稱後產生正式草稿。';
+      out.noiseOutcomeId='article8.established';
+      return out;
+    }
+    if(a8.status==='exceptionPending'){
+      out.noiseRouteText='第9條公告不適用 → 第8條例外事項待查';
+      out.noiseGuide=out.noise522Article9Text+'\n'+a8.text;
+      out.noiseValidation='請完成第8條例外事項查核。';
+      out.noiseRecord='';out.noiseReply='';out.noiseBlocked='yes';
+      return out;
+    }
+    if(a8.status==='pending'){
+      out.noiseRouteText='第9條公告不適用 → 第8條待確認';
+      out.noiseGuide=out.noise522Article9Text+'\n'+a8.text;
+      out.noiseValidation=zone.message||'第8條適用事實尚待確認。';
+      out.noiseBlocked='yes';
+      return out;
+    }
+    out.noiseRouteText='未形成噪音管制法管制路徑';
+    out.noiseGuide=out.noise522Article9Text+'\n'+(a8.text||'第8條：未形成公告禁止行為候選。');
+    out.noiseValidation='';
+    out.noiseBlocked='no';
+    out.noiseOutcomeId='noise.no-regulated-route';
+    out.noiseResultText='依目前查得事實，未形成噪音管制法之管制路徑。';
+    return out;
+  }
   function prepare(raw={}){
     const input={...raw};
     let out=seed(input);
@@ -325,10 +378,14 @@
 
     out.noise522ShowSource='yes';
     if(!input.noiseSourceCategory)return setStage(out,'主要噪音來源','請確認主要噪音來源；場所、音源與現場行為分開記錄。','請確認主要噪音來源。');
-    out.noise522ShowEquipment=yes(input.noiseSourceCategory==='equipment'&&input.noisePlaceType==='nonListed');
+    const needsAnnouncement=input.noisePlaceType==='nonListed'&&['equipment','speaker','other'].includes(input.noiseSourceCategory);
+    out.noise522ShowEquipment=yes(needsAnnouncement);
     out.noise522ShowSourceOther=yes(input.noiseSourceCategory==='other');
-    if(input.noiseSourceCategory==='equipment'&&input.noisePlaceType==='nonListed'&&!input.noiseEquipmentType){
-      return setStage(out,'其他經主管機關公告之場所、工程及設施','本案不屬工廠（場）、娛樂場所、營業場所或營建工程；請確認主要機械設備是否屬主管機關公告項目。','請確認公告之場所、工程及設施。');
+    if(needsAnnouncement&&!input.noiseEquipmentType){
+      return setStage(out,'其他經主管機關公告之場所、工程及設施','本案不屬工廠（場）、娛樂場所、營業場所或營建工程；請直接核對本府第9條第1項第6款公告內容。','請確認是否屬公告之場所、工程及設施。');
+    }
+    if(needsAnnouncement&&input.noiseEquipmentType==='pending'){
+      return setStage(out,'公告項目尚待確認','目前尚無法確認是否屬主管機關公告之場所、工程及設施；系統不先推定第9條適用。','公告項目尚待確認。');
     }
     if(input.noiseSourceCategory==='pending')return setStage(out,'主要噪音來源尚待確認','主要音源尚待確認；請先釐清音源，系統不以「尚待確認」推定任何第9條查核對象。','主要噪音來源尚待確認。');
 
@@ -341,10 +398,15 @@
       return out;
     }
 
+    const announcedItem=typeof rules.announcedItem==='function'?rules.announcedItem(input):null;
+    if(input.noisePlaceType==='nonListed'&&announcedItem?.kind==='none'&&input.noiseSourceCategory!=='speaker'){
+      return prepareNoArticle9(input,out);
+    }
+
     const candidates=rules.targetCandidates(input);
     let target=rules.target(input);
     out.noise522ShowTargetChoice=yes(candidates.length>1);
-    out.noise522ShowTargetManual=yes(candidates.length===0);
+    out.noise522ShowTargetManual=yes(candidates.length===0&&input.noisePlaceType!=='nonListed');
     if(candidates.length>1&&!target)return setStage(out,'選擇查核對象','本案存在不同合法查核路徑，請依陳情對象及現場實際情況選擇。','請選擇本次查核對象。');
     if(!candidates.length&&input.noiseTargetManual){
       target=rules.targets[input.noiseTargetManual]||null;
@@ -542,7 +604,7 @@
       'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowNonUrbanFourth'
     ].map(id=>computed(id,id));
     const optionsTargets=Object.values(rules.targets).map(x=>({id:x.id,label:x.label}));
-    const announcedEquipment=rules.equipment.filter(x=>x.facilityId);
+    const announcedEquipment=rules.announcedItems||rules.equipment;
     const newFields=[
       ...flags,
       field('noiseDate','稽查日期','date',{format:'roc'}),
@@ -552,7 +614,7 @@
       select('noiseMeasurability','依現場狀況，這個聲音是否容易進行有效量測？',ynu,show('noise522ShowMeasurability')),
       select('noisePlaceType','場所／工程屬性',rules.places,show('noise522ShowPlace')),
       select('noiseSourceCategory','主要噪音來源',rules.sources,show('noise522ShowSource')),
-      select('noiseEquipmentType','其他經主管機關公告之場所、工程及設施',announcedEquipment,show('noise522ShowEquipment')),
+      select('noiseEquipmentType','本案是否屬下列公告項目？',announcedEquipment,show('noise522ShowEquipment')),
       field('noiseSourceDescription','主要音源補充描述','text',{displayWhen:show('noise522ShowSource')}),
       select('noiseTargetChoice','本案可有不同查核方式，請依陳情對象及現場實際情況選擇',optionsTargets,show('noise522ShowTargetChoice')),
       select('noiseTargetManual','查核對象（無法由固定規則唯一形成時由稽查員確認）',optionsTargets,show('noise522ShowTargetManual')),
@@ -611,7 +673,7 @@
       steps:[
         {id:'basic',title:'稽查日期及時間',help:'先記錄本次稽查日期與到場時間，後續第8條時段判斷及紀錄草稿直接引用。',fields:['noiseDate','noiseTime']},
         {id:'article6',title:'第6條前置分流',help:'確認聲音的持續性與可有效量測性。任一為否即不進一般第9條量測主流程。',fields:['noiseContinuity','noiseMeasurability']},
-        {id:'target',title:'場所、音源與查核對象',help:'直接選擇法規上的場所／工程屬性；前四類場所由場所直接形成第9條主要路徑，非上述場所搭配機械設備時才進一步確認公告項目。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
+        {id:'target',title:'場所、音源與查核對象',help:'直接選擇法規上的場所／工程屬性；前四類場所由場所直接形成第9條主要路徑。非上述場所／工程則直接核對本府公告項目；以上皆非時停止第9條公告路徑，再確認第8條。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
         {id:'measurement',title:'現場量測',help:'音源正在發生時先保全量測證據；系統不與噪音計連動，也不顯示假計時。',fields:['noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseWeatherText','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow']},
         {id:'facts',title:'量測期間補充現場事實',help:'量測期間可補現場行為、使用分區、道路／交界及其他觀察，不必等這些資料全部填完才開始量測。',fields:['noiseSubject','noiseBehavior','noiseBoundaryInvolved','noiseLandUseType','noiseNonUrbanFourth','noiseZoneLegalOverride','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseBoundaryZonePair','noiseObservation']},
         {id:'law',title:'法規研判與待查事項',help:'第8條與第9條分開呈現；正式草稿只依主要處理路徑產生。',fields:['noiseA8ExceptionSummary','noise522Article8Text','noise522Article9Text','noise522PendingText','noise522FactSummary','noiseRouteText','noiseResultText']}
