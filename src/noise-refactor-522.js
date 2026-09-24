@@ -446,6 +446,13 @@
       out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
       return setStage(out,'第9條公告不適用 → 第8條現場行為待查',a8.text,'請完成第8條現場行為查核。');
     }
+    if(a8.status==='disturbancePending'){
+      out.noise522ShowA8Disturbance='yes';
+      out.noise522Article8Text=a8.text;
+      out.noise522PendingText='待查／待補：第8條妨害安寧事實。';
+      out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
+      return setStage(out,'第9條公告不適用 → 第8條妨害安寧事實待查',a8.text,'請確認該禁止行為是否致妨害他人生活環境安寧。');
+    }
     out.noise522Article8Text=a8.text||'';
     out.noise522PendingText=zone.status==='pending'?'待查／待補：噪音管制區。':'待查／待補：無。';
     out.noise522FactSummary=['場所：'+placeLabel(input),'主要音源：'+sourceLabel(input),'第9條公告項目：以上公告項目皆非'].join('\n');
