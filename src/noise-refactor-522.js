@@ -696,9 +696,6 @@
     out.noise522MeasureDetailLow=lowSelected?metricDetailText('低頻 Leq,LF',assessment,target,'low'):'';
     out.noise522Article9Text='第9條：'+(resultSummary(input,target,assessment)||'量測結果尚未輸入；實際未量測之項目可留白。');
 
-    if(out.noise522StandardText)factParts.push('適用標準：\n'+out.noise522StandardText);
-    for(const detail of [out.noise522MeasureDetailLeq,out.noise522MeasureDetailLmax,out.noise522MeasureDetailLow])if(detail)factParts.push(detail);
-    out.noise522FactSummary=factParts.join('\n');
     const pending=pendingItems(measureInput,target,zone,assessment,a8||{status:'none'});
     out.noise522PendingText=pending.length?'待查／待補：'+pending.join('、'):'待查／待補：無。';
     out.noiseResultText=resultSummary(input,target,assessment)||'量測結果尚未輸入；實際未量測之項目可留白。';
