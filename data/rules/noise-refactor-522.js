@@ -44,7 +44,7 @@
     ['instrument','使用樂器','instrument'],
     ['vehicleBusiness','引擎試車／車輛修理、改裝','vehicleBusiness'],
     ['karaoke','卡拉 OK／伴唱歌唱','karaoke'],
-    ['renovation','使用動力機械或手持工具從事裝修工程',''],
+    ['renovation','使用動力機械或手持工具從事裝修工程','renovation'],
     ['construction','使用動力機械或手持工具從事營建工程','construction'],
     ['exhaust','特定排氣管車輛','exhaust'],
     ['leafBlower','吹葉機','leafBlower'],
