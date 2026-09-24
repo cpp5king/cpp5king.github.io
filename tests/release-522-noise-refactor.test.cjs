@@ -26,7 +26,7 @@ const base={
   noiseSubject:'測試場所',noiseDirectZone:'2',noiseBoundaryInvolved:'no',noiseTargetRunning:'yes'
 };
 
-test('5.2.3 量測不再先選類型，直接顯示量測欄位',()=>{
+test('5.2.4 量測不再先選類型，直接顯示量測欄位',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   assert.equal(t.fields.some(x=>x.id==='noiseMeasureBands'),false);
@@ -146,11 +146,71 @@ test('第9條只判斷實際填入的量測項目',()=>{
   assert.doesNotMatch(out.noise522PendingText||'',/低頻判定所需資料/);
 });
 
-test('版本為5.2.3且離線殼不再使用5.2.2檔號',()=>{
+test('24小時制使用自製00到23時選擇器，不再依手機原生上午下午介面',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const time=t.fields.find(x=>x.id==='noiseTime');
+  assert.deepEqual(JSON.parse(JSON.stringify(time.timePicker)),{empty:'—',hour:'時',minute:'分'});
+  assert.match(time.help,/00～23/);
+});
+
+test('第8條例外欄位在表單與手機流程均排在量測之後',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const measurementIds=['noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFull','noiseBgLow'];
+  const lastMeasure=Math.max(...measurementIds.map(id=>t.fields.findIndex(x=>x.id===id)));
+  for(const id of ['noiseA8Ex_fireworks_government','noiseA8Ex_fireworks_festival']){
+    assert.ok(t.fields.findIndex(x=>x.id===id)>lastMeasure,id);
+  }
+  const ids=t.mobileWizard.steps.map(x=>x.id);
+  assert.ok(ids.indexOf('article8-exceptions')>ids.indexOf('measurement'));
+  assert.ok(ids.indexOf('law')>ids.indexOf('article8-exceptions'));
+  const exStep=t.mobileWizard.steps.find(x=>x.id==='article8-exceptions');
+  assert.ok(exStep.fields.includes('noiseA8Ex_fireworks_government'));
+  assert.ok(exStep.fields.includes('noiseA8Ex_fireworks_festival'));
+});
+
+test('營建工程機械設備遇到施放爆竹煙火，不因場所屬第9條而提前跳量測',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
+    noiseBehavior:'fireworks',noiseA8Disturbance:'yes'
+  });
+  assert.equal(out.noiseRouteText,'第8條例外事項待查');
+  assert.equal(out.noise522ShowMeasurement,'no');
+  assert.equal(out.noiseShowA8Exception,'yes');
+  assert.match(out.noise522Article8Text,/不是同一噪音來源／作業/);
+});
+
+test('與第9條同一作業的營建工程第8條行為仍先保全量測',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
+    noiseBehavior:'construction',noiseA8Disturbance:'yes'
+  });
+  assert.equal(out.noiseRouteText,'第8條例外前量測證據保全');
+  assert.equal(out.noise522ShowMeasurement,'yes');
+  assert.equal(out.noiseShowA8Exception,'no');
+  assert.match(out.noiseGuide,/同一噪音來源／作業/);
+});
+
+test('爆竹煙火例外成立後，才回到獨立的營建工程第9條量測',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
+    noiseBehavior:'fireworks',noiseA8Disturbance:'yes',
+    noiseA8Ex_fireworks_government:'yes'
+  });
+  assert.equal(out.noise522ShowMeasurement,'yes');
+  assert.equal(out.noiseRouteText,'第9條現場量測');
+  assert.match(out.noise522Article8Text,/例外成立/);
+});
+
+test('版本為5.2.4且離線殼不再使用5.2.2檔號',()=>{
   const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sw=fs.readFileSync(path.join(ROOT,'service-worker.js'),'utf8');
   const meta=fs.readFileSync(path.join(ROOT,'data/app-meta.js'),'utf8');
   assert.doesNotMatch(index,/v=5\.2\.2/);
-  assert.match(sw,/VERSION='5\.2\.3'/);
-  assert.match(meta,/version:'5\.2\.3'/);
+  assert.match(sw,/VERSION='5\.2\.4'/);
+  assert.match(meta,/version:'5\.2\.4'/);
 });
