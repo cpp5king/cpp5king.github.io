@@ -37,7 +37,7 @@
   function sourceLabel(input){
     if(input.noiseSourceCategory==='equipment'){
       const row=rules.equipment.find(x=>x.id===input.noiseEquipmentType);
-      return text(input.noiseSourceDescription)||row?.label||'機械／設備';
+      return text(input.noiseSourceDescription)||row?.label||'機械設備';
     }
     const row=rules.sources.find(x=>x.id===input.noiseSourceCategory);
     return text(input.noiseSourceDescription)||row?.label||'';
@@ -45,7 +45,7 @@
   function targetLabel(target){return target?.label||'';}
   function targetTable(target){
     if(!target)return '';
-    return {factory:'factory',business:'business',construction:'construction',renovation:'construction',speaker:'speaker',otherFacility:'other'}[target.id]||'';
+    return {factory:'factory',entertainment:'business',business:'business',construction:'construction',renovation:'construction',speaker:'speaker',otherFacility:'other'}[target.id]||'';
   }
   function holidayState(input){
     if(typeof core.holidayState==='function'){
@@ -289,7 +289,7 @@
   function seed(input){
     return {...input,
       noise522Never:'no',
-      noise522ShowContinuity:'yes',noise522ShowMeasurability:'yes',noise522ShowPlace:'no',noise522ShowPlaceLegal:'no',
+      noise522ShowContinuity:'yes',noise522ShowMeasurability:'yes',noise522ShowPlace:'no',
       noise522ShowSource:'no',noise522ShowEquipment:'no',noise522ShowSourceOther:'no',noise522ShowTargetChoice:'no',noise522ShowTargetManual:'no',
       noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowSingleFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowZoneSimple:'no',
@@ -320,15 +320,16 @@
     }
 
     out.noise522ShowPlace='yes';
-    if(!input.noisePlaceType)return setStage(out,'場所／工程','請依現場實際情形選擇場所／工程類型。','請確認場所／工程。');
-    out.noise522ShowPlaceLegal=yes(input.noisePlaceType==='other');
-    if(input.noisePlaceType==='other'&&!input.noisePlaceLegalClass)return setStage(out,'場所法律性質','「其他」場所不由系統猜測，請補選法律場所性質或保持尚待確認。','請確認其他場所之法律性質。');
+    if(!input.noisePlaceType)return setStage(out,'場所／工程屬性','請直接依本案法律上的場所／工程屬性選擇。','請確認場所／工程屬性。');
+    if(input.noisePlaceType==='pending')return setStage(out,'場所／工程屬性尚待確認','場所／工程屬性尚待確認；系統不先推定第9條查核對象。','場所／工程屬性尚待確認。');
 
     out.noise522ShowSource='yes';
     if(!input.noiseSourceCategory)return setStage(out,'主要噪音來源','請確認主要噪音來源；場所、音源與現場行為分開記錄。','請確認主要噪音來源。');
-    out.noise522ShowEquipment=yes(input.noiseSourceCategory==='equipment');
+    out.noise522ShowEquipment=yes(input.noiseSourceCategory==='equipment'&&input.noisePlaceType==='nonListed');
     out.noise522ShowSourceOther=yes(input.noiseSourceCategory==='other');
-    if(input.noiseSourceCategory==='equipment'&&!input.noiseEquipmentType)return setStage(out,'機械／設備種類','請確認主要機械／設備種類。','請確認機械／設備種類。');
+    if(input.noiseSourceCategory==='equipment'&&input.noisePlaceType==='nonListed'&&!input.noiseEquipmentType){
+      return setStage(out,'其他經主管機關公告之場所、工程及設施','本案不屬工廠（場）、娛樂場所、營業場所或營建工程；請確認主要機械設備是否屬主管機關公告項目。','請確認公告之場所、工程及設施。');
+    }
     if(input.noiseSourceCategory==='pending')return setStage(out,'主要噪音來源尚待確認','主要音源尚待確認；請先釐清音源，系統不以「尚待確認」推定任何第9條查核對象。','主要噪音來源尚待確認。');
 
     if(input.noiseSourceCategory==='vehicle'){
@@ -403,7 +404,7 @@
       noiseSpeakerOutdoor:input.noiseMeasurementPlace==='boundary'?'yes':input.noiseMeasurementPlace==='complainant'?'no':'',
       noiseHoliday:holidayState(input)
     };
-    if((target.id==='factory'||target.id==='business'||target.id==='otherFacility')&&!selected(input.noiseGeneralSpecialAssessment,'periodic'))forwarded.noiseGeneralMethod='leq';
+    if((target.id==='factory'||target.id==='entertainment'||target.id==='business'||target.id==='otherFacility')&&!selected(input.noiseGeneralSpecialAssessment,'periodic'))forwarded.noiseGeneralMethod='leq';
     if(target.id==='construction'||target.id==='renovation'){
       forwarded.noiseBgLmaxMode='uncooperative';
       forwarded.noiseBgLmax='';
@@ -417,7 +418,7 @@
       const preserve=['noiseShowGeneralBg10','noiseShowGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText','noiseA8ExceptionSummary'];
       preserve.forEach(k=>{if(legacy[k]!==undefined)out[k]=legacy[k];});
     }
-    out.noiseShowGeneralMethod=yes(fullSelected&&['factory','business','otherFacility'].includes(target.id));
+    out.noiseShowGeneralMethod=yes(fullSelected&&['factory','entertainment','business','otherFacility'].includes(target.id));
     out.noiseShowSpeakerMode=yes(fullSelected&&target.id==='speaker');
     out.noiseShowConstructionLmax='no';
 
@@ -480,10 +481,10 @@
     const next={...after};
     const clear=keys=>keys.forEach(k=>{next[k]='';});
     if(before.noiseContinuity!==after.noiseContinuity||before.noiseMeasurability!==after.noiseMeasurability){
-      if(after.noiseContinuity!=='yes'||after.noiseMeasurability!=='yes')clear(['noisePlaceType','noisePlaceLegalClass','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning','noiseMeasureBands']);
+      if(after.noiseContinuity!=='yes'||after.noiseMeasurability!=='yes')clear(['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning','noiseMeasureBands']);
     }
-    if(before.noisePlaceType!==after.noisePlaceType||before.noisePlaceLegalClass!==after.noisePlaceLegalClass){
-      clear(['noiseTargetChoice','noiseTargetManual','noiseTargetRunning','noiseMeasureBands','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
+    if(before.noisePlaceType!==after.noisePlaceType){
+      clear(['noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning','noiseMeasureBands','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
     }
     if(before.noiseSourceCategory!==after.noiseSourceCategory||before.noiseEquipmentType!==after.noiseEquipmentType){
       clear(['noiseTargetChoice','noiseTargetManual','noiseTargetRunning','noiseMeasureBands','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
@@ -535,22 +536,23 @@
     const bgLowMode=t.fields.find(f=>f.id==='noiseBgLowMode');if(bgLowMode)bgLowMode.displayWhen=show('noiseShowBgLow');
 
     const flags=[
-      'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowPlaceLegal','noise522ShowSource',
+      'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
       'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowNonUrbanFourth'
     ].map(id=>computed(id,id));
     const optionsTargets=Object.values(rules.targets).map(x=>({id:x.id,label:x.label}));
+    const announcedEquipment=rules.equipment.filter(x=>x.facilityId);
     const newFields=[
       ...flags,
+      field('noiseDate','稽查日期','date',{format:'roc'}),
+      field('noiseTime','稽查時間','time'),
       computed('noise522TargetText','目前查核對象',true,show('noise522ShowRunning')),
       select('noiseContinuity','這個聲音是否具有持續性？',ynu,show('noise522ShowContinuity')),
       select('noiseMeasurability','依現場狀況，這個聲音是否容易進行有效量測？',ynu,show('noise522ShowMeasurability')),
-      select('noisePlaceType','場所／工程',rules.places,show('noise522ShowPlace')),
-      field('noisePlaceOtherText','其他場所說明','text',{displayWhen:{field:'noisePlaceType',value:'other'}}),
-      select('noisePlaceLegalClass','其他場所之法律性質',rules.placeLegalClasses,show('noise522ShowPlaceLegal')),
+      select('noisePlaceType','場所／工程屬性',rules.places,show('noise522ShowPlace')),
       select('noiseSourceCategory','主要噪音來源',rules.sources,show('noise522ShowSource')),
-      select('noiseEquipmentType','機械／設備種類',rules.equipment,show('noise522ShowEquipment')),
+      select('noiseEquipmentType','其他經主管機關公告之場所、工程及設施',announcedEquipment,show('noise522ShowEquipment')),
       field('noiseSourceDescription','主要音源補充描述','text',{displayWhen:show('noise522ShowSource')}),
       select('noiseTargetChoice','本案可有不同查核方式，請依陳情對象及現場實際情況選擇',optionsTargets,show('noise522ShowTargetChoice')),
       select('noiseTargetManual','查核對象（無法由固定規則唯一形成時由稽查員確認）',optionsTargets,show('noise522ShowTargetManual')),
@@ -600,17 +602,18 @@
     t.fields.splice(firstNonComputed<0?0:firstNonComputed,0,...newFields);
     t.title='噪音稽查－事實／量測／法規分層測試版';
     t.formTitle='噪音案件';
-    t.version='5.2.2-test.1';
-    t.moduleVersion='5.2.2-test.1';
+    t.version='5.2.2';
+    t.moduleVersion='5.2.2';
     t.previewOnlyMessage='尚有必要事實或法規研判資料未完成；現場事實與已輸入量測資料均保留。';
     t.mobileWizard={
       ariaLabel:'噪音手機逐步流程',brandLabel:'稽查助手',brandSlogan:'先保全現場證據，再完成法規研判',fallbackTitle:'其他必要事項',
       statusFields:[{id:'noise522TargetText',label:'查核對象'},{id:'noiseRouteText',label:'目前路徑'}],
       steps:[
-        {id:'article6',title:'第6條前置分流',help:'先確認聲音的持續性與可有效量測性。任一為否即不進一般第9條量測主流程。',fields:['noiseContinuity','noiseMeasurability']},
-        {id:'target',title:'場所、音源與查核對象',help:'場所與音源分開記錄，由固定規則形成查核對象；有多條合法路徑時再由稽查員選擇。',fields:['noisePlaceType','noisePlaceOtherText','noisePlaceLegalClass','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
+        {id:'basic',title:'稽查日期及時間',help:'先記錄本次稽查日期與到場時間，後續第8條時段判斷及紀錄草稿直接引用。',fields:['noiseDate','noiseTime']},
+        {id:'article6',title:'第6條前置分流',help:'確認聲音的持續性與可有效量測性。任一為否即不進一般第9條量測主流程。',fields:['noiseContinuity','noiseMeasurability']},
+        {id:'target',title:'場所、音源與查核對象',help:'直接選擇法規上的場所／工程屬性；前四類場所由場所直接形成第9條主要路徑，非上述場所搭配機械設備時才進一步確認公告項目。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
         {id:'measurement',title:'現場量測',help:'音源正在發生時先保全量測證據；系統不與噪音計連動，也不顯示假計時。',fields:['noiseMeasureBands','noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseFullStart','noiseFullEnd','noiseLowStart','noiseLowEnd','noiseWeatherText','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseMeasureResultFull','noiseMeasureResultLow']},
-        {id:'facts',title:'量測期間補充現場事實',help:'量測期間可補現場行為、使用分區、道路／交界及其他觀察，不必等這些資料全部填完才開始量測。',fields:['noiseDate','noiseTime','noiseSubject','noiseBehavior','noiseBoundaryInvolved','noiseLandUseType','noiseNonUrbanFourth','noiseZoneLegalOverride','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseBoundaryZonePair','noiseObservation']},
+        {id:'facts',title:'量測期間補充現場事實',help:'量測期間可補現場行為、使用分區、道路／交界及其他觀察，不必等這些資料全部填完才開始量測。',fields:['noiseSubject','noiseBehavior','noiseBoundaryInvolved','noiseLandUseType','noiseNonUrbanFourth','noiseZoneLegalOverride','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseBoundaryZonePair','noiseObservation']},
         {id:'law',title:'法規研判與待查事項',help:'第8條與第9條分開呈現；正式草稿只依主要處理路徑產生。',fields:['noiseA8ExceptionSummary','noise522Article8Text','noise522Article9Text','noise522PendingText','noise522FactSummary','noiseRouteText','noiseResultText']}
       ]
     };
