@@ -10,7 +10,7 @@
   ].map(([id,label,legalClass])=>({id,label,legalClass}));
   const sources=[
     ['equipment','機械設備'],
-    ['speaker','擴音設備'],
+    ['speaker','擴音設施'],
     ['vehicle','車輛相關'],
     ['other','其他'],
     ['pending','尚待確認']
@@ -34,7 +34,7 @@
     ['commercialMachinery','使用動力機械從事商業行為','commercialMachinery'],
     ['religious','宗教／民俗活動使用發聲法器','religious'],
     ['instrument','使用樂器','instrument'],
-    ['vehicleBusiness','引擎試車／車輛修理、改裝','vehicleBusiness'],
+    ['vehicleBusiness','運轉引擎試車／使用動力機械清洗、修理、改裝車輛之商業行為','vehicleBusiness'],
     ['karaoke','卡拉 OK／伴唱歌唱','karaoke'],
     ['renovation','使用動力機械或手持工具從事裝修工程','renovation'],
     ['construction','使用動力機械或手持工具從事營建工程','construction'],
@@ -103,8 +103,8 @@
   }
   function landUseZone(id){return landUseZones[id]||'';}
   root.NOISE_REFACTOR_522=Object.freeze({
-    version:'5.2.2',
-    source:'5.2.1 噪音規則之流程重構映射層；第8、9條法規條件與數值沿用既有單一規則來源。',
+    version:'5.2.3',
+    source:'5.2.3 噪音流程重構映射層；第8、9條法規條件與數值沿用既有單一規則來源。',
     places:Object.freeze(places),
     sources:Object.freeze(sources),
     equipment:Object.freeze(announcedItems),
