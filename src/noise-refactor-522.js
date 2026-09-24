@@ -407,8 +407,14 @@
   }
   function draftA9(input,target,assessment,zones){
     if(!text(input.noiseSubject)||!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime)||!zones.length)return '';
-    const fullStatus=assessment.full?.status||'',lowStatus=assessment.low?.status||'';
-    const statuses=[fullStatus,lowStatus].filter(Boolean);
+    const construction=target.id==='construction'||target.id==='renovation';
+    const leqEntered=construction?num(input.noiseValueLeq)!==null:num(input.noiseValueFull)!==null;
+    const lmaxEntered=construction&&num(input.noiseValueLmax)!==null;
+    const lowEnteredNow=num(input.noiseValueLow)!==null;
+    const leqStatus=leqEntered?(construction?assessment.leq?.status:assessment.full?.status)||'':'';
+    const lmaxStatus=lmaxEntered?assessment.lmax?.status||'':'';
+    const lowStatus=lowEnteredNow?assessment.low?.status||'':'';
+    const statuses=[leqStatus,lmaxStatus,lowStatus].filter(Boolean);
     if(!statuses.length)return '';
     const source=sourceLabel(input)||targetLabel(target);
     const outdoor=input.noiseMeasurementPlace==='boundary';
@@ -431,8 +437,9 @@
     const rainText=input.noiseRain==='yes'?'天雨':input.noiseRain==='no'?'無雨':text(input.noiseWeatherText)?'天候'+text(input.noiseWeatherText):'';
     const weather=outdoor&&rainText?'量測時'+rainText+(num(input.noiseWind)!==null?'，風速為'+fmt(input.noiseWind)+'m/s，':'，'):'';
     const mixed=[];
-    if(fullStatus)mixed.push('全頻測定結果'+statusLabels[fullStatus]);
-    if(lowStatus)mixed.push('低頻測定結果'+statusLabels[lowStatus]);
+    if(leqStatus)mixed.push('全頻 Leq 測定結果'+statusLabels[leqStatus]);
+    if(lmaxStatus)mixed.push('Lmax 測定結果'+statusLabels[lmaxStatus]);
+    if(lowStatus)mixed.push('低頻 Leq,LF 測定結果'+statusLabels[lowStatus]);
     const result=mixed.join('；');
     const standard=standardDescription(input,target,assessment);
     let ending='';
@@ -443,8 +450,14 @@
   }
   function replyA9(input,target,assessment,zones){
     if(!text(input.noiseSubject)||!rocDate(input.noiseDate)||!inspectionHour(input.noiseTime)||!zones.length)return '';
-    const fullStatus=assessment.full?.status||'',lowStatus=assessment.low?.status||'';
-    const statuses=[fullStatus,lowStatus].filter(Boolean);
+    const construction=target.id==='construction'||target.id==='renovation';
+    const leqEntered=construction?num(input.noiseValueLeq)!==null:num(input.noiseValueFull)!==null;
+    const lmaxEntered=construction&&num(input.noiseValueLmax)!==null;
+    const lowEnteredNow=num(input.noiseValueLow)!==null;
+    const leqStatus=leqEntered?(construction?assessment.leq?.status:assessment.full?.status)||'':'';
+    const lmaxStatus=lmaxEntered?assessment.lmax?.status||'':'';
+    const lowStatus=lowEnteredNow?assessment.low?.status||'':'';
+    const statuses=[leqStatus,lmaxStatus,lowStatus].filter(Boolean);
     if(!statuses.length)return '';
     const source=sourceLabel(input)||targetLabel(target);
     const point=publicPointText(input);
@@ -457,7 +470,7 @@
     }
     if(lowEntered(input)&&num(input.noiseValueLow)!==null)parts.push('低頻測定值為'+fmt(input.noiseValueLow)+'分貝');
     const lead='本局於'+rocDate(input.noiseDate)+inspectionHour(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時作業中，噪音源為'+source+'，'+(point?'於'+point:'於現場')+'量測'+parts.join('、')+'，';
-    if(statuses.includes('unable')){
+    if(statuses.includes('unable')&&!statuses.includes('high')){
       if(input.noiseMeasurementPlace==='boundary'&&input.noiseRain==='yes'){
         return '本局於'+rocDate(input.noiseDate)+inspectionHour(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場天雨，不符室外量測條件，本次無法完成有效噪音量測。';
       }
@@ -471,8 +484,9 @@
       return lead+'未超過'+(standard||'本案適用之噪音管制標準')+'，本局仍勸導業者降低音量並注意作業時段及加強噪音防護措施以免擾鄰，爾後將不定期派員前往稽查，倘發現有違反法令，將依法告發，以維護環境品質。';
     }
     const mixed=[];
-    if(fullStatus)mixed.push('全頻'+statusLabels[fullStatus]);
-    if(lowStatus)mixed.push('低頻'+statusLabels[lowStatus]);
+    if(leqStatus)mixed.push('全頻 Leq '+statusLabels[leqStatus]);
+    if(lmaxStatus)mixed.push('Lmax '+statusLabels[lmaxStatus]);
+    if(lowStatus)mixed.push('低頻 Leq,LF '+statusLabels[lowStatus]);
     return lead+'經比對'+(standard||'本案適用之噪音管制標準')+'，'+mixed.join('；')+'，本局將依噪音管制法相關規定辦理後續改善及查處。';
   }
   function pendingItems(input,target,zone,assessment,a8){
@@ -518,6 +532,7 @@
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowA8Zone:'no',noise522ShowA9Zone:'no',noise522ShowA9DirectZone:'no',
       noise522ShowA9BoundaryKind:'no',noise522ShowA9RoadFacts:'no',noise522ShowA9BoundaryPair:'no',noise522ShowA8Behavior:'no',noise522ShowA8Disturbance:'no',noise522ShowLowInput:'no',
       noise522ShowStandard:'no',noise522ShowLeqDetail:'no',noise522ShowLmaxDetail:'no',noise522ShowLowDetail:'no',
+      noise522ShowBgFullValue:'no',noise522ShowBgLmaxValue:'no',noise522ShowBgLowValue:'no',
       noise522A9ZoneText:'',noise522StandardText:'',noise522MeasureDetailLeq:'',noise522MeasureDetailLmax:'',noise522MeasureDetailLow:'',
       ...Object.fromEntries((root.NOISE_ARTICLE8_RULES?.acts||[]).map(act=>['noise522A8Candidate_'+act.id,'no'])),
       ...Object.fromEntries(Object.values(rules.targets||{}).map(target=>['noise522TargetCandidate_'+target.id,'no'])),
@@ -688,6 +703,9 @@
     out.noiseShowBgFull=yes(leqEntered&&(construction?assessment.leq.needsBackground:assessment.full.needsBackground));
     out.noiseShowBgLmax=yes(lmaxEntered&&assessment.lmax.needsBackground);
     out.noiseShowBgLow=yes(lowSelected&&assessment.low.needsBackground);
+    out.noise522ShowBgFullValue=yes(out.noiseShowBgFull==='yes'&&input.noiseBgFullMode==='measured');
+    out.noise522ShowBgLmaxValue=yes(out.noiseShowBgLmax==='yes'&&input.noiseBgLmaxMode==='measured');
+    out.noise522ShowBgLowValue=yes(out.noiseShowBgLow==='yes'&&input.noiseBgLowMode==='measured');
     out.noise522ShowLeqDetail=yes(leqEntered);
     out.noise522ShowLmaxDetail=yes(lmaxEntered);
     out.noise522ShowLowDetail=yes(lowSelected);
@@ -886,6 +904,7 @@
     const clearA8Branch=()=>clear(['noiseBehavior',...exceptionKeys]);
     if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime||before.noiseA8SourceZone!==after.noiseA8SourceZone){
       clearA8Branch();
+      if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime)clear(['noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     }
     if(before.noiseBehavior!==after.noiseBehavior){
       clear([...exceptionKeys,'noiseContinuity','noiseMeasurability','noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning',
@@ -922,6 +941,9 @@
     if(before.noiseBgLowMode!==after.noiseBgLowMode&&after.noiseBgLowMode!=='measured')clear(['noiseBgLow']);
     const zoneFacts=['noiseA9DirectZone','noiseA9BoundaryInvolved','noiseA9BoundaryKind','noiseA9BoundaryZonePair','noiseA9RoadWidth','noiseA9RoadSideAZone','noiseA9RoadSideBZone','noiseA9RoadSourceSide','noiseA9RoadPointSide','noiseA9BoundaryDistance','noiseA9RoadOriginalFourth','noiseA9RoadAdjacentFirst','noiseA9ZoneLegalOverride'];
     if(zoneFacts.some(k=>before[k]!==after[k]))clear(['noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
+    if(before.noiseGeneralMethod!==after.noiseGeneralMethod||before.noiseSpeakerMode!==after.noiseSpeakerMode){
+      clear(['noiseValueFull','noiseBgFullMode','noiseBgFull']);
+    }
     if(selected(before.noiseGeneralSpecialAssessment,'periodic')&&!selected(after.noiseGeneralSpecialAssessment,'periodic')){
       clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText']);
     }
@@ -964,11 +986,11 @@
     const low=t.fields.find(f=>f.id==='noiseValueLow');if(low){low.label='測定低頻音量（dB）';low.displayWhen=show('noise522ShowLowInput');}
     const wind=t.fields.find(f=>f.id==='noiseWind');if(wind){wind.displayWhen=show('noise522ShowWeather');wind.help='室外量測時填寫實測風速；系統將依量測條件判斷是否可有效量測。';}
     const bgFullMode=t.fields.find(f=>f.id==='noiseBgFullMode');if(bgFullMode){bgFullMode.label='全頻 Leq 背景音量處理';bgFullMode.displayWhen=show('noiseShowBgFull');}
-    const bgFull=t.fields.find(f=>f.id==='noiseBgFull');if(bgFull){bgFull.label='全頻 Leq 背景音量 dB(A)';bgFull.displayWhen={field:'noiseBgFullMode',value:'measured'};}
+    const bgFull=t.fields.find(f=>f.id==='noiseBgFull');if(bgFull){bgFull.label='全頻 Leq 背景音量 dB(A)';bgFull.displayWhen=show('noise522ShowBgFullValue');}
     const bgLmaxMode=t.fields.find(f=>f.id==='noiseBgLmaxMode');if(bgLmaxMode){bgLmaxMode.label='Lmax 背景音量處理';bgLmaxMode.displayWhen=show('noiseShowBgLmax');}
-    const bgLmax=t.fields.find(f=>f.id==='noiseBgLmax');if(bgLmax){bgLmax.label='Lmax 背景音量 dB(A)';bgLmax.displayWhen={field:'noiseBgLmaxMode',value:'measured'};}
+    const bgLmax=t.fields.find(f=>f.id==='noiseBgLmax');if(bgLmax){bgLmax.label='Lmax 背景音量 dB(A)';bgLmax.displayWhen=show('noise522ShowBgLmaxValue');}
     const bgLowMode=t.fields.find(f=>f.id==='noiseBgLowMode');if(bgLowMode){bgLowMode.label='低頻 Leq,LF 背景音量處理';bgLowMode.displayWhen=show('noiseShowBgLow');}
-    const bgLow=t.fields.find(f=>f.id==='noiseBgLow');if(bgLow){bgLow.label='低頻 Leq,LF 背景音量 dB(A)';bgLow.displayWhen={field:'noiseBgLowMode',value:'measured'};}
+    const bgLow=t.fields.find(f=>f.id==='noiseBgLow');if(bgLow){bgLow.label='低頻 Leq,LF 背景音量 dB(A)';bgLow.displayWhen=show('noise522ShowBgLowValue');}
 
     const flags=[
       'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
@@ -976,6 +998,7 @@
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
       'noise522ShowA8Zone','noise522ShowA9Zone','noise522ShowA9DirectZone','noise522ShowA9BoundaryKind','noise522ShowA9RoadFacts','noise522ShowA9BoundaryPair',
       'noise522ShowA8Behavior','noise522ShowLowInput','noise522ShowStandard','noise522ShowLeqDetail','noise522ShowLmaxDetail','noise522ShowLowDetail',
+      'noise522ShowBgFullValue','noise522ShowBgLmaxValue','noise522ShowBgLowValue',
       ...(root.NOISE_ARTICLE8_RULES?.acts||[]).map(act=>'noise522A8Candidate_'+act.id),
       ...Object.values(rules.targets||{}).map(target=>'noise522TargetCandidate_'+target.id)
     ].map(id=>computed(id,id));
