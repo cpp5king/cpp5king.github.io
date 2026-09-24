@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-    branches: [main, test/noise-refactor-5.2.6]
+    branches: [main, test/noise-refactor-5.2.7]
   pull_request:
 
 jobs:
