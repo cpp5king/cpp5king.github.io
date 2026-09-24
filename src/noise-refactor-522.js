@@ -687,11 +687,11 @@
     const missing='（尚未確認）';
     const field=(id,label,type,extra={})=>({id,label,type,missing,...extra});
     const computed=(id,label,display=false,displayWhen=null)=>({id,label,type:'computed',missing,display,...(displayWhen?{displayWhen}:{})});
-    const select=(id,label,options,displayWhen)=>field(id,label,'select',{allowCustom:false,options:options.map(x=>({
+    const select=(id,label,options,displayWhen,extra={})=>field(id,label,'select',{allowCustom:false,options:options.map(x=>({
       id:x.id||x[0],label:x.label||x[1],value:x.label||x[1],
       ...(x.when?{when:x.when}:{}),...(x.disabled?{disabled:true}:{})
-    })),...(displayWhen?{displayWhen}:{})});
-    const checklist=(id,label,items,displayWhen)=>field(id,label,'checklist',{items:items.map(x=>({id:x.id||x[0],label:x.label||x[1],value:x.label||x[1]})),separator:'、',emptyValue:'',...(displayWhen?{displayWhen}:{})});
+    })),...(displayWhen?{displayWhen}:{}),...extra});
+    const checklist=(id,label,items,displayWhen,extra={})=>field(id,label,'checklist',{items:items.map(x=>({id:x.id||x[0],label:x.label||x[1],value:x.label||x[1]})),separator:'、',emptyValue:'',...(displayWhen?{displayWhen}:{}),...extra});
     const show=id=>({field:id,value:'yes'});
     const ynu=[['yes','是'],['no','否'],['unknown','尚無法確認']];
     const yn=[['yes','是'],['no','否']];
@@ -733,15 +733,15 @@
       computed('noise522TargetText','目前查核對象',true,show('noise522ShowRunning')),
       select('noiseContinuity','這個聲音是否具有持續性？',ynu,show('noise522ShowContinuity')),
       select('noiseMeasurability','依現場狀況，這個聲音是否容易進行有效量測？',ynu,show('noise522ShowMeasurability')),
-      select('noisePlaceType','場所／工程屬性',rules.places,{...show('noise522ShowPlace'),help:'請依查核對象本身的法律性質選擇，不以實際發出聲音的設備種類判斷。'}),
-      select('noiseSourceCategory','主要噪音來源',rules.sources,{...show('noise522ShowSource'),help:'記錄現場實際發出噪音的來源；場所屬性與噪音來源分開判斷。'}),
+      select('noisePlaceType','場所／工程屬性',rules.places,show('noise522ShowPlace'),{help:'請依查核對象本身的法律性質選擇，不以實際發出聲音的設備種類判斷。'}),
+      select('noiseSourceCategory','主要噪音來源',rules.sources,show('noise522ShowSource'),{help:'記錄現場實際發出噪音的來源；場所屬性與噪音來源分開判斷。'}),
       select('noiseEquipmentType','本案是否屬下列公告項目？',announcedEquipment,show('noise522ShowEquipment')),
       field('noiseSourceDescription','主要音源補充描述','text',{displayWhen:show('noise522ShowSource')}),
       select('noiseTargetChoice','本案可有不同查核方式，請依陳情對象及現場實際情況選擇',optionsTargets,show('noise522ShowTargetChoice')),
       select('noiseTargetManual','查核對象（無法由固定規則唯一形成時由稽查員確認）',optionsTargets,show('noise522ShowTargetManual')),
       select('noiseTargetRunning','目前查核對象是否正在運轉／發生？',yn,show('noise522ShowRunning')),
-      select('noiseDirectZone','噪音管制區',[['1','第1類'],['2','第2類'],['3','第3類'],['4','第4類'],['pending','尚待確認']],{...show('noise522ShowZoneSimple'),help:'請先選擇所在地原則上所屬之第1～4類；如涉及道路或管制區交界，下一題再進一步確認。'}),
-      select('noiseBoundaryInvolved','本量測位置是否涉及道路或不同噪音管制區交界？',yn,{...show('noise522ShowConcurrentFacts'),help:'如量測位置位於道路範圍、道路兩側或不同噪音管制區交界，請選「是」。'}),
+      select('noiseDirectZone','噪音管制區',[['1','第1類'],['2','第2類'],['3','第3類'],['4','第4類'],['pending','尚待確認']],show('noise522ShowZoneSimple'),{help:'請先選擇所在地原則上所屬之第1～4類；如涉及道路或管制區交界，下一題再進一步確認。'}),
+      select('noiseBoundaryInvolved','本量測位置是否涉及道路或不同噪音管制區交界？',yn,show('noise522ShowConcurrentFacts'),{help:'如量測位置位於道路範圍、道路兩側或不同噪音管制區交界，請選「是」。'}),
       select('noiseBoundaryKind','道路／交界類型',[['road','道路'],['zoneBoundary','不同噪音管制區交界']],show('noise522ShowBoundaryKind')),
       field('noiseRoadName','道路名稱','text',{displayWhen:show('noise522ShowRoadFacts')}),
       field('noiseRoadWidth','道路寬度（公尺）','number',{min:0,displayWhen:show('noise522ShowRoadFacts')}),
@@ -756,11 +756,11 @@
       select('noiseBoundaryZonePair','交界涉及之兩類噪音管制區',[
         ['1-2','第1類＋第2類'],['1-3','第1類＋第3類'],['1-4','第1類＋第4類'],['2-3','第2類＋第3類'],['2-4','第2類＋第4類'],['3-4','第3類＋第4類']
       ],show('noise522ShowBoundaryPair')),
-      select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,{...show('noise522ShowA8Behavior'),help:'僅顯示目前日期、時間及噪音管制區可能適用之公告禁止行為。'}),
-      checklist('noiseMeasureBands','量測類型',[['full','全頻噪音'],['low','低頻噪音']],{...show('noise522ShowMeasurement'),help:'可依案件需要選擇全頻、低頻，或兩者皆量測。'}),
-      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],{...show('noise522ShowMeasurementPlace'),help:'請依實際測點選擇；具特殊法定測量位置者，系統依適用規則處理。'}),
+      select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,show('noise522ShowA8Behavior'),{help:'僅顯示目前日期、時間及噪音管制區可能適用之公告禁止行為。'}),
+      checklist('noiseMeasureBands','量測類型',[['full','全頻噪音'],['low','低頻噪音']],show('noise522ShowMeasurement'),{help:'可依案件需要選擇全頻、低頻，或兩者皆量測。'}),
+      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],show('noise522ShowMeasurementPlace'),{help:'請依實際測點選擇；具特殊法定測量位置者，系統依適用規則處理。'}),
       field('noiseMeasurementPlaceDetail','量測位置描述（選填）','text',{displayWhen:show('noise522ShowMeasurement'),required:false,help:'補充實際測點位置，例如「工地東側周界外」、「陳情人臥室窗邊」。'}),
-      select('noiseRain','是否天雨？',yn,{...show('noise522ShowWeather'),help:'僅供室外量測條件記錄。'}),
+      select('noiseRain','是否天雨？',yn,show('noise522ShowWeather'),{help:'僅供室外量測條件記錄。'}),
       field('noiseObservation','補充現場事實（選填）','textarea',{
         displayWhen:show('noise522ShowConcurrentFacts'),required:false,
         placeholder:'僅填寫其他欄位未涵蓋、可能有助後續研判之客觀現場情形。',help:'例如設備間歇啟動、關閉設備後聲音消失，或另有明顯背景音源。'
