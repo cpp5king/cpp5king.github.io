@@ -297,7 +297,7 @@
       if(selected(input.noiseMeasureBands,'full')){
         if(!text(input.noiseFullStart)||!text(input.noiseFullEnd))items.push('全頻量測開始／結束時間');
         if(!input.noiseMeasurementPlace)items.push('全頻量測地點');
-        if(input.noiseMeasurementPlace==='boundary'&&(!['yes','no'].includes(input.noiseRain)&&!text(input.noiseWeatherText)||num(input.noiseWind)===null))items.push('是否天雨／風速');
+        if(input.noiseMeasurementPlace==='boundary'&&((!['yes','no'].includes(input.noiseRain)&&!text(input.noiseWeatherText))||num(input.noiseWind)===null))items.push('是否天雨／風速');
         if(!assessment.full?.status&&assessment.full?.progress)items.push('全頻判定所需資料');
       }
       if(selected(input.noiseMeasureBands,'low')){
