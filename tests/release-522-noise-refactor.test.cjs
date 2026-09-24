@@ -212,7 +212,8 @@ test('5.2.6 主流程欄位順序先第8條，再第6條與第9條',()=>{
   assert.ok(pos('noiseA8SourceZone')<pos('noiseBehavior'));
   assert.ok(pos('noiseBehavior')<pos('noiseContinuity'));
   assert.ok(pos('noiseContinuity')<pos('noisePlaceType'));
-  assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));\n  assert.ok(pos('noiseMeasurementPlace')<pos('noiseA9BoundaryInvolved'));
+  assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));
+  assert.ok(pos('noiseMeasurementPlace')<pos('noiseA9BoundaryInvolved'));
   assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps.map(x=>x.id).slice(0,5))),['basic','article8-site','article6','target','measurement']);
 });
 
