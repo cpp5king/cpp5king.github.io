@@ -207,6 +207,49 @@ test('第8條例外成立後不因場所身分自動跳第9條',()=>{
   assert.equal(out.noiseOutcomeId,'article8.excluded');
 });
 
+test('5.2.5 主流程欄位順序先第8條，再第6條與第9條',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const pos=id=>t.fields.findIndex(x=>x.id===id);
+  assert.ok(pos('noiseDirectZone')<pos('noiseBehavior'));
+  assert.ok(pos('noiseBehavior')<pos('noiseContinuity'));
+  assert.ok(pos('noiseContinuity')<pos('noisePlaceType'));
+  assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));
+  assert.deepEqual(t.mobileWizard.steps.map(x=>x.id).slice(0,5),['basic','article8-site','article6','target','measurement']);
+});
+
+test('有第8條候選時先停在第8條，不先顯示第6條或第9條場所音源',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({...base});
+  assert.equal(out.noiseRouteText,'第8條現場行為查核');
+  assert.equal(out.noise522ShowA8Behavior,'yes');
+  assert.equal(out.noise522ShowContinuity,'no');
+  assert.equal(out.noise522ShowPlace,'no');
+  assert.equal(out.noise522ShowMeasurement,'no');
+});
+
+test('第8條選無上述行為後才進一般第6條第9條流程',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({...base,noiseBehavior:'none'});
+  assert.equal(out.noise522ShowContinuity,'yes');
+  assert.equal(out.noise522ShowMeasurability,'yes');
+  assert.equal(out.noise522ShowPlace,'yes');
+  assert.equal(out.noise522ShowMeasurement,'no');
+});
+
+test('非第9條直接連結之第8條行為例外成立後結束本聲音查核',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noiseBehavior:'fireworks',noiseA8Disturbance:'yes',
+    noiseA8Ex_fireworks_festival:'yes',
+    noisePlaceType:'construction',noiseSourceCategory:'other'
+  });
+  assert.equal(out.noiseRouteText,'第8條例外成立');
+  assert.equal(out.noise522ShowMeasurement,'no');
+  assert.equal(out.noise522ShowContinuity,'no');
+  assert.equal(out.noise522ShowPlace,'no');
+});
+
 test('版本為5.2.5且離線殼不再使用5.2.2檔號',()=>{
   const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sw=fs.readFileSync(path.join(ROOT,'service-worker.js'),'utf8');
