@@ -51,6 +51,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px
 .sentence-slot { display: inline-block; vertical-align: middle; max-width: 100%; min-width: 180px; margin: 8px 4px; padding: 10px; border-radius: 8px; background: #f5f8fc; line-height: 1.6; }
 .sentence-slot label { font-size: .9rem; }
 .sentence-slot select { max-width: 100%; width: 100%; }
+.field-help { display:block; margin-top:6px; color:#66788a; font-size:.78rem; line-height:1.45; }
 .custom-slot { display: block; margin-top: 10px; }
 .choice-group, .choice-items { border: 1px solid #b7c5d6; border-radius: 6px; padding: 10px; margin: 0; }
 .choice-items { margin-top: 10px; background: white; }

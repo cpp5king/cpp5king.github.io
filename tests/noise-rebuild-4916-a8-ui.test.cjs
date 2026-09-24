@@ -97,7 +97,7 @@ test('00時第一類與第四類只呈現系統篩選後選項，末項為以上
   let out=root.NoiseMain.prepare(base('2026-09-07','00:00','1'));
   assert.equal(out.noiseShowA8Choice,'yes');
   let ids=optionIds(root);
-  assert.equal(ids.length,10);
+  assert.equal(ids.length,11);
   assert.equal(ids.at(-1),'none');
   let t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   assert.equal(t.fields.find(x=>x.id==='noiseA8Act').options.at(-1).label,'以上皆非');

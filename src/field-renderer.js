@@ -430,6 +430,11 @@
         }
       }
 
+      if(spec.help){
+        const help=el("small",spec.help,"field-help");
+        wrap.append(help);
+      }
+
       displays.push(facts => {
         wrap.hidden =
           !root.DraftEngine.matches(

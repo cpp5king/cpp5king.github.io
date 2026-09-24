@@ -191,6 +191,32 @@
       ]
     },
     {
+      "id": "renovation",
+      "label": "使用動力機械／手持工具從事裝修工程",
+      "zones": [
+        "1",
+        "2",
+        "3"
+      ],
+      "periods": [
+        [
+          "22:00",
+          "08:00"
+        ]
+      ],
+      "holidayPeriods": [
+        [
+          "12:00",
+          "14:00"
+        ],
+        [
+          "20:00",
+          "08:00"
+        ]
+      ],
+      "hasExceptions": false
+    },
+    {
       "id": "construction",
       "label": "營建工程使用動力機械／手持工具",
       "zones": [

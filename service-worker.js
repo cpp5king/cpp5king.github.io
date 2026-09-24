@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.2.1');
+importScripts('./data/law-offline-assets.js?v=5.2.9');
 const PROVENANCE='PP-IA-41-7F3C9A21';
-const VERSION='5.2.1';
-const CACHE_REVISION='release';
-const CACHE_NAME='inspection-assistant-5.2.1-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.9';
+const CACHE_REVISION='noise-refactor-test-8';
+const CACHE_NAME='inspection-assistant-5.2.9-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -41,6 +41,7 @@ const APP_SHELL=[
   './data/templates/water-main.js'+V,
   './data/rules/noise-article8.js'+V,
   './data/rules/noise-article9.js'+V,
+  './data/rules/noise-refactor-522.js'+V,
   './data/water-rules.js'+V,
   './data/waste-rules.js'+V,
   './data/air-v1-config.js'+V,
@@ -60,6 +61,7 @@ const APP_SHELL=[
   './src/noise-priority-routing.js'+V,
   './src/noise-mobile-wizard.js'+V,
   './src/noise-approved-drafts.js'+V,
+  './src/noise-refactor-522.js'+V,
   './src/water-measure-law.js'+V,
   './src/water-permit-law.js'+V,
   './src/water-standard-law.js'+V,
