@@ -15,23 +15,19 @@
     ['other','其他'],
     ['pending','尚待確認']
   ].map(([id,label])=>({id,label}));
-  const equipment=[
-    ['hvac','空調／冷暖氣設備','1'],
-    ['coolingTower','冷卻水塔','2'],
-    ['pump','抽水／加壓馬達','3'],
-    ['exhaustFan','抽排風機','4'],
-    ['refrigeration','冷凍／冷藏設備','5'],
-    ['generator','發電機','6'],
-    ['transformer','變壓器','7'],
-    ['process','製程設備',''],
-    ['breaker','破碎機',''],
-    ['excavator','挖土機',''],
-    ['cutter','切割機',''],
-    ['drill','電鑽／鑽孔機',''],
-    ['grinder','砂輪機',''],
-    ['compressor','空壓機',''],
-    ['other','其他機械設備','']
-  ].map(([id,label,facilityId])=>({id,label,facilityId}));
+  const announcedItems=[
+    ['hvac','空調（通風、冷暖氣機）系統','facility','1'],
+    ['coolingTower','冷卻水塔','facility','2'],
+    ['pump','抽水（加壓）馬達','facility','3'],
+    ['exhaustFan','抽排風機','facility','4'],
+    ['refrigeration','冷凍（冷藏）櫃','facility','5'],
+    ['generator','發電機（含固定及移動式）','facility','6'],
+    ['transformer','變壓器','facility','7'],
+    ['nonBusinessKaraoke','非營業用卡拉 OK','facility','8'],
+    ['renovation','非屬前四類場所／工程範圍內之裝修工程','renovation',''],
+    ['none','以上公告項目皆非','none',''],
+    ['pending','尚待確認','pending','']
+  ].map(([id,label,kind,facilityId])=>({id,label,kind,facilityId}));
   const behaviors=[
     ['fireworks','施放爆竹煙火','fireworks'],
     ['outdoorSpeaker','室外使用擴音設施','outdoorSpeaker'],
@@ -52,7 +48,7 @@
     entertainment:{id:'entertainment',label:'娛樂場所整體噪音',a9Type:'business'},
     business:{id:'business',label:'營業場所整體噪音',a9Type:'business'},
     construction:{id:'construction',label:'營建工程整體噪音',a9Type:'construction'},
-    renovation:{id:'renovation',label:'公告裝修工程',a9Type:'renovation'},
+    renovation:{id:'renovation',label:'其他經主管機關公告之裝修工程',a9Type:'renovation'},
     speaker:{id:'speaker',label:'擴音設施',a9Type:'speaker'},
     otherFacility:{id:'otherFacility',label:'其他經主管機關公告之場所、工程及設施',a9Type:'otherFacility'}
   };
@@ -67,30 +63,27 @@
   function placeClass(input={}){
     return places.find(x=>x.id===input.noisePlaceType)?.legalClass||'';
   }
-  function equipmentMeta(input={}){
-    return equipment.find(x=>x.id===input.noiseEquipmentType)||null;
+  function announcedItem(input={}){
+    return announcedItems.find(x=>x.id===input.noiseEquipmentType)||null;
   }
   function overallTarget(legal){
     return ['factory','entertainment','business','construction'].includes(legal)?targets[legal]:null;
   }
   function targetCandidates(input={}){
-    const legal=placeClass(input),source=input.noiseSourceCategory,equipmentRow=equipmentMeta(input);
+    const legal=placeClass(input),source=input.noiseSourceCategory,item=announcedItem(input);
     if(!legal||legal==='pending'||source==='pending'||!source)return [];
     if(source==='vehicle')return [];
-    if(source==='speaker'){
-      const rows=[];
-      const overall=overallTarget(legal);
-      if(overall)rows.push(overall);
-      rows.push(targets.speaker);
-      return rows;
-    }
-    if(source==='equipment'){
-      const overall=overallTarget(legal);
-      if(overall)return [overall];
-      if(legal==='nonListed'&&equipmentRow?.facilityId)return [{...targets.otherFacility,facilityId:equipmentRow.facilityId}];
+    if(legal==='nonListed'){
+      if(item?.kind==='facility')return [{...targets.otherFacility,facilityId:item.facilityId}];
+      if(item?.kind==='renovation')return [targets.renovation];
+      if(source==='speaker'&&item?.kind==='none')return [targets.speaker];
       return [];
     }
-    if(source==='other'){
+    if(source==='speaker'){
+      const overall=overallTarget(legal);
+      return overall?[overall,targets.speaker]:[targets.speaker];
+    }
+    if(source==='equipment'||source==='other'){
       const overall=overallTarget(legal);
       return overall?[overall]:[];
     }
@@ -105,7 +98,8 @@
     return behaviors.find(x=>x.id===input.noiseBehavior)?.article8Act||'';
   }
   function announcedFacility(input={}){
-    return equipmentMeta(input)?.facilityId||'';
+    const item=announcedItem(input);
+    return item?.kind==='facility'?item.facilityId:'';
   }
   function landUseZone(id){return landUseZones[id]||'';}
   root.NOISE_REFACTOR_522=Object.freeze({
@@ -113,9 +107,10 @@
     source:'5.2.1 噪音規則之流程重構映射層；第8、9條法規條件與數值沿用既有單一規則來源。',
     places:Object.freeze(places),
     sources:Object.freeze(sources),
-    equipment:Object.freeze(equipment),
+    equipment:Object.freeze(announcedItems),
+    announcedItems:Object.freeze(announcedItems),
     behaviors:Object.freeze(behaviors),
     targets:Object.freeze(targets),
-    placeClass,targetCandidates,target,article8Act,announcedFacility,landUseZone
+    placeClass,announcedItem,targetCandidates,target,article8Act,announcedFacility,landUseZone
   });
 })(typeof window==='undefined'?globalThis:window);
