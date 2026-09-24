@@ -906,7 +906,7 @@
       computed('noise522PendingText','待查事項',true,show('noise522ShowConcurrentFacts'))
     ];
     const existingIds=new Set([...newFields,...resultFields].map(f=>f.id));
-    t.fields=t.fields.filter(f=>!existingIds.has(f.id)&&f.id!=='noiseQuickDecisionText'&&f.id!=='noiseMeasureBands');
+    t.fields=t.fields.filter(f=>!existingIds.has(f.id)&&f.id!=='noiseQuickDecisionText'&&f.id!=='noiseMeasureBands'&&f.id!=='noiseA8Disturbance');
     const exceptionIds=new Set();
     for(const act of root.NOISE_ARTICLE8_RULES?.acts||[]){
       for(const check of act.exceptionChecks||[])exceptionIds.add(a8ExceptionValue(act.id,check.id));
