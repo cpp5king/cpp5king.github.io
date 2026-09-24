@@ -301,7 +301,7 @@
       noise522ShowSource:'no',noise522ShowEquipment:'no',noise522ShowSourceOther:'no',noise522ShowTargetChoice:'no',noise522ShowTargetManual:'no',
       noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowSingleFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowZoneSimple:'no',
-      noise522ShowBoundaryKind:'no',noise522ShowRoadFacts:'no',noise522ShowBoundaryPair:'no',noise522ShowNonUrbanFourth:'no',
+      noise522ShowBoundaryKind:'no',noise522ShowRoadFacts:'no',noise522ShowBoundaryPair:'no',
       noise522TargetText:'',noise522FactSummary:'',noise522Article8Text:'',noise522Article9Text:'',noise522PendingText:'',
       noiseMeasureResultFull:'',noiseMeasureResultLow:'',noiseRouteText:'',noiseGuide:'',noiseValidation:'',noiseRecord:'',noiseReply:'',
       noiseBlocked:'yes',noiseOutcomeId:'',noiseShowA8Exception:'no',noiseShowGeneralMethod:'no',noiseShowSpeakerMode:'no',noiseShowBgFull:'no',noiseShowBgLow:'no',
@@ -317,7 +317,6 @@
     out.noise522ShowBoundaryKind=yes(input.noiseBoundaryInvolved==='yes');
     out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
     out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
-    out.noise522ShowNonUrbanFourth=yes(input.noiseBoundaryInvolved==='no'&&input.noiseLandUseType==='nonUrban');
     out.noise522TargetText='未形成第9條管制對象';
     out.noise522Article9Text='第9條：本案不屬工廠（場）、娛樂場所、營業場所、營建工程，且不屬本府依第9條第1項第6款公告之場所、工程及設施，本路徑不適用第9條量測標準。';
     const zone=zoneState(input);
@@ -448,7 +447,6 @@
     out.noise522ShowBoundaryKind=yes(input.noiseBoundaryInvolved==='yes');
     out.noise522ShowRoadFacts=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='road');
     out.noise522ShowBoundaryPair=yes(input.noiseBoundaryInvolved==='yes'&&input.noiseBoundaryKind==='zoneBoundary');
-    out.noise522ShowNonUrbanFourth=yes(input.noiseBoundaryInvolved==='no'&&input.noiseLandUseType==='nonUrban');
 
     if(!fullSelected&&!lowSelected){
       out.noiseRouteText='現場量測';
@@ -608,7 +606,7 @@
       'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
-      'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowNonUrbanFourth'
+      'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair'
     ].map(id=>computed(id,id));
     const optionsTargets=Object.values(rules.targets).map(x=>({id:x.id,label:x.label}));
     const announcedEquipment=rules.announcedItems||rules.equipment;
