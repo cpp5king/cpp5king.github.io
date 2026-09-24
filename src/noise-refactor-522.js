@@ -709,7 +709,7 @@
       out.noise522Article8Text=a8.text||'';
 
       if(a8.status==='behaviorPending')return setStage(out,'第8條現場行為待查',a8.text,'請完成第8條現場行為查核。');
-      if(a8.status==='pending')return setStage(out,'第8條適用事實待確認',a8.text,zone.message||'第8條適用事實尚待確認。');
+      if(a8.status==='pending')return setStage(out,'第8條適用事實待確認',a8.text,a8Zone.message||'第8條適用事實尚待確認。');
       if(a8.status==='established')return finishA8Only(input,out,a8Zone,a8);
 
       if(a8.status==='preserveFirst'){
@@ -775,16 +775,15 @@
     if(before.noiseTargetRunning!==after.noiseTargetRunning&&after.noiseTargetRunning!=='yes'){
       clear(['noiseMeasureBands','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
     }
-    if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime||before.noiseDirectZone!==after.noiseDirectZone||
-       before.noiseBoundaryInvolved!==after.noiseBoundaryInvolved||before.noiseBoundaryKind!==after.noiseBoundaryKind||
-       before.noiseBoundaryZonePair!==after.noiseBoundaryZonePair||before.noiseRoadWidth!==after.noiseRoadWidth||
-       before.noiseRoadSideAZone!==after.noiseRoadSideAZone||before.noiseRoadSideBZone!==after.noiseRoadSideBZone||
-       before.noiseRoadSourceSide!==after.noiseRoadSourceSide||before.noiseRoadPointSide!==after.noiseRoadPointSide||
-       before.noiseBoundaryDistance!==after.noiseBoundaryDistance||before.noiseRoadOriginalFourth!==after.noiseRoadOriginalFourth||
-       before.noiseRoadAdjacentFirst!==after.noiseRoadAdjacentFirst||before.noiseZoneLegalOverride!==after.noiseZoneLegalOverride){
+    if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime||before.noiseA8SourceZone!==after.noiseA8SourceZone){
       clear(['noiseBehavior']);
     }
-    if(before.noiseMeasurementPlace!==after.noiseMeasurementPlace)clear(['noiseWind','noiseRain']);
+    if(before.noiseMeasurementPlace!==after.noiseMeasurementPlace){
+      clear(['noiseA9DirectZone','noiseA9BoundaryInvolved','noiseA9BoundaryKind','noiseA9BoundaryZonePair','noiseA9RoadName','noiseA9RoadWidth',
+        'noiseA9RoadSideAZone','noiseA9RoadSideBZone','noiseA9RoadSourceSide','noiseA9RoadPointSide','noiseA9BoundaryDistance',
+        'noiseA9RoadOriginalFourth','noiseA9RoadAdjacentFirst','noiseA9ZoneLegalOverride','noiseWind','noiseRain',
+        'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow']);
+    }
     if(selected(before.noiseGeneralSpecialAssessment,'periodic')&&!selected(after.noiseGeneralSpecialAssessment,'periodic')){
       clear(['noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethod','noiseGeneralMethodText']);
     }
@@ -814,7 +813,9 @@
 
     const oldInteractive=new Set([
       'noiseSpecial','noiseVehicleExhaustA8','noiseZoneMode','noiseZone','noiseHoliday','noiseA8Act','noiseA8Disturbance','noiseNature','noiseA6Disturbance',
-      'noiseA9Type','noiseFacility','noiseFullPoint','noiseSpeakerOutdoor','noiseBgLmaxMode','noiseBgLmax','noiseQuickDecisionText','noiseMeasureBands','noiseA8Disturbance'
+      'noiseA9Type','noiseFacility','noiseFullPoint','noiseSpeakerOutdoor','noiseBgLmaxMode','noiseBgLmax','noiseQuickDecisionText','noiseMeasureBands',
+      'noiseDirectZone','noiseBoundaryInvolved','noiseBoundaryKind','noiseBoundaryZonePair','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone',
+      'noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseZoneLegalOverride'
     ]);
     for(const f of t.fields||[])if(oldInteractive.has(f.id))f.displayWhen=hidden;
 
@@ -828,10 +829,11 @@
     const bgLowMode=t.fields.find(f=>f.id==='noiseBgLowMode');if(bgLowMode)bgLowMode.displayWhen=show('noiseShowBgLow');
 
     const flags=[
-      'noise522Never','noise522ShowSite','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
+      'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
-      'noise522ShowZoneSimple','noise522ShowBoundaryKind','noise522ShowRoadFacts','noise522ShowBoundaryPair','noise522ShowA8Behavior','noise522ShowA8Disturbance','noise522ShowLowInput',
+      'noise522ShowA8Zone','noise522ShowA9Zone','noise522ShowA9DirectZone','noise522ShowA9BoundaryKind','noise522ShowA9RoadFacts','noise522ShowA9BoundaryPair',
+      'noise522ShowA8Behavior','noise522ShowLowInput',
       ...(root.NOISE_ARTICLE8_RULES?.acts||[]).map(act=>'noise522A8Candidate_'+act.id),
       ...Object.values(rules.targets||{}).map(target=>'noise522TargetCandidate_'+target.id)
     ].map(id=>computed(id,id));
@@ -847,24 +849,12 @@
       field('noiseSubject','查核對象／場所／工程名稱','text',{help:'例如：○○工廠、○○餐廳、○○集合住宅新建工程。'}),
       field('noiseDate','稽查日期','date',{format:'roc'}),
       field('noiseTime','稽查時間（24小時制）','time',{timePicker:{empty:'—',hour:'時',minute:'分'},help:'使用 00～23 時的24小時制，例如 05:30、10:36、19:20、23:45。'}),
-      select('noiseDirectZone','噪音管制區',[['1','第1類'],['2','第2類'],['3','第3類'],['4','第4類'],['pending','尚待確認']],show('noise522ShowSite'),{help:'先確認所在地噪音管制區；如涉及道路或不同管制區交界，下一題再進一步確認。'}),
-      select('noiseBoundaryInvolved','本案位置是否涉及道路或不同噪音管制區交界？',yn,show('noise522ShowSite'),{help:'此項先用於確認第8條及後續第9條適用管制區。'}),
-      select('noiseBoundaryKind','道路／交界類型',[['road','道路'],['zoneBoundary','不同噪音管制區交界']],show('noise522ShowBoundaryKind')),
-      field('noiseRoadName','道路名稱','text',{displayWhen:show('noise522ShowRoadFacts')}),
-      field('noiseRoadWidth','道路寬度（公尺）','number',{min:0,displayWhen:show('noise522ShowRoadFacts')}),
-      select('noiseRoadSideAZone','道路 A 側噪音管制區',zones,show('noise522ShowRoadFacts')),
-      select('noiseRoadSideBZone','道路 B 側噪音管制區',zones,show('noise522ShowRoadFacts')),
-      select('noiseRoadSourceSide','音源所在側',[['a','A側'],['b','B側']],show('noise522ShowRoadFacts')),
-      select('noiseRoadPointSide','量測點所在側',[['a','A側'],['b','B側']],show('noise522ShowRoadFacts')),
-      field('noiseBoundaryDistance','量測點距道路／交界距離（公尺）','number',{min:0,displayWhen:show('noise522ShowRoadFacts')}),
-      select('noiseRoadOriginalFourth','15公尺以上道路外推範圍原本是否屬第四類',ynu,show('noise522ShowRoadFacts')),
-      select('noiseRoadAdjacentFirst','15公尺以上道路是否緊鄰第一類噪音管制區',ynu,show('noise522ShowRoadFacts')),
-      select('noiseZoneLegalOverride','原噪音管制區（道路判定需要時）',zones,show('noise522ShowRoadFacts')),
-      select('noiseBoundaryZonePair','交界涉及之兩類噪音管制區',[
-        ['1-2','第1類＋第2類'],['1-3','第1類＋第3類'],['1-4','第1類＋第4類'],['2-3','第2類＋第3類'],['2-4','第2類＋第4類'],['3-4','第3類＋第4類']
-      ],show('noise522ShowBoundaryPair')),
-      select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,show('noise522ShowA8Behavior'),{help:'先直接判斷現場是否有目前時段及管制區可能適用的第8條公告禁止行為；沒有才進入一般第6條／第9條流程。'}),
-      select('noiseA8Disturbance','該禁止行為是否致妨害他人生活環境安寧？',ynu,show('noise522ShowA8Disturbance'),{help:'此為第8條構成事實之一，不以第9條分貝標準取代。'}),
+      select('noiseA8SourceZone','音源／第8條行為所在地噪音管制區',[['1','第1類'],['2','第2類'],['3','第3類'],['4','第4類'],['pending','尚待確認']],show('noise522ShowA8Zone'),{
+        help:'此欄只供第8條判斷：請依噪音源或禁止行為實際發生地所屬管制區選擇；不與後續第9條量測適用管制區共用。'
+      }),
+      select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,show('noise522ShowA8Behavior'),{
+        help:'先直接判斷現場是否有目前時段及音源所在地管制區可能適用的第8條公告禁止行為；沒有才進入一般第6條／第9條流程。'
+      }),
       select('noiseContinuity','這個聲音是否具有持續性？',ynu,show('noise522ShowContinuity')),
       select('noiseMeasurability','依現場狀況，這個聲音是否容易進行有效量測？',ynu,show('noise522ShowMeasurability')),
       select('noisePlaceType','場所／工程屬性',rules.places,show('noise522ShowPlace'),{help:'第8條未形成處理路徑後，才依本次同一聲音的場所／工程法律性質判斷第9條。'}),
@@ -875,8 +865,31 @@
       select('noiseTargetManual','查核對象（無法由固定規則唯一形成時由稽查員確認）',optionsTargetsAll,show('noise522ShowTargetManual')),
       computed('noise522TargetText','目前查核對象',true,show('noise522ShowRunning')),
       select('noiseTargetRunning','目前查核對象是否正在運轉／發生？',yn,show('noise522ShowRunning')),
-      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],show('noise522ShowMeasurementPlace'),{help:'請依實際測點選擇；具特殊法定測量位置者，系統依適用規則處理。'}),
+      select('noiseMeasurementPlace','量測地點',[['boundary','周界外'],['complainant','陳情人指定之住居所']],show('noise522ShowMeasurementPlace'),{
+        help:'先確認實際測點。第9條適用管制區在本題之後另行判定，不沿用第8條音源所在地管制區。'
+      }),
       field('noiseMeasurementPlaceDetail','量測位置描述（選填）','text',{displayWhen:show('noise522ShowMeasurement'),required:false,help:'補充實際測點位置，例如「工地東側周界外」、「陳情人臥室窗邊」。'}),
+      select('noiseA9BoundaryInvolved','第9條量測位置是否涉及道路或不同噪音管制區交界？',yn,show('noise522ShowA9Zone'),{
+        help:'原則上依量測位置所在地判定；若涉及道路或不同管制區交界，系統再依新北市管制區公告規則處理。'
+      }),
+      select('noiseA9DirectZone','第9條量測位置所在地噪音管制區',zones,show('noise522ShowA9DirectZone'),{
+        help:'此為第9條量測標準使用的管制區；與第8條音源／行為所在地管制區分開記錄。'
+      }),
+      select('noiseA9BoundaryKind','第9條道路／交界類型',[['road','道路'],['zoneBoundary','不同噪音管制區交界']],show('noise522ShowA9BoundaryKind')),
+      field('noiseA9RoadName','道路名稱','text',{displayWhen:show('noise522ShowA9RoadFacts')}),
+      field('noiseA9RoadWidth','道路寬度（公尺）','number',{min:0,displayWhen:show('noise522ShowA9RoadFacts')}),
+      select('noiseA9RoadSideAZone','道路 A 側原噪音管制區',zones,show('noise522ShowA9RoadFacts')),
+      select('noiseA9RoadSideBZone','道路 B 側原噪音管制區',zones,show('noise522ShowA9RoadFacts')),
+      select('noiseA9RoadSourceSide','噪音源所在側',[['a','A側'],['b','B側']],show('noise522ShowA9RoadFacts'),{help:'6公尺以上未滿15公尺道路之非交通噪音源，系統依噪音源所在位置判定適用標準。'}),
+      select('noiseA9RoadPointSide','量測點所在側',[['a','A側'],['b','B側']],show('noise522ShowA9RoadFacts')),
+      field('noiseA9BoundaryDistance','量測點距道路／交界距離（公尺）','number',{min:0,displayWhen:show('noise522ShowA9RoadFacts')}),
+      select('noiseA9RoadOriginalFourth','15公尺以上道路外推範圍原本是否屬第四類',ynu,show('noise522ShowA9RoadFacts')),
+      select('noiseA9RoadAdjacentFirst','15公尺以上道路是否緊鄰第一類噪音管制區',ynu,show('noise522ShowA9RoadFacts')),
+      select('noiseA9ZoneLegalOverride','原噪音管制區（道路判定需要時）',zones,show('noise522ShowA9RoadFacts')),
+      select('noiseA9BoundaryZonePair','交界涉及之兩類噪音管制區',[
+        ['1-2','第1類＋第2類'],['1-3','第1類＋第3類'],['1-4','第1類＋第4類'],['2-3','第2類＋第3類'],['2-4','第2類＋第4類'],['3-4','第3類＋第4類']
+      ],show('noise522ShowA9BoundaryPair')),
+      computed('noise522A9ZoneText','第9條量測適用管制區',true,show('noise522ShowA9Zone')),
       select('noiseRain','是否天雨？',yn,show('noise522ShowWeather'),{help:'僅供室外量測條件記錄。'}),
       field('noiseObservation','補充現場事實（選填）','textarea',{
         displayWhen:show('noise522ShowConcurrentFacts'),required:false,
@@ -918,11 +931,17 @@
       statusFields:[{id:'noise522TargetText',label:'查核對象'},{id:'noiseRouteText',label:'目前路徑'}],
       steps:[
         {id:'basic',title:'案件基本資料',help:'先記錄查核對象／場所／工程名稱、稽查日期及24小時制時間。',fields:['noiseSubject','noiseDate','noiseTime']},
-        {id:'article8-site',title:'管制區與第8條先分流',help:'先確認噪音管制區與道路／交界，再直接判斷現場是否有第8條公告禁止行為。沒有第8條行為，才進入一般第6條／第9條流程。',fields:['noiseDirectZone','noiseBoundaryInvolved','noiseBoundaryKind','noiseRoadName','noiseRoadWidth','noiseRoadSideAZone','noiseRoadSideBZone','noiseRoadSourceSide','noiseRoadPointSide','noiseBoundaryDistance','noiseRoadOriginalFourth','noiseRoadAdjacentFirst','noiseZoneLegalOverride','noiseBoundaryZonePair','noiseBehavior','noiseA8Disturbance']},
+        {id:'article8-site',title:'第8條音源所在地與禁止行為',help:'第8條先看噪音源／禁止行為發生地的管制區，再直接判斷是否有公告禁止行為；不使用後續量測點的管制區。',fields:['noiseA8SourceZone','noiseBehavior']},
         {id:'article6',title:'第6條前置分流',help:'只有第8條沒有形成處理路徑時，才確認聲音持續性與是否容易有效量測。',fields:['noiseContinuity','noiseMeasurability']},
-        {id:'target',title:'第9條場所、音源與查核對象',help:'只針對本次同一聲音確認場所、音源及第9條查核對象；不因所在場所身分把另一種第8條聲音自動送去量測。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
-        {id:'measurement',title:'現場量測',help:'進入量測階段後直接填入實際量得的均能音量、低頻音量；營建工程等依法需要者另填最大音量。未量測項目留白即可。',fields:['noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseRain','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseObservation']},
-        {id:'article8-exceptions',title:'第8條例外查核',help:'只有第8條與第9條確定是同一個聲音且需先保全證據時，量測完成後才查例外；其他第8條行為直接查例外，不自動跳第9條。',fields:[...Array.from(exceptionIds)]},
+        {id:'target',title:'第9條場所、音源與查核對象',help:'只針對本次同一聲音確認場所、音源及第9條查核對象。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
+        {id:'measurement',title:'第9條量測',help:'先選實際量測地點，再另行判定第9條量測適用管制區；一般情形依量測位置所在地，涉及道路或交界時依公告特殊規則處理。之後再填實際量測值。',fields:[
+          'noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseA9BoundaryInvolved','noiseA9DirectZone','noiseA9BoundaryKind','noiseA9RoadName','noiseA9RoadWidth',
+          'noiseA9RoadSideAZone','noiseA9RoadSideBZone','noiseA9RoadSourceSide','noiseA9RoadPointSide','noiseA9BoundaryDistance','noiseA9RoadOriginalFourth',
+          'noiseA9RoadAdjacentFirst','noiseA9ZoneLegalOverride','noiseA9BoundaryZonePair','noise522A9ZoneText',
+          'noiseRain','noiseWind','noiseGeneralSpecialAssessment','noiseSpeakerMode','noiseGeneralBg10','noiseGeneralSpread','noiseGeneralMethodText',
+          'noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLowMode','noiseBgLow','noiseObservation'
+        ]},
+        {id:'article8-exceptions',title:'第8條例外查核',help:'只有第8條與第9條確定是同一個聲音且需先保全證據時，量測完成後才查例外；其他第8條行為直接查例外。',fields:[...Array.from(exceptionIds)]},
         {id:'law',title:'結果與法規研判',help:'集中顯示量測結果、現場摘要、第8條、第9條與待查事項。',fields:['noiseMeasureResultFull','noiseMeasureResultLow','noise522FactSummary','noise522Article8Text','noise522Article9Text','noise522PendingText']}
       ]
     };
