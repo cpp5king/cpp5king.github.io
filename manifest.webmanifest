@@ -1,9 +1,9 @@
 {
-  "name": "稽查助手5.2.5",
+  "name": "稽查助手5.2.6",
   "short_name": "稽查助手",
   "description": "完全離線的稽查決策支援工具",
   "lang": "zh-Hant",
-  "start_url": "./index.html?v=5.2.5",
+  "start_url": "./index.html?v=5.2.6",
   "scope": "./",
   "display": "standalone",
   "background_color": "#efede8",
