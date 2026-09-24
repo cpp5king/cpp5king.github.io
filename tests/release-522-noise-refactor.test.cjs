@@ -58,14 +58,85 @@ test('稽查日期及時間為噪音流程最前方可見欄位，手機流程�
   assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps[0].fields)),['noiseDate','noiseTime']);
 });
 
-test('非上述場所加機械設備時才展開公告場所工程設施項目',()=>{
+test('非上述場所工程進入主管機關公告內容，前四類場所不重複詢問',()=>{
   const root=loadRuntime();
-  let out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',noiseSourceCategory:'equipment'});
-  assert.equal(out.noise522ShowEquipment,'yes');
-  assert.match(out.noiseRouteText,/其他經主管機關公告之場所、工程及設施/);
-  out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'factory',noiseSourceCategory:'equipment'});
+  for(const source of ['equipment','speaker','other']){
+    const out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',noiseSourceCategory:source});
+    assert.equal(out.noise522ShowEquipment,'yes');
+    assert.match(out.noiseRouteText,/其他經主管機關公告之場所、工程及設施/);
+  }
+  const out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'factory',noiseSourceCategory:'equipment'});
   assert.equal(out.noise522ShowEquipment,'no');
   assert.equal(out.noise522TargetText,'工廠（場）整體噪音');
+});
+
+test('公告內容完整列出八類設施、非前四類裝修工程、以上皆非與尚待確認',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const f=t.fields.find(x=>x.id==='noiseEquipmentType');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.options.map(x=>x.label))),[
+    '空調（通風、冷暖氣機）系統','冷卻水塔','抽水（加壓）馬達','抽排風機','冷凍（冷藏）櫃',
+    '發電機（含固定及移動式）','變壓器','非營業用卡拉 OK','非屬前四類場所／工程範圍內之裝修工程',
+    '以上公告項目皆非','尚待確認'
+  ]);
+});
+
+test('非上述場所公告項目選以上皆非時，不得手動硬指定第9條查核對象',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'13:00',noiseContinuity:'yes',noiseMeasurability:'yes',
+    noisePlaceType:'nonListed',noiseSourceCategory:'equipment',noiseEquipmentType:'none',
+    noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseLandUseType:'residential'
+  });
+  assert.equal(out.noise522ShowTargetManual,'no');
+  assert.equal(out.noise522ShowMeasurement,'no');
+  assert.equal(out.noiseRouteText,'未形成噪音管制法管制路徑');
+  assert.equal(out.noiseOutcomeId,'noise.no-regulated-route');
+  assert.match(out.noise522Article9Text,/不適用第9條量測標準/);
+});
+
+test('第9條公告項目皆非時仍繼續第8條研判，第8條成立可獨立形成處理路徑',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'23:00',noiseContinuity:'yes',noiseMeasurability:'yes',
+    noisePlaceType:'nonListed',noiseSourceCategory:'equipment',noiseEquipmentType:'none',
+    noiseSourceDescription:'一般設備',noiseBehavior:'instrument',
+    noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseSubject:'測試場所'
+  });
+  assert.equal(out.noiseRouteText,'第8條公告禁止行為成立');
+  assert.equal(out.noiseOutcomeId,'article8.established');
+  assert.match(out.noiseRecord,/噪音管制法第8條/);
+  assert.equal(out.noise522ShowMeasurement,'no');
+});
+
+test('非營業用卡拉OK屬公告設施，形成其他經主管機關公告之場所工程及設施路徑',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',
+    noiseSourceCategory:'speaker',noiseEquipmentType:'nonBusinessKaraoke',noiseTargetRunning:'yes'
+  });
+  assert.equal(out.noise522TargetText,'其他經主管機關公告之場所、工程及設施');
+  assert.equal(out.noise522ShowMeasurement,'yes');
+});
+
+test('非前四類裝修工程由公告內容直接形成公告裝修工程第9條路徑',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',
+    noiseSourceCategory:'other',noiseEquipmentType:'renovation',noiseTargetRunning:'yes'
+  });
+  assert.equal(out.noise522TargetText,'其他經主管機關公告之裝修工程');
+  assert.equal(out.noise522ShowMeasurement,'yes');
+});
+
+test('非上述場所擴音設備若不屬第6款公告項目，仍保留第9條擴音設施法定路徑',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',
+    noiseSourceCategory:'speaker',noiseEquipmentType:'none',noiseTargetRunning:'yes'
+  });
+  assert.equal(out.noise522TargetText,'擴音設施');
+  assert.equal(out.noise522ShowMeasurement,'yes');
 });
 
 test('5.2.2 第6條拆成持續性與可有效量測性兩題，任一為否即分流警察方向',()=>{
