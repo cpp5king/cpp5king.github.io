@@ -26,7 +26,7 @@ const base={
   noiseSubject:'測試場所',noiseA8SourceZone:'2',noiseTargetRunning:'yes'
 };
 
-test('5.2.7 量測不再先選類型，直接顯示量測欄位',()=>{
+test('5.2.8 量測不再先選類型，直接顯示量測欄位',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   assert.equal(t.fields.some(x=>x.id==='noiseMeasureBands'),false);
@@ -205,7 +205,7 @@ test('第8條例外成立後不因場所身分自動跳第9條',()=>{
   assert.equal(out.noiseOutcomeId,'article8.excluded');
 });
 
-test('5.2.7 欄位結構維持第8條再第6條第9條，實際顯示由時間快篩控制',()=>{
+test('5.2.8 欄位結構維持第8條再第6條第9條，實際顯示由時間快篩控制',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const pos=id=>t.fields.findIndex(x=>x.id===id);
@@ -379,11 +379,88 @@ test('摘要可同時保留第8條音源所在地與第9條推導適用管制區
   assert.match(out.noise522FactSummary,/第9條量測適用管制區：第2類/);
 });
 
-test('版本為5.2.7且離線殼不再使用5.2.2檔號',()=>{
+test('第8條例外成立且直接結束時產生符合例外之固定紀錄',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noiseBehavior:'fireworks',
+    noiseA8Ex_fireworks_government:'yes'
+  });
+  assert.equal(out.noiseOutcomeId,'article8.excluded');
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRecord,/現場有施放爆竹煙火/);
+  assert.match(out.noiseRecord,/符合本府公告之例外情形/);
+  assert.match(out.noiseRecord,/政府辦理大型活動或國際交流/);
+  assert.match(out.noiseRecord,/未認有違反噪音管制法第8條/);
+});
+
+test('第8條例外成立後同一音源續走第9條時最終只使用第9條紀錄',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
+    noiseBehavior:'construction',
+    noiseMeasurementPlace:'boundary',noiseA9BoundaryInvolved:'no',noiseA9DirectZone:'2',
+    noiseRain:'no',noiseWind:'1',noiseValueLeq:'40',noiseValueLmax:'60',
+    noiseA8Ex_construction_emergency:'yes'
+  });
+  assert.equal(out.noiseOutcomeId,'article9.compliant');
+  assert.match(out.noiseRecord,/於周界外量測/);
+  assert.doesNotMatch(out.noiseRecord,/符合本府公告之例外情形/);
+  assert.doesNotMatch(out.noiseRecord,/未認有違反噪音管制法第8條/);
+});
+
+test('第6條不具持續性結果產生固定紀錄',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'15:00',noiseSubject:'測試場所',
+    noiseContinuity:'no',noiseMeasurability:'yes'
+  });
+  assert.equal(out.noiseOutcomeId,'article6.police-direction');
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRecord,/所陳噪音因屬不具持續性之性質/);
+  assert.match(out.noiseRecord,/噪音管制法第6條/);
+  assert.match(out.noiseRecord,/由警察機關依有關法規處理/);
+  assert.doesNotMatch(out.noiseRecord,/不易量測/);
+});
+
+test('第6條不易量測結果產生固定紀錄',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'15:00',noiseSubject:'測試場所',
+    noiseContinuity:'yes',noiseMeasurability:'no'
+  });
+  assert.equal(out.noiseOutcomeId,'article6.police-direction');
+  assert.match(out.noiseRecord,/所陳噪音因屬不易量測之性質/);
+  assert.doesNotMatch(out.noiseRecord,/不具持續性且/);
+});
+
+test('第6條同時不具持續性且不易量測時合併成單一句型',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'15:00',noiseSubject:'測試場所',
+    noiseContinuity:'no',noiseMeasurability:'no'
+  });
+  assert.match(out.noiseRecord,/不具持續性且不易量測之性質/);
+});
+
+test('未形成第9條管制對象時產生固定紀錄',()=>{
+  const root=loadRuntime();
+  const out=root.NoiseMain.prepare({
+    noiseDate:'2026-09-24',noiseTime:'15:00',noiseSubject:'測試場所',
+    noiseContinuity:'yes',noiseMeasurability:'yes',
+    noisePlaceType:'business',noiseSourceCategory:'vehicle'
+  });
+  assert.equal(out.noiseOutcomeId,'noise.no-article9-route');
+  assert.equal(out.noiseBlocked,'no');
+  assert.match(out.noiseRecord,/經查該址為測試場所/);
+  assert.match(out.noiseRecord,/尚非屬噪音管制法第9條所定管制對象/);
+  assert.match(out.noiseRecord,/本次未進行噪音管制標準量測/);
+});
+
+test('版本為5.2.8且離線殼不再使用5.2.2檔號',()=>{
   const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sw=fs.readFileSync(path.join(ROOT,'service-worker.js'),'utf8');
   const meta=fs.readFileSync(path.join(ROOT,'data/app-meta.js'),'utf8');
   assert.doesNotMatch(index,/v=5\.2\.2/);
-  assert.match(sw,/VERSION='5\.2\.7'/);
-  assert.match(meta,/version:'5\.2\.7'/);
+  assert.match(sw,/VERSION='5\.2\.8'/);
+  assert.match(meta,/version:'5\.2\.8'/);
 });
