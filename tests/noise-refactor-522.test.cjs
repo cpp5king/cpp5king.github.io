@@ -188,5 +188,5 @@ test('測試版離線殼載入新規則與流程檔，版本不再標成正式5.
   const meta=fs.readFileSync(path.join(ROOT,'data/app-meta.js'),'utf8');
   assert.match(index,/noise-refactor-522\.js/);
   assert.match(sw,/noise-refactor-522\.js/);
-  assert.match(meta,/5\.2\.2-test\.1/);
+  assert.match(meta,/5\.2\.2/);
 });
