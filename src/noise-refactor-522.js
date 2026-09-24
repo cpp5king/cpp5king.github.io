@@ -177,7 +177,11 @@
     const wind=num(input.noiseWind);
     let full={status:'',progress:'',needsBackground:false},low={status:'',progress:'',needsBackground:false};
     if(fullSelected){
-      if(outdoor&&wind!==null&&wind>5){
+      if(outdoor&&input.noiseRain==='yes'){
+        full={status:'unable',note:'室外量測時天雨。',needsBackground:false};
+      }else if(outdoor&&(!['yes','no'].includes(input.noiseRain)||wind===null)){
+        full={status:'',progress:'室外量測條件尚待確認（是否天雨／風速）。',needsBackground:false};
+      }else if(outdoor&&wind>5){
         full={status:'unable',note:'室外量測風速大於5 m/s。',needsBackground:false};
       }else if(target.id==='construction'||target.id==='renovation'){
         const leq=metric(input.noiseValueLeq,std.full,input.noiseBgFullMode,input.noiseBgFull);
@@ -290,8 +294,11 @@
     if(!statuses.length)return '';
     const source=sourceLabel(input)||targetLabel(target);
     const outdoor=input.noiseMeasurementPlace==='boundary';
+    if(statuses.includes('unable')&&outdoor&&input.noiseRain==='yes'){
+      return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場天雨，不符室外噪音量測條件，本次無法進行有效噪音量測。';
+    }
     if(statuses.includes('unable')&&outdoor&&num(input.noiseWind)!==null&&num(input.noiseWind)>5){
-      return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往所陳地點，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場風速為'+fmt(input.noiseWind)+'m/s，已逾噪音管制標準所定室外測量風速不得大於5m/s之測量條件，本次無法進行有效噪音量測。';
+      return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場風速為'+fmt(input.noiseWind)+'m/s，已逾噪音管制標準所定室外測量風速不得大於5m/s之測量條件，本次無法進行有效噪音量測。';
     }
     const parts=[];
     if(selected(input.noiseMeasureBands,'full')){
@@ -333,6 +340,9 @@
     if(selected(input.noiseMeasureBands,'low')&&num(input.noiseValueLow)!==null)parts.push('低頻測定值為'+fmt(input.noiseValueLow)+'分貝');
     const lead='本局於'+rocDate(input.noiseDate)+inspectionHour(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時作業中，噪音源為'+source+'，'+(point?'於'+point:'於現場')+'量測'+parts.join('、')+'，';
     if(statuses.includes('unable')){
+      if(input.noiseMeasurementPlace==='boundary'&&input.noiseRain==='yes'){
+        return '本局於'+rocDate(input.noiseDate)+inspectionHour(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場天雨，不符室外量測條件，本次無法完成有效噪音量測。';
+      }
       if(input.noiseMeasurementPlace==='boundary'&&num(input.noiseWind)!==null&&num(input.noiseWind)>5){
         return '本局於'+rocDate(input.noiseDate)+inspectionHour(input.noiseTime)+'派員前往稽查，經查該址為'+text(input.noiseSubject)+'，稽查時噪音源仍運轉中，惟現場風速為'+fmt(input.noiseWind)+'m/s，已逾室外量測條件，本次無法完成有效噪音量測。';
       }
