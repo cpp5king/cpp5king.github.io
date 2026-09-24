@@ -444,7 +444,7 @@
     if(a8.status==='established'){
       out.noiseRouteText='第8條公告禁止行為成立';
       out.noiseGuide=a8.text;
-      out.noiseRecord=draftA8(input,a8,zone.zones);
+      out.noiseRecord=draftA8(input,a8,a8Zone.zones);
       out.noiseReply='';
       out.noiseBlocked=out.noiseRecord?'no':'yes';
       out.noiseValidation=out.noiseRecord?'':'第8條已成立，請補填查核對象／場所／工程名稱後產生正式草稿。';
