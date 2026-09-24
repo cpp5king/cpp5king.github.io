@@ -427,7 +427,7 @@ test('量測結果摘要與第8第9條研判及待查事項集中於表單最底
     'noiseMeasureResultFull','noiseMeasureResultLow','noise522FactSummary','noise522Article8Text','noise522Article9Text','noise522PendingText'
   ]);
   const law=t.mobileWizard.steps.find(x=>x.id==='law');
-  assert.deepEqual(JSON.parse(JSON.stringify(law.fields.slice(-6))),bottom);
+  assert.deepEqual(JSON.parse(JSON.stringify(law.fields.slice(-6))),JSON.parse(JSON.stringify(bottom)));
   assert.equal(law.fields.at(-1),'noise522PendingText');
 });
 
