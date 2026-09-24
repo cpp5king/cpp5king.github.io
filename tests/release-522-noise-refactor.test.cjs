@@ -215,7 +215,7 @@ test('5.2.5 主流程欄位順序先第8條，再第6條與第9條',()=>{
   assert.ok(pos('noiseBehavior')<pos('noiseContinuity'));
   assert.ok(pos('noiseContinuity')<pos('noisePlaceType'));
   assert.ok(pos('noisePlaceType')<pos('noiseMeasurementPlace'));
-  assert.deepEqual(t.mobileWizard.steps.map(x=>x.id).slice(0,5),['basic','article8-site','article6','target','measurement']);
+  assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps.map(x=>x.id).slice(0,5))),['basic','article8-site','article6','target','measurement']);
 });
 
 test('有第8條候選時先停在第8條，不先顯示第6條或第9條場所音源',()=>{
