@@ -29,7 +29,7 @@ const base={
 const measured={
   ...base,noiseMeasureBands:['full'],noiseMeasurementPlace:'complainant',
   noiseDate:'2026-09-24',noiseTime:'13:00',noiseSubject:'測試社區',
-  noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseLandUseType:'residential',
+  noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseDirectZone:'2',
   noiseFullStart:'13:01',noiseFullEnd:'13:04'
 };
 
@@ -48,14 +48,54 @@ test('主要噪音來源簡化為機械設備、擴音設備、車輛相關、�
   assert.deepEqual(JSON.parse(JSON.stringify(f.options.map(x=>x.label))),['機械設備','擴音設備','車輛相關','其他','尚待確認']);
 });
 
-test('稽查日期及時間為噪音流程最前方可見欄位，手機流程也先顯示基本時間',()=>{
+test('查核對象名稱、稽查日期及時間置於噪音流程最上方',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   const visible=t.fields.filter(x=>x.type!=='computed'&&!(x.displayWhen&&x.displayWhen.field==='noise522Never'));
-  assert.equal(visible[0].id,'noiseDate');
-  assert.equal(visible[1].id,'noiseTime');
+  assert.equal(visible[0].id,'noiseSubject');
+  assert.equal(visible[1].id,'noiseDate');
+  assert.equal(visible[2].id,'noiseTime');
   assert.equal(t.mobileWizard.steps[0].id,'basic');
-  assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps[0].fields)),['noiseDate','noiseTime']);
+  assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps[0].fields)),['noiseSubject','noiseDate','noiseTime']);
+});
+
+
+test('一般案件直接選第1至4類噪音管制區或尚待確認，不再要求一般使用分區',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const direct=t.fields.find(x=>x.id==='noiseDirectZone');
+  assert.ok(direct);
+  assert.deepEqual(JSON.parse(JSON.stringify(direct.options.map(x=>x.label))),['第1類','第2類','第3類','第4類','尚待確認']);
+  assert.equal(t.fields.some(x=>x.id==='noiseLandUseType'),false);
+  assert.equal(t.fields.some(x=>x.id==='noiseNonUrbanFourth'),false);
+  const out=root.NoiseMain.prepare({
+    ...measured,noiseValueFull:'40',noiseDirectZone:'3'
+  });
+  assert.doesNotMatch(out.noiseValidation||'',/使用分區/);
+});
+
+test('其他現場觀察明確標示選填且空白不阻擋量測或法規研判',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const observation=t.fields.find(x=>x.id==='noiseObservation');
+  assert.equal(observation.label,'其他現場觀察（選填）');
+  assert.equal(observation.required,false);
+  const out=root.NoiseMain.prepare({...measured,noiseObservation:'',noiseValueFull:'40'});
+  assert.doesNotMatch(out.noiseValidation||'',/其他現場觀察/);
+  assert.doesNotMatch(out.noise522PendingText||'',/其他現場觀察/);
+});
+
+test('現場行為位於量測類型與量測地點之前，且不作為開始量測的硬性阻擋',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const ids=t.fields.map(x=>x.id);
+  assert.ok(ids.indexOf('noiseBehavior')<ids.indexOf('noiseMeasureBands'));
+  assert.ok(ids.indexOf('noiseBehavior')<ids.indexOf('noiseMeasurementPlace'));
+  const measurement=t.mobileWizard.steps.find(x=>x.id==='measurement');
+  assert.equal(measurement.fields[0],'noiseBehavior');
+  const out=root.NoiseMain.prepare({...base,noiseBehavior:''});
+  assert.equal(out.noise522ShowMeasurement,'yes');
+  assert.match(out.noiseValidation,/量測類型/);
 });
 
 test('非上述場所工程進入主管機關公告內容，前四類場所不重複詢問',()=>{
@@ -86,7 +126,7 @@ test('非上述場所公告項目選以上皆非時，不得手動硬指定第9�
   const out=root.NoiseMain.prepare({
     noiseDate:'2026-09-24',noiseTime:'13:00',noiseContinuity:'yes',noiseMeasurability:'yes',
     noisePlaceType:'nonListed',noiseSourceCategory:'equipment',noiseEquipmentType:'none',
-    noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseLandUseType:'residential'
+    noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseDirectZone:'2'
   });
   assert.equal(out.noise522ShowTargetManual,'no');
   assert.equal(out.noise522ShowMeasurement,'no');
@@ -101,7 +141,7 @@ test('第9條公告項目皆非時仍繼續第8條研判，第8條成立可獨�
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseContinuity:'yes',noiseMeasurability:'yes',
     noisePlaceType:'nonListed',noiseSourceCategory:'equipment',noiseEquipmentType:'none',
     noiseSourceDescription:'一般設備',noiseBehavior:'instrument',
-    noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseSubject:'測試場所'
+    noiseBoundaryInvolved:'no',noiseDirectZone:'2',noiseSubject:'測試場所'
   });
   assert.equal(out.noiseRouteText,'第8條公告禁止行為成立');
   assert.equal(out.noiseOutcomeId,'article8.established');
@@ -216,7 +256,7 @@ test('營建工程只使用單一背景音處理Leq，不再要求背景Lmax欄�
     noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'complainant',
     noiseDate:'2026-09-24',noiseTime:'13:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'none',
-    noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseFullStart:'13:01',noiseFullEnd:'13:04',
+    noiseBoundaryInvolved:'no',noiseDirectZone:'2',noiseFullStart:'13:01',noiseFullEnd:'13:04',
     noiseValueLeq:'60',noiseValueLmax:'70'
   });
   assert.equal(out.noiseMeasureResultFull,'未高於適用標準');
@@ -228,7 +268,7 @@ test('室外風速大於5m/s使第9條無法有效判定，但不阻斷第8條�
     noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
-    noiseBoundaryInvolved:'no',noiseLandUseType:'residential',
+    noiseBoundaryInvolved:'no',noiseDirectZone:'2',
     noiseA8Ex_construction_emergency:'no',noiseA8Ex_construction_repair:'no',noiseA8Ex_construction_approved:'no'
   };
   const out=root.NoiseMain.prepare(input);
@@ -245,7 +285,7 @@ test('第8條例外成立後使用已保全的第9條量測資料繼續研判',(
     noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'1.6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
-    noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseFullStart:'23:01',noiseFullEnd:'23:04',
+    noiseBoundaryInvolved:'no',noiseDirectZone:'2',noiseFullStart:'23:01',noiseFullEnd:'23:04',
     noiseValueLeq:'68.4',noiseValueLmax:'82.1',noiseBgFullMode:'measured',noiseBgFull:'54.2',
     noiseA8Ex_construction_emergency:'yes'
   });
