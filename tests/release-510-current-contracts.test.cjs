@@ -6,20 +6,20 @@ const vm=require('node:vm');
 const ROOT=path.join(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(ROOT,p),'utf8');
 
-test('5.2.8 test candidate metadata keeps provenance and test build marker',()=>{
+test('5.2.9 test candidate metadata keeps provenance and test build marker',()=>{
   const context=vm.createContext({window:{}});
   vm.runInContext(read('data/app-meta.js'),context);
   const meta=context.window.INSPECTION_APP_META;
-  assert.equal(meta.version,'5.2.8');
-  assert.equal(meta.label,'稽查助手5.2.8');
-  assert.equal(meta.build,'test-5.2.8-noise-refactor-1');
+  assert.equal(meta.version,'5.2.9');
+  assert.equal(meta.label,'稽查助手5.2.9');
+  assert.equal(meta.build,'test-5.2.9-noise-refactor-1');
   assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
   for(const p of ['index.html','manifest.webmanifest','service-worker.js','data/app-meta.js']){
     assert.doesNotMatch(read(p),/local-rc8|5\.1\.0-local|5\.1\.1-local|5\.2-test-r|test-site-5\.2/);
   }
   assert.doesNotMatch(read('index.html'),/test-site-banner|非正式版本/);
-  assert.match(read('service-worker.js'),/inspection-assistant-5\.2\.8-pp-7f3c9a21-/);
-  assert.doesNotMatch(read('service-worker.js'),/inspection-assistant-test-5\.2\.8/);
+  assert.match(read('service-worker.js'),/inspection-assistant-5\.2\.9-pp-7f3c9a21-/);
+  assert.doesNotMatch(read('service-worker.js'),/inspection-assistant-test-5\.2\.9/);
   assert.match(read('index.html'),/theme-color" content="#57534e"/);
   assert.match(read('manifest.webmanifest'),/"background_color": "#efede8"/);
   assert.match(read('manifest.webmanifest'),/"theme_color": "#57534e"/);
