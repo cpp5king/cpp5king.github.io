@@ -138,7 +138,10 @@
         const intro=el('p','只整理目前已填或已計算的內容；尚未填寫的欄位不會被系統自行補入。','ia-action-note');body.append(intro);
         const list=el('div','', 'ia-current-facts');let count=0;
         for(const field of template.fields||[]){
-          if(field.type==='fixed')continue;if(field.showWhen&&!root.DraftEngine.matches(field.showWhen,normalized))continue;
+          if(field.type==='fixed')continue;
+          if(field.type==='computed'&&!field.display)continue;
+          const visibility=field.displayWhen||field.showWhen;
+          if(visibility&&!root.DraftEngine.matches(visibility,normalized))continue;
           const value=displayTemplateValue(field,normalized);if(!value)continue;
           const row=el('div','', 'ia-current-fact');row.append(el('strong',field.label),el('span',value));list.append(row);count++;
         }
