@@ -26,7 +26,7 @@ const base={
   noiseSubject:'測試場所',noiseDirectZone:'2',noiseBoundaryInvolved:'no',noiseTargetRunning:'yes'
 };
 
-test('5.2.4 量測不再先選類型，直接顯示量測欄位',()=>{
+test('5.2.5 量測不再先選類型，直接顯示量測欄位',()=>{
   const root=loadRuntime();
   const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
   assert.equal(t.fields.some(x=>x.id==='noiseMeasureBands'),false);
@@ -47,7 +47,7 @@ test('稽查時間使用24小時制且移除左側舊簡易判斷',()=>{
 
 test('多重第9條查核方式只顯示本案候選',()=>{
   const root=loadRuntime();
-  const out=root.NoiseMain.prepare({...base,noisePlaceType:'business',noiseSourceCategory:'speaker'});
+  const out=root.NoiseMain.prepare({...base,noiseTime:'13:00',noisePlaceType:'business',noiseSourceCategory:'speaker'});
   assert.equal(out.noise522ShowTargetChoice,'yes');
   assert.equal(out.noise522TargetCandidate_business,'yes');
   assert.equal(out.noise522TargetCandidate_speaker,'yes');
@@ -179,7 +179,7 @@ test('營建工程機械設備遇到施放爆竹煙火，不因場所屬第9條�
   assert.equal(out.noiseRouteText,'第8條例外事項待查');
   assert.equal(out.noise522ShowMeasurement,'no');
   assert.equal(out.noiseShowA8Exception,'yes');
-  assert.match(out.noise522Article8Text,/不是同一噪音來源／作業/);
+  assert.match(out.noise522Article8Text,/例外/);
 });
 
 test('與第9條同一作業的營建工程第8條行為仍先保全量測',()=>{
@@ -194,23 +194,24 @@ test('與第9條同一作業的營建工程第8條行為仍先保全量測',()=>
   assert.match(out.noiseGuide,/同一噪音來源／作業/);
 });
 
-test('爆竹煙火例外成立後，才回到獨立的營建工程第9條量測',()=>{
+test('第8條例外成立後不因場所身分自動跳第9條',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
     ...base,noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseBehavior:'fireworks',noiseA8Disturbance:'yes',
     noiseA8Ex_fireworks_government:'yes'
   });
-  assert.equal(out.noise522ShowMeasurement,'yes');
-  assert.equal(out.noiseRouteText,'第9條現場量測');
-  assert.match(out.noise522Article8Text,/例外成立/);
+  assert.equal(out.noise522ShowMeasurement,'no');
+  assert.equal(out.noise522ShowPlace,'no');
+  assert.equal(out.noiseRouteText,'第8條例外成立');
+  assert.equal(out.noiseOutcomeId,'article8.excluded');
 });
 
-test('版本為5.2.4且離線殼不再使用5.2.2檔號',()=>{
+test('版本為5.2.5且離線殼不再使用5.2.2檔號',()=>{
   const index=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sw=fs.readFileSync(path.join(ROOT,'service-worker.js'),'utf8');
   const meta=fs.readFileSync(path.join(ROOT,'data/app-meta.js'),'utf8');
   assert.doesNotMatch(index,/v=5\.2\.2/);
-  assert.match(sw,/VERSION='5\.2\.4'/);
-  assert.match(meta,/version:'5\.2\.4'/);
+  assert.match(sw,/VERSION='5\.2\.5'/);
+  assert.match(meta,/version:'5\.2\.5'/);
 });
