@@ -23,7 +23,7 @@ function loadRuntime(){
 }
 const base={
   noiseContinuity:'yes',noiseMeasurability:'yes',
-  noisePlaceType:'residential',noiseSourceCategory:'equipment',noiseEquipmentType:'pump',
+  noisePlaceType:'nonListed',noiseSourceCategory:'equipment',noiseEquipmentType:'pump',
   noiseTargetRunning:'yes'
 };
 const measured={
@@ -32,6 +32,41 @@ const measured={
   noiseBehavior:'none',noiseBoundaryInvolved:'no',noiseLandUseType:'residential',
   noiseFullStart:'13:01',noiseFullEnd:'13:04'
 };
+
+
+test('場所工程屬性只保留直接法規分類與非上述、尚待確認',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const f=t.fields.find(x=>x.id==='noisePlaceType');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.options.map(x=>x.label))),['工廠（場）','娛樂場所','營業場所','營建工程','非上述場所／工程','尚待確認']);
+});
+
+test('主要噪音來源簡化為機械設備、擴音設備、車輛相關、其他、尚待確認',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const f=t.fields.find(x=>x.id==='noiseSourceCategory');
+  assert.deepEqual(JSON.parse(JSON.stringify(f.options.map(x=>x.label))),['機械設備','擴音設備','車輛相關','其他','尚待確認']);
+});
+
+test('稽查日期及時間為噪音流程最前方可見欄位，手機流程也先顯示基本時間',()=>{
+  const root=loadRuntime();
+  const t=root.INSPECTION_CONFIG.templates.find(x=>x.id==='noise-main');
+  const visible=t.fields.filter(x=>x.type!=='computed'&&!(x.displayWhen&&x.displayWhen.field==='noise522Never'));
+  assert.equal(visible[0].id,'noiseDate');
+  assert.equal(visible[1].id,'noiseTime');
+  assert.equal(t.mobileWizard.steps[0].id,'basic');
+  assert.deepEqual(JSON.parse(JSON.stringify(t.mobileWizard.steps[0].fields)),['noiseDate','noiseTime']);
+});
+
+test('非上述場所加機械設備時才展開公告場所工程設施項目',()=>{
+  const root=loadRuntime();
+  let out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'nonListed',noiseSourceCategory:'equipment'});
+  assert.equal(out.noise522ShowEquipment,'yes');
+  assert.match(out.noiseRouteText,/其他經主管機關公告之場所、工程及設施/);
+  out=root.NoiseMain.prepare({noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'factory',noiseSourceCategory:'equipment'});
+  assert.equal(out.noise522ShowEquipment,'no');
+  assert.equal(out.noise522TargetText,'工廠（場）整體噪音');
+});
 
 test('5.2.2 第6條拆成持續性與可有效量測性兩題，任一為否即分流警察方向',()=>{
   const root=loadRuntime();
@@ -43,27 +78,28 @@ test('5.2.2 第6條拆成持續性與可有效量測性兩題，任一為否即�
   }
 });
 
-test('住宅社區加抽水馬達形成公告特定設施，且量測不被日期時間或管制區前置阻擋',()=>{
+test('非上述場所加抽水馬達形成主管機關公告場所工程設施路徑，且量測不被日期時間或管制區前置阻擋',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare(base);
-  assert.equal(out.noise522TargetText,'新北市公告特定設施');
+  assert.equal(out.noise522TargetText,'其他經主管機關公告之場所、工程及設施');
   assert.equal(out.noise522ShowMeasurement,'yes');
   assert.match(out.noiseValidation,/量測類型/);
   assert.doesNotMatch(out.noiseValidation,/日期|管制區/);
 });
 
-test('餐飲店加抽排風機應走營業場所整體噪音，不誤走公告特定設施',()=>{
+test('營業場所加機械設備直接走營業場所整體噪音，不再要求公告設備種類',()=>{
   const root=loadRuntime();
-  const out=root.NoiseMain.prepare({...base,noisePlaceType:'restaurant',noiseEquipmentType:'exhaustFan'});
-  assert.equal(out.noise522TargetText,'娛樂／營業場所整體噪音');
+  const out=root.NoiseMain.prepare({...base,noisePlaceType:'business',noiseEquipmentType:''});
+  assert.equal(out.noise522TargetText,'營業場所整體噪音');
+  assert.equal(out.noise522ShowEquipment,'no');
 });
 
-test('餐飲店加擴音設備同時提供營業場所整體與擴音設施兩條合法路徑',()=>{
+test('營業場所加擴音設備同時提供營業場所整體與擴音設施兩條合法路徑',()=>{
   const root=loadRuntime();
-  let out=root.NoiseMain.prepare({...base,noisePlaceType:'restaurant',noiseSourceCategory:'speaker',noiseEquipmentType:''});
+  let out=root.NoiseMain.prepare({...base,noisePlaceType:'business',noiseSourceCategory:'speaker',noiseEquipmentType:''});
   assert.equal(out.noise522ShowTargetChoice,'yes');
   assert.match(out.noiseValidation,/選擇本次查核對象/);
-  out=root.NoiseMain.prepare({...base,noisePlaceType:'restaurant',noiseSourceCategory:'speaker',noiseEquipmentType:'',noiseTargetChoice:'speaker'});
+  out=root.NoiseMain.prepare({...base,noisePlaceType:'business',noiseSourceCategory:'speaker',noiseEquipmentType:'',noiseTargetChoice:'speaker'});
   assert.equal(out.noise522TargetText,'擴音設施');
 });
 
@@ -79,7 +115,7 @@ test('到場未運轉只記錄未運轉，不反推聲音不具持續性',()=>{
 test('量測類型為複選且全頻與低頻結果獨立，不產生整體合格不合格',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
-    ...measured,noisePlaceType:'restaurant',noiseSourceCategory:'equipment',noiseEquipmentType:'exhaustFan',
+    ...measured,noisePlaceType:'business',noiseSourceCategory:'equipment',noiseEquipmentType:'',
     noiseMeasureBands:['full','low'],noiseValueFull:'60',noiseBgFullMode:'measured',noiseBgFull:'40',
     noiseLowStart:'13:05',noiseLowEnd:'13:08',noiseValueLow:'30'
   });
@@ -93,7 +129,7 @@ test('量測類型為複選且全頻與低頻結果獨立，不產生整體合�
 test('背景差值小於3dB時量測結果為無法完成有效判定，不使用資料不足作結果',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
-    ...measured,noisePlaceType:'restaurant',noiseSourceCategory:'equipment',noiseEquipmentType:'exhaustFan',
+    ...measured,noisePlaceType:'business',noiseSourceCategory:'equipment',noiseEquipmentType:'',
     noiseValueFull:'60',noiseBgFullMode:'measured',noiseBgFull:'58'
   });
   assert.equal(out.noiseMeasureResultFull,'本次無法完成有效判定');
@@ -106,7 +142,7 @@ test('營建工程只使用單一背景音處理Leq，不再要求背景Lmax欄�
   assert.deepEqual(JSON.parse(JSON.stringify(template.fields.find(x=>x.id==='noiseBgLmaxMode').displayWhen)),{field:'noise522Never',value:'yes'});
   assert.deepEqual(JSON.parse(JSON.stringify(template.fields.find(x=>x.id==='noiseBgLmax').displayWhen)),{field:'noise522Never',value:'yes'});
   const out=root.NoiseMain.prepare({
-    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'constructionMachinery',
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'complainant',
     noiseDate:'2026-09-24',noiseTime:'13:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'none',
     noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseFullStart:'13:01',noiseFullEnd:'13:04',
@@ -118,7 +154,7 @@ test('營建工程只使用單一背景音處理Leq，不再要求背景Lmax欄�
 test('室外風速大於5m/s使第9條無法有效判定，但不阻斷第8條成立',()=>{
   const root=loadRuntime();
   const input={
-    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'constructionMachinery',
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
     noiseBoundaryInvolved:'no',noiseLandUseType:'residential',
@@ -135,7 +171,7 @@ test('室外風速大於5m/s使第9條無法有效判定，但不阻斷第8條�
 test('第8條例外成立後使用已保全的第9條量測資料繼續研判',()=>{
   const root=loadRuntime();
   const out=root.NoiseMain.prepare({
-    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'constructionMachinery',
+    noiseContinuity:'yes',noiseMeasurability:'yes',noisePlaceType:'construction',noiseSourceCategory:'equipment',
     noiseTargetRunning:'yes',noiseMeasureBands:['full'],noiseMeasurementPlace:'boundary',noiseWeatherText:'無雨',noiseWind:'1.6',
     noiseDate:'2026-09-24',noiseTime:'23:00',noiseSubject:'○○集合住宅新建工程',noiseBehavior:'construction',
     noiseBoundaryInvolved:'no',noiseLandUseType:'residential',noiseFullStart:'23:01',noiseFullEnd:'23:04',
@@ -163,12 +199,12 @@ test('特殊評定只有一般場所類型顯示，營建與擴音不顯示',()=
   let out=root.NoiseMain.prepare({...measured,noiseValueFull:'40'});
   assert.equal(out.noiseShowGeneralMethod,'yes');
   out=root.NoiseMain.prepare({
-    ...measured,noisePlaceType:'construction',noiseSourceCategory:'constructionMachinery',noiseEquipmentType:'',
+    ...measured,noisePlaceType:'construction',noiseSourceCategory:'equipment',noiseEquipmentType:'',
     noiseValueLeq:'40',noiseValueLmax:'50'
   });
   assert.equal(out.noiseShowGeneralMethod,'no');
   out=root.NoiseMain.prepare({
-    ...measured,noisePlaceType:'residential',noiseSourceCategory:'speaker',noiseEquipmentType:'',
+    ...measured,noisePlaceType:'nonListed',noiseSourceCategory:'speaker',noiseEquipmentType:'',
     noiseTargetChoice:'speaker',noiseValueFull:'40',noiseSpeakerMode:'fixed'
   });
   assert.equal(out.noiseShowGeneralMethod,'no');
