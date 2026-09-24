@@ -103,8 +103,8 @@
   }
   function landUseZone(id){return landUseZones[id]||'';}
   root.NOISE_REFACTOR_522=Object.freeze({
-    version:'5.2.5',
-    source:'5.2.5 噪音流程重構映射層；第8、9條法規條件與數值沿用既有單一規則來源。',
+    version:'5.2.6',
+    source:'5.2.6 噪音流程重構映射層；第8、9條法規條件與數值沿用既有單一規則來源。',
     places:Object.freeze(places),
     sources:Object.freeze(sources),
     equipment:Object.freeze(announcedItems),
