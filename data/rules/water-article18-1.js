@@ -1,0 +1,35 @@
+(function(root){
+  'use strict';
+  root.WATER_RULES=root.WATER_RULES||{};
+  root.WATER_RULES.article181Bypass={
+    id:'WATER-A181-BYPASS',version:'1.0',title:'第18條之1第1項－繞流排放',legalBasis:'水污染防治法第18條之1第1項',
+    elements:[
+      {id:'article181SubjectEligible',label:'屬事業或污水下水道系統',noMeans:'notApplicable',nextChecks:['確認管制主體身分']},
+      {id:'wastewaterConfirmed',label:'已確認為廢（污）水',nextChecks:['查明水的來源、產生作業及污染物']},
+      {id:'approvedRouteConfirmed',label:'已確認核准登記之收集、處理流程及出口',noMeans:'insufficient',nextChecks:['調閱核准水措、許可及水路資料']},
+      {id:'actualRouteConfirmed',label:'已確認現場實際水路',noMeans:'insufficient',nextChecks:['追查管線、閥門、槽體與實際流向']},
+      {id:'bypassConfirmed',label:'已確認實際避開核准流程或由非核准出口排放',nextChecks:['以水流、示蹤、水位、閥門操作或影像補強繞流事實']},
+      {id:'noBypassEmergencyException',label:'無第18條之1第3項緊急例外',nextChecks:['確認是否屬搶救人員或重大處理設施之急迫情形及3小時內通知']}
+    ]
+  };
+  root.WATER_RULES.article181Dilution={
+    id:'WATER-A181-DILUTION',version:'1.0',title:'第18條之1第2項－違法稀釋',legalBasis:'水污染防治法第18條之1第2項',
+    elements:[
+      {id:'article181SubjectEligible',label:'屬事業或污水下水道系統',noMeans:'notApplicable',nextChecks:['確認管制主體身分']},
+      {id:'wastewaterConfirmed',label:'已確認為廢（污）水',nextChecks:['查明水的來源、產生作業及污染物']},
+      {id:'requiresTreatmentToMeetStandard',label:'該廢（污）水須經處理始能符合管制標準',nextChecks:['確認原水水質、處理需求及適用管制標準']},
+      {id:'dilutionObserved',label:'已確認排放（入）前有混合稀釋行為',nextChecks:['確認混合點、來源水及操作方式']},
+      {id:'mixedWithNoTreatmentNeededWater',label:'混入無需處理即能符合標準之水',nextChecks:['確認被混入水來源及其是否無需處理即可符合標準']},
+      {id:'noValidDilutionPermit',label:'查無合法稀釋許可／依據',nextChecks:['查核第20條稀釋許可及相關管理規定']},
+      {id:'noDilutionEmergencyException',label:'無第18條之1第3項緊急例外',nextChecks:['確認是否屬急迫搶救情形及3小時內通知']}
+    ]
+  };
+  root.WATER_RULES.article181Treatment={
+    id:'WATER-A181-TREATMENT',version:'1.0',title:'第18條之1第4項－處理設施功能／操作',legalBasis:'水污染防治法第18條之1第4項',
+    elements:[
+      {id:'article181SubjectEligible',label:'屬事業或污水下水道系統',noMeans:'notApplicable',nextChecks:['確認管制主體身分']},
+      {id:'treatmentFacilityApplicable',label:'本案有廢（污）水（前）處理設施可供檢視',noMeans:'notApplicable',nextChecks:['確認現場是否設有廢（污）水（前）處理設施']},
+      {id:'treatmentFacilityNonCompliant',label:'處理設施功能／設備不足或未維持正常操作',nextChecks:['查核設備功能、鼓風、加藥、泵浦、操作狀態及相關紀錄']}
+    ]
+  };
+})(typeof window==='undefined'?globalThis:window);
