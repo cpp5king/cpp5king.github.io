@@ -32,6 +32,6 @@ test('版本與PWA識別同步且含PP5來源身分', () => {
   assert.equal(meta.provenance,marker);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   assert.equal(manifest.name, meta.label);
-  assert.equal(manifest.id, './inspection-assistant-pp');
+  assert.equal(manifest.id, './inspection-assistant-pp5');
   assert.match(read('service-worker.js'),new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
 });
