@@ -84,7 +84,7 @@ test('5.2 mobile home keeps current case and module choices above the fold',()=>
   assert.match(app,/mobile-home-minor-actions/);
   assert.match(app,/📱 可加入主畫面離線使用/);
   assert.match(app,/matchMedia\?\.\('\(max-width:760px\)'\)/);
-  assert.match(app,/testSite\?'稽查助手 5\.2\.1 視覺測試版':appMeta\.label/);
+  assert.match(app,/testSite\?'稽查助手 5\.2\.1 視覺測試版':appMeta\.name/);
   assert.match(css,/5\.2 compact mobile home: keep primary actions above the fold/);
   assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(css,/main>\.mobile-install\{[\s\S]*?display:none!important/);
