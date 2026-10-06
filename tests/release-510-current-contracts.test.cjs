@@ -13,7 +13,7 @@ test('5.2.9 test candidate metadata keeps provenance and test build marker',()=>
   assert.equal(meta.version,'5.2.9');
   assert.equal(meta.label,'稽查助手5.2.9');
   assert.equal(meta.build,'test-5.2.9-noise-refactor-1');
-  assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
+  assert.equal(meta.provenance,'PP5-IA-41-7F3C9A21');
   for(const p of ['index.html','manifest.webmanifest','service-worker.js','data/app-meta.js']){
     assert.doesNotMatch(read(p),/local-rc8|5\.1\.0-local|5\.1\.1-local|5\.2-test-r|test-site-5\.2/);
   }
