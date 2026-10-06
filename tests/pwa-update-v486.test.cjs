@@ -14,7 +14,7 @@ test('PWA 更新器、iOS 前景恢復與導覽逾時保護同步目前版本',(
   const html=read('index.html');
   const manifest=JSON.parse(read('manifest.webmanifest'));
   assert.match(meta.version,/^\d+\.\d+\.\d+$/);
-  assert.equal(meta.provenance,'PP-IA-41-7F3C9A21');
+  assert.equal(meta.provenance,'PP5-IA-41-7F3C9A21');
   assert.match(pwa,new RegExp("const VERSION='"+meta.version.replaceAll('.','\\.')+"'"));
   assert.match(pwa,/app-meta\.js\?update=/);
   assert.match(pwa,/cache:'no-store'/);
@@ -38,5 +38,5 @@ test('PWA 更新器、iOS 前景恢復與導覽逾時保護同步目前版本',(
   assert.equal(manifest.start_url,'./index.html?v='+meta.version);
   assert.equal(manifest.id,'./inspection-assistant-pp');
   assert.match(html,new RegExp('src/pwa\\.js\\?v='+meta.version.replaceAll('.','\\.')));
-  assert.match(html,/application-provenance" content="PP-IA-41-7F3C9A21/);
+  assert.match(html,/application-provenance" content="PP5-IA-41-7F3C9A21/);
 });
