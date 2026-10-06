@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.join(__dirname, '..');
-const marker = 'PP-IA-41-7F3C9A21';
+const marker = 'PP5-IA-41-7F3C9A21';
 
 function read(file){ return fs.readFileSync(path.join(root,file),'utf8'); }
 function appMeta(){
@@ -14,7 +14,7 @@ function appMeta(){
   return context.window.INSPECTION_APP_META;
 }
 
-test('PP來源指紋分散存在多個核心檔案', () => {
+test('PP5來源指紋分散存在多個核心檔案', () => {
   for (const file of [
     'data/provenance.js',
     'data/app-meta.js',
@@ -25,10 +25,10 @@ test('PP來源指紋分散存在多個核心檔案', () => {
   ]) assert.match(read(file), new RegExp(marker.replaceAll('-','\\-')), file+' 缺少來源指紋');
 });
 
-test('版本與PWA識別同步且含PP來源身分', () => {
+test('版本與PWA識別同步且含PP5來源身分', () => {
   const meta=appMeta();
   assert.match(meta.version,/^\d+\.\d+\.\d+$/);
-  assert.equal(meta.ownerTag,'PP');
+  assert.equal(meta.ownerTag,'PP5');
   assert.equal(meta.provenance,marker);
   const manifest = JSON.parse(read('manifest.webmanifest'));
   assert.equal(manifest.name, meta.label);
