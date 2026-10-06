@@ -1,6 +1,6 @@
 // 完全離線的案件分類與模板清單。
 window.INSPECTION_CONFIG = {
-  "_provenance": "PP-IA-41-7F3C9A21",
+  "_provenance": "PP5-IA-41-7F3C9A21",
   "categories": [
     {"id":"air","title":"空氣污染","status":"active"},
     {"id":"water","title":"水污染","status":"active"},
