@@ -5,8 +5,8 @@
     version:'5.2.9',
     label:'稽查助手5.2.9',
     build:'test-5.2.9-noise-refactor-1',
-    ownerTag:'PP',
+    ownerTag:'PP5',
     productId:'INSPECTION-ASSISTANT',
-    provenance:'PP-IA-41-7F3C9A21'
+    provenance:'PP5-IA-41-7F3C9A21'
   });
 })(window);
