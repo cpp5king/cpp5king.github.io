@@ -826,8 +826,17 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
   body[data-module="home"] main>.mobile-install{
     display:none!important;
   }
-  body[data-module="home"] footer{
-    display:none!important;
+  body[data-module="home"]>footer{
+    display:block!important;
+    margin:0 auto;
+    padding:6px 14px max(18px, env(safe-area-inset-bottom))!important;
+    color:#7a756e;
+    font-size:.68rem;
+    line-height:1.45;
+    text-align:center;
+  }
+  body[data-module="home"]>footer small{
+    font-size:inherit;
   }
   .mobile-home-shell{
     display:grid;
