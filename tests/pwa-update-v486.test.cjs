@@ -36,7 +36,7 @@ test('PWA 更新器、iOS 前景恢復與導覽逾時保護同步目前版本',(
   assert.match(sw,/event\.request\.mode==='navigate'/);
   assert.match(sw,/index\.html'\+V/);
   assert.equal(manifest.start_url,'./index.html?v='+meta.version);
-  assert.equal(manifest.id,'./inspection-assistant-pp');
+  assert.equal(manifest.id,'./inspection-assistant-pp5');
   assert.match(html,new RegExp('src/pwa\\.js\\?v='+meta.version.replaceAll('.','\\.')));
   assert.match(html,/application-provenance" content="PP5-IA-41-7F3C9A21/);
 });
