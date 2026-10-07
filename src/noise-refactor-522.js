@@ -929,12 +929,13 @@
       if(before.noiseDate!==after.noiseDate||before.noiseTime!==after.noiseTime)clear(['noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     }
     if(before.noiseBehavior!==after.noiseBehavior){
-      clear([...exceptionKeys,'noiseContinuity','noiseMeasurability','noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning',
+      clear([...exceptionKeys,'noiseContinuity','noiseMeasurability','noiseCommunityCommittee','noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning',
         'noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseA9DirectZone','noiseA9BoundaryInvolved','noiseA9BoundaryKind','noiseA9BoundaryZonePair','noiseA9RoadName','noiseA9RoadWidth',
         'noiseA9RoadSideAZone','noiseA9RoadSideBZone','noiseA9RoadSourceSide','noiseA9RoadPointSide','noiseA9BoundaryDistance','noiseA9RoadOriginalFourth','noiseA9RoadAdjacentFirst',
         'noiseA9ZoneLegalOverride','noiseRain','noiseWind','noiseValueFull','noiseValueLeq','noiseValueLmax','noiseValueLow','noiseBgFullMode','noiseBgFull','noiseBgLmaxMode','noiseBgLmax','noiseBgLowMode','noiseBgLow']);
     }
     if(before.noiseContinuity!==after.noiseContinuity||before.noiseMeasurability!==after.noiseMeasurability){
+      clear(['noiseCommunityCommittee']);
       if(after.noiseContinuity!=='yes'||after.noiseMeasurability!=='yes')clear(['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseTargetChoice','noiseTargetManual','noiseTargetRunning']);
     }
     if(before.noisePlaceType!==after.noisePlaceType){
