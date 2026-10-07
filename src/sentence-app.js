@@ -1,5 +1,6 @@
 (function (root) {
   "use strict";
+  let openModuleHomeHandler=()=>false;
   async function start() {
     const app = document.getElementById('app');
     app.textContent = '正在載入本機模板…';
@@ -8,6 +9,13 @@
     catch (error) { app.textContent = '無法啟動：' + error.message + ' 請檢查 data/templates 設定後重新整理。'; return; }
     const session = root.CaseSession.create(config);
     let viewMode = 'home';
+    openModuleHomeHandler=categoryId=>{
+      const current=session.snapshot();
+      if(!categoryId||current.categoryId!==categoryId)return false;
+      viewMode='category';
+      render();
+      return true;
+    };
     function el(tag, text, className) {
       const node = document.createElement(tag);
       if (text) node.textContent = text;
@@ -656,11 +664,7 @@
   root.InspectionApp = {
     start,
     openModuleHome(categoryId){
-      const current=session.snapshot();
-      if(!categoryId||current.categoryId!==categoryId)return false;
-      viewMode='category';
-      render();
-      return true;
+      return openModuleHomeHandler(categoryId);
     }
   };
   const homeInstructions=document.querySelector?.('#home-instructions');

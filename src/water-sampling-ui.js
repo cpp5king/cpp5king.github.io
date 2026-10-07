@@ -277,7 +277,7 @@
   function reset(){state=rules().empty();step=0;if(app)render();}
 
   root.WaterSamplingUI=Object.freeze({
-    version:'5.2.14',
+    version:'5.2.15',
     method:'NIEA W109.54B',
     mount,
     hasData,
