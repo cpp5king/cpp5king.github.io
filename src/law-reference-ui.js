@@ -65,6 +65,33 @@ function articleRecords(full){
   if(Array.isArray(full?.articles)&&full.articles.length)return full.articles;
   return [];
 }
+function officialQuickRecords(entry,art){
+  if(entry?.local&&art?.text)return [{no:art.label||'公告內容',text:art.text,local:true}];
+  const full=fullEntry(entry),refs=articleNosFromText(art?.label||'');
+  if(!refs.length)return [];
+  return articleRecords(full).filter(rec=>rec.type==='A'&&refs.includes(normalizeArticleNo(rec.no)));
+}
+function renderQuickArticle(body,entry,art){
+  const card=document.createElement('div');card.className='law-ref-article';
+  const h=document.createElement('strong');h.textContent=art.label||'法規重點';card.append(h);
+  const official=officialQuickRecords(entry,art);
+  if(official.length){
+    const tag=document.createElement('div');tag.className='law-ref-meta';tag.textContent=entry.local?'正式公告內容':'法條原文（官方全文快照）';card.append(tag);
+    for(const rec of official){
+      const block=document.createElement('div');block.className='law-ref-full-text';
+      if(!entry.local&&rec.no){const no=document.createElement('b');no.textContent=rec.no;block.append(no,document.createElement('br'));}
+      block.append(document.createTextNode(rec.text||''));card.append(block);
+    }
+    if(art.summary){
+      const tip=document.createElement('div');tip.className='law-ref-related-scope-note';
+      tip.innerHTML='<strong>稽查提示</strong><div>'+esc(art.summary)+'</div>';card.append(tip);
+    }
+  }else{
+    const tag=document.createElement('div');tag.className='law-ref-meta';tag.textContent='稽查提示（非條文原文）';card.append(tag);
+    const div=document.createElement('div');div.textContent=art.summary||'';card.append(div);
+  }
+  body.append(card);
+}
 function matchesQuery(rec,q){
   if(!q)return true;
   const hay=[rec.no,rec.text,rec.chapter,...(rec.headingPath||[])].join(' ').toLowerCase();return hay.includes(q.toLowerCase());
@@ -180,10 +207,10 @@ function open(moduleId,context={}){
   overlay=document.createElement('div');overlay.className='law-ref-overlay';
   const panel=document.createElement('section');panel.className='law-ref-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label',lib.title);
   const head=document.createElement('div');head.className='law-ref-head';
-  const completeCount=(lib.entries||[]).filter(e=>articleRecords(fullEntry(e)).length).length;
+  const completeCount=(lib.entries||[]).filter(e=>e.local&&e.articles?.some(x=>x.text)||articleRecords(fullEntry(e)).length).length;
   const snapshot=root.INSPECTION_LAW_FULLTEXT;
   const snapshotLabel=snapshot?.lawUpdateDate||snapshot?.orderUpdateDate||snapshot?.verifiedAt||library.verifiedAt;
-  const h=document.createElement('div');h.innerHTML=`<h2>${esc(lib.title)}</h2><p>中央法規來源：全國法規資料庫（law.moj.gov.tw）｜內建快照 ${esc(snapshotLabel)}｜完整法規 ${completeCount}/${lib.entries.length}</p>`;
+  const h=document.createElement('div');h.innerHTML=`<h2>${esc(lib.title)}</h2><p>中央法規：全國法規資料庫官方快照 ${esc(snapshotLabel)}｜地方公告：各地方主管機關正式來源｜可離線查閱 ${completeCount}/${lib.entries.length}</p>`;
   const actions=document.createElement('div');actions.className='law-ref-head-actions';
   const x=document.createElement('button');x.type='button';x.className='secondary law-ref-close';x.textContent='關閉';x.onclick=close;actions.append(x);head.append(h,actions);panel.append(head);
   const notice=document.createElement('div');notice.className='law-ref-notice';notice.textContent='法規提示只用來協助查找，不代表系統已認定適用或違規。行為日期、施行日期、地方公告及特別規定仍須分開確認。';panel.append(notice);
@@ -205,8 +232,8 @@ function open(moduleId,context={}){
       const body=document.createElement('div');body.className='law-ref-body';
       const rel=renderRelatedBox(entry,related.get(entry.id));if(rel)body.append(rel);
       if(entry.notes){const p=document.createElement('p');p.textContent=entry.notes;body.append(p);}
-      for(const art of entry.articles||[]){const card=document.createElement('div');card.className='law-ref-article';card.innerHTML=`<strong>${esc(art.label)}</strong><div>${esc(art.summary)}</div>`;body.append(card);}
-      const a=document.createElement('a');a.href=entry.sourceUrl;a.target='_blank';a.rel='noopener noreferrer';a.className='law-ref-link';a.textContent='查看全國法規資料庫官方最新版（需網路）';body.append(a);
+      for(const art of entry.articles||[])renderQuickArticle(body,entry,art);
+      const a=document.createElement('a');a.href=entry.sourceUrl;a.target='_blank';a.rel='noopener noreferrer';a.className='law-ref-link';a.textContent=entry.local?'查看新北市政府環保局正式公告（需網路）':'查看全國法規資料庫官方最新版（需網路）';body.append(a);
       const meta=document.createElement('div');meta.className='law-ref-meta';meta.textContent=`官方來源：${entry.sourceName}｜本機核對：${entry.verifiedAt}`;body.append(meta);
       d.append(body);content.append(d);
     }
@@ -220,7 +247,15 @@ function open(moduleId,context={}){
       const s=document.createElement('summary');s.innerHTML=`<strong>${esc(entry.name)}</strong><span>${esc(fmtDate(fullEntry(entry)?.amended||entry.amended||''))}</span>`;d.append(s);
       const body=document.createElement('div');body.className='law-ref-body';const rel=renderRelatedBox(entry,related.get(entry.id));if(rel)body.append(rel);
       const records=articleRecords(full);
-      if(records.length){
+      if(entry.local&&Array.isArray(entry.articles)&&entry.articles.some(x=>x.text)){
+        for(const art of entry.articles||[]){
+          const card=document.createElement('article');card.className='law-ref-full-article';
+          const h4=document.createElement('h4');h4.textContent=art.label||'公告內容';card.append(h4);
+          const txt=document.createElement('div');txt.className='law-ref-full-text';txt.textContent=art.text||'';card.append(txt);
+          if(art.summary){const tip=document.createElement('div');tip.className='law-ref-related-scope-note';tip.innerHTML='<strong>稽查提示</strong><div>'+esc(art.summary)+'</div>';card.append(tip);}
+          body.append(card);
+        }
+      }else if(records.length){
         if(full?.foreword){const fw=document.createElement('div');fw.className='law-ref-foreword';fw.innerHTML='<strong>序文／前言</strong>';const fwt=document.createElement('div');fwt.className='law-ref-full-text';fwt.textContent=full.foreword;fw.append(fwt);body.append(fw);}
         const refs=only?(related.get(entry.id)?.articleRefs||[]):[];
         if(only&&related.has(entry.id)&&!refs.length){const n=document.createElement('div');n.className='law-ref-related-scope-note';n.textContent='目前只能確認到法規層級的關聯，尚無足夠事實縮小到特定條文；因此顯示本法全部條文。';body.append(n);}
@@ -237,7 +272,7 @@ function open(moduleId,context={}){
         body.append(pending);
       }
       if(full?.sourceUpdateDate||full?.downloadedAt){const meta=document.createElement('div');meta.className='law-ref-meta';meta.textContent=`官方資料更新：${full.sourceUpdateDate||'未提供'}｜本機快照：${full.downloadedAt||'未提供'}`;body.append(meta);}
-      const a=document.createElement('a');a.href=entry.sourceUrl;a.target='_blank';a.rel='noopener noreferrer';a.className='law-ref-link';a.textContent='查看全國法規資料庫官方最新版（需網路）';body.append(a);
+      const a=document.createElement('a');a.href=entry.sourceUrl;a.target='_blank';a.rel='noopener noreferrer';a.className='law-ref-link';a.textContent=entry.local?'查看新北市政府環保局正式公告（需網路）':'查看全國法規資料庫官方最新版（需網路）';body.append(a);
       d.append(body);content.append(d);
     }
   }
