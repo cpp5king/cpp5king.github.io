@@ -391,14 +391,28 @@
     if(!a8?.act||!['notApplicable','noDisturbance'].includes(a8.status)||!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime))return '';
     return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，經查現場有'+a8.act.label+'，經核對稽查日期、時間、音源／行為所在地噪音管制區及本府公告內容，該行為未落入公告禁止之條件，故本次未認有違反噪音管制法第8條規定之情形。';
   }
-  function draftArticle6(input,continuity,measurability){
-    if(!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime))return '';
-    let nature='';
-    if(continuity==='no'&&measurability==='no')nature='不具持續性且不易量測';
-    else if(continuity==='no')nature='不具持續性';
-    else if(measurability==='no')nature='不易量測';
-    if(!nature)return '';
-    return '本局於'+rocDate(input.noiseDate)+inspectionTime(input.noiseTime)+'派員前往稽查，所陳噪音因屬'+nature+'之性質，依噪音管制法第6條規定，由警察機關依有關法規處理。';
+  function article6Nature(continuity,measurability){
+    if(continuity==='no'&&measurability==='no')return '不具持續性或不易量測';
+    if(continuity==='no')return '不具持續性';
+    if(measurability==='no')return '不易量測';
+    return '';
+  }
+  function draftArticle6(input,continuity,measurability,committee){
+    const date=rocDate(input.noiseDate),time=inspectionTime(input.noiseTime);
+    if(!date||!time)return {record:'',reply:'',route:'',outcome:''};
+    const nature=article6Nature(continuity,measurability);
+    if(!nature)return {record:'',reply:'',route:'',outcome:''};
+    const prefix='本局於'+date+time+'派員前往稽查，查所陳噪音屬'+nature+'之聲音';
+    const replyPrefix=root.NOISE_TEXTS?.common?.replyPrefix||'有關臺端反映事項，';
+    const replyEnding=root.NOISE_TEXTS?.common?.replyEnding||'';
+    if(committee==='yes'){
+      const record=prefix+'，另查該處設有管理委員會，本局已勸導管理委員會加強社區自主管理，以維護居住品質；涉及公寓大廈管理事項，主管機關為本府工務局公寓大廈管理科。';
+      const reply=replyPrefix+'本局於'+date+time+'派員前往稽查，查所陳噪音屬'+nature+'之聲音，另查該處設有管理委員會，本局已勸導管理委員會加強社區自主管理；涉及公寓大廈管理事項，建請臺端可向本府工務局公寓大廈管理科反映，由該局依權責辦理。'+replyEnding;
+      return {record,reply,route:'非量測聲音／有管委會 → 工務局公寓大廈管理科',outcome:'article6.building-management'};
+    }
+    const record=prefix+'，依噪音管制法第6條規定，製造不具持續性或不易量測而足以妨害他人生活安寧之聲音者，由警察機關依有關法規處理之。';
+    const reply=replyPrefix+'本局於'+date+time+'派員前往稽查，查所陳噪音屬'+nature+'之聲音，依噪音管制法第6條規定，製造不具持續性或不易量測而足以妨害他人生活安寧之聲音者，由警察機關依有關法規處理之，建請臺端可向警察機關反映處理。'+replyEnding;
+    return {record,reply,route:'第6條／警察機關處理方向',outcome:'article6.police-direction'};
   }
   function draftNoArticle9(input){
     if(!rocDate(input.noiseDate)||!inspectionTime(input.noiseTime)||!text(input.noiseSubject))return '';
@@ -526,7 +540,7 @@
   function seed(input){
     return {...input,
       noise522Never:'no',
-      noise522ShowSite:'yes',noise522ShowContinuity:'no',noise522ShowMeasurability:'no',noise522ShowPlace:'no',
+      noise522ShowSite:'yes',noise522ShowContinuity:'no',noise522ShowMeasurability:'no',noise522ShowCommittee:'no',noise522ShowPlace:'no',
       noise522ShowSource:'no',noise522ShowEquipment:'no',noise522ShowSourceOther:'no',noise522ShowTargetChoice:'no',noise522ShowTargetManual:'no',
       noise522ShowRunning:'no',noise522ShowMeasurement:'no',noise522ShowFull:'no',noise522ShowSingleFull:'no',noise522ShowConstructionFull:'no',noise522ShowLow:'no',
       noise522ShowMeasurementPlace:'no',noise522ShowWeather:'no',noise522ShowConcurrentFacts:'no',noise522ShowA8Zone:'no',noise522ShowA9Zone:'no',noise522ShowA9DirectZone:'no',
@@ -750,21 +764,29 @@
   function prepareGeneralArticle9(input,out,a8){
     out.noise522ShowContinuity='yes';
     out.noise522ShowMeasurability='yes';
-    const continuity=tri(input.noiseContinuity),measurability=tri(input.noiseMeasurability);
-    if(continuity==='no'||measurability==='no'){
-      out.noiseRouteText='第6條型態／警察機關處理方向';
-      out.noiseGuide='本案未形成第8條處理路徑，且聲音不具持續性或不易進行有效量測，不進入環保局一般第9條量測主流程；依噪音管制法第6條型態及權責方向處理。';
-      out.noiseRecord=draftArticle6(input,continuity,measurability);
-      out.noiseReply='';
-      out.noiseBlocked=out.noiseRecord?'no':'yes';
-      out.noiseValidation=out.noiseRecord?'':'第6條分流已完成，但紀錄基本資料不足。';
-      out.noise522Article8Text=a8?.text||'';
-      out.noise522FactSummary='第6條前置分流：'+(continuity==='no'?'不具持續性':'')+((continuity==='no'&&measurability==='no')?'；':'')+(measurability==='no'?'不易有效量測':'')+'。';
-      out.noiseOutcomeId='article6.police-direction';
-      return out;
+    const continuity=['yes','no'].includes(input.noiseContinuity)?input.noiseContinuity:'missing';
+    const measurability=['yes','no'].includes(input.noiseMeasurability)?input.noiseMeasurability:'missing';
+    if(continuity==='missing'||measurability==='missing'){
+      return setStage(out,'第6條前置分流','第8條未形成處理路徑；請確認這個聲音是否具有持續性，以及是否容易以噪音計進行有效量測。','請完成第6條前置分流兩項事實。');
     }
-    if(continuity!=='yes'||measurability!=='yes'){
-      return setStage(out,'第6條前置分流','第8條未形成處理路徑；請確認這個聲音是否具有持續性，以及是否容易進行有效量測。','請完成第6條前置分流兩項事實。');
+    if(continuity==='no'||measurability==='no'){
+      out.noise522ShowCommittee='yes';
+      if(!['yes','no'].includes(input.noiseCommunityCommittee)){
+        return setStage(out,'非量測聲音｜主管機關分流','聲音不具持續性或不易以噪音計有效量測；請確認該處是否設有管理委員會，以分流後續主管機關。','請確認該處是否設有管理委員會。');
+      }
+      const docs=draftArticle6(input,continuity,measurability,input.noiseCommunityCommittee);
+      out.noiseRouteText=docs.route;
+      out.noiseGuide=input.noiseCommunityCommittee==='yes'
+        ?'本案不進入一般第9條量測主流程；已依有管理委員會之公寓大廈管理方向，勸導管理委員會加強自主管理，主管機關為本府工務局公寓大廈管理科。'
+        :'本案不進入一般第9條量測主流程；如足以妨害他人生活安寧，依噪音管制法第6條由警察機關依有關法規處理。';
+      out.noiseRecord=docs.record;
+      out.noiseReply=docs.reply;
+      out.noiseBlocked=docs.record&&docs.reply?'no':'yes';
+      out.noiseValidation=out.noiseBlocked==='no'?'':'主管機關分流已完成，但草稿所需日期或時間不足。';
+      out.noise522Article8Text=a8?.text||'';
+      out.noise522FactSummary='第6條前置分流：'+article6Nature(continuity,measurability)+'。\n主管機關分流：'+(input.noiseCommunityCommittee==='yes'?'設有管理委員會 → 本府工務局公寓大廈管理科':'無管理委員會 → 警察機關')+'。';
+      out.noiseOutcomeId=docs.outcome;
+      return out;
     }
 
     out.noise522ShowPlace='yes';
@@ -993,7 +1015,7 @@
     const bgLow=t.fields.find(f=>f.id==='noiseBgLow');if(bgLow){bgLow.label='低頻 Leq,LF 背景音量 dB(A)';bgLow.displayWhen=show('noise522ShowBgLowValue');}
 
     const flags=[
-      'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowPlace','noise522ShowSource',
+      'noise522Never','noise522ShowContinuity','noise522ShowMeasurability','noise522ShowCommittee','noise522ShowPlace','noise522ShowSource',
       'noise522ShowEquipment','noise522ShowSourceOther','noise522ShowTargetChoice','noise522ShowTargetManual','noise522ShowRunning','noise522ShowMeasurement',
       'noise522ShowFull','noise522ShowSingleFull','noise522ShowConstructionFull','noise522ShowLow','noise522ShowMeasurementPlace','noise522ShowWeather','noise522ShowConcurrentFacts',
       'noise522ShowA8Zone','noise522ShowA9Zone','noise522ShowA9DirectZone','noise522ShowA9BoundaryKind','noise522ShowA9RoadFacts','noise522ShowA9BoundaryPair',
@@ -1020,8 +1042,13 @@
       select('noiseBehavior','第8條現場行為查核',a8BehaviorOptions,show('noise522ShowA8Behavior'),{
         help:'先直接判斷現場是否有目前時段及音源所在地管制區可能適用的第8條公告禁止行為；沒有才進入一般第6條／第9條流程。'
       }),
-      select('noiseContinuity','這個聲音是否具有持續性？',ynu,show('noise522ShowContinuity')),
-      select('noiseMeasurability','依現場狀況，這個聲音是否容易進行有效量測？',ynu,show('noise522ShowMeasurability')),
+      select('noiseContinuity','這個聲音是否具有持續性？',yn,show('noise522ShowContinuity'),{
+        help:'例如冷氣壓縮機、抽風機、馬達持續運轉聲通常較具持續性；敲擊、拖拉家具、碰撞、間歇性施工等通常較不具持續性。仍應依現場實際聲音型態判斷。'
+      }),
+      select('noiseMeasurability','依現場狀況，這個聲音是否容易以噪音計進行有效量測？',yn,show('noise522ShowMeasurability')),
+      select('noiseCommunityCommittee','該處是否設有管理委員會？',yn,show('noise522ShowCommittee'),{
+        help:'有管理委員會：勸導管理委員會加強社區自主管理，公寓大廈管理主管機關為本府工務局公寓大廈管理科；無管理委員會：依第6條方向由警察機關依有關法規處理。'
+      }),
       select('noisePlaceType','場所／工程屬性',rules.places,show('noise522ShowPlace'),{help:'第8條未形成處理路徑後，才依本次同一聲音的場所／工程法律性質判斷第9條。'}),
       select('noiseSourceCategory','主要噪音來源',rules.sources,show('noise522ShowSource'),{help:'記錄本次同一聲音實際來自何種音源；不以場所身分替代音源事實。'}),
       select('noiseEquipmentType','本案是否屬下列公告項目？',announcedEquipment,show('noise522ShowEquipment')),
@@ -1095,8 +1122,8 @@
     t.fields.push(...movedExceptions,...resultFields);
     t.title='噪音稽查－事實／量測／法規分層測試版';
     t.formTitle='噪音案件';
-    t.version='5.2.9';
-    t.moduleVersion='5.2.9';
+    t.version='5.2.10';
+    t.moduleVersion='5.2.10';
     t.previewOnlyMessage='尚有必要事實或法規研判資料未完成；現場事實與已輸入量測資料均保留。';
     t.mobileWizard={
       ariaLabel:'噪音手機逐步流程',brandLabel:'稽查助手',brandSlogan:'先保全現場證據，再完成法規研判',fallbackTitle:'其他必要事項',
@@ -1104,7 +1131,7 @@
       steps:[
         {id:'basic',title:'案件基本資料',help:'先記錄查核對象／場所／工程名稱、稽查日期及24小時制時間。',fields:['noiseSubject','noiseDate','noiseTime']},
         {id:'article8-site',title:'第8條時間快篩與禁止行為',help:'先由稽查日期、時間快篩第8條。只有存在公告禁止時段時，才顯示音源／行為所在地管制區；再依分區與時段顯示實際可能的禁止行為。',fields:['noiseA8SourceZone','noiseBehavior']},
-        {id:'article6',title:'第6條前置分流',help:'只有第8條沒有形成處理路徑時，才確認聲音持續性與是否容易有效量測。',fields:['noiseContinuity','noiseMeasurability']},
+        {id:'article6',title:'第6條前置分流',help:'只有第8條沒有形成處理路徑時，才確認聲音持續性與是否容易以噪音計有效量測；任一題為否時，再依是否有管理委員會分流主管機關。',fields:['noiseContinuity','noiseMeasurability','noiseCommunityCommittee']},
         {id:'target',title:'第9條場所、音源與查核對象',help:'只針對本次同一聲音確認場所、音源及第9條查核對象。',fields:['noisePlaceType','noiseSourceCategory','noiseEquipmentType','noiseSourceDescription','noiseTargetChoice','noiseTargetManual','noise522TargetText','noiseTargetRunning']},
         {id:'measurement',title:'第9條量測',help:'先選實際量測地點，再另行判定第9條量測適用管制區；一般情形依量測位置所在地，涉及道路或交界時依公告特殊規則處理。之後再填實際量測值。',fields:[
           'noiseMeasurementPlace','noiseMeasurementPlaceDetail','noiseA9BoundaryInvolved','noiseA9DirectZone','noiseA9BoundaryKind','noiseA9RoadName','noiseA9RoadWidth',
