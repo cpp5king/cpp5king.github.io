@@ -1,4 +1,4 @@
-importScripts('./data/law-offline-assets.js?v=5.2.9');
+importScripts('./data/law-offline-assets.js?v=5.2.10');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
 const VERSION='5.2.10';
 const CACHE_REVISION='noise-refactor-test-8';
