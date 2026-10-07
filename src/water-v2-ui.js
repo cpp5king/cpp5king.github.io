@@ -286,7 +286,7 @@
     const inspectionParts=inspectionDateTimeParts(state.caseInfo.inspectionDate);
     $app.innerHTML = `
       <section class="hero">
-        <h2>水污染 V2</h2>
+        <h2>現場稽查</h2>
         <p>先選你現在面對的情境。污染來源未知就從「污染排查」開始；已經知道要查誰，就直接進「對象查核」。流程可做到一半停止，隨時整理目前內容。</p>
         <span class="pill">資料只存在本次頁面記憶體，不寫入 localStorage / IndexedDB</span>
       </section>
@@ -646,7 +646,7 @@
     }).join(''):'<div class="muted small">目前案件尚未加入候選分類。</div>'):'';
     const anyConfirmed=!!i?.businessClassifications?.some(x=>x.status==='confirmed');
     $app.innerHTML=`
-      <div class="section-title"><div><h2>事業分類及定義</h2><p>《水污染防治法事業分類及定義》現行64類完整附表查詢。</p></div><button class="btn btn-ghost" id="businessClassHome">${state.businessLookup?.standalone?'返回水污染功能':'返回水污首頁'}</button></div>
+      <div class="section-title"><div><h2>事業分類及定義</h2><p>《水污染防治法事業分類及定義》現行64類完整附表查詢。</p></div></div>
       <section class="card">
         <div class="notice info"><strong>官方附表</strong><br>分類名稱、定義、適用條件及備註依現行公告附件整理；搜尋關鍵字僅供查找。搜尋命中不代表已認定屬水污法事業。</div>
         <div class="business-class-search"><input class="text-input" id="businessClassQuery" value="${esc(q)}" placeholder="輸入業別、製程或關鍵字"><button type="button" class="btn btn-primary" id="businessClassSearch">搜尋</button><button type="button" class="btn btn-ghost" id="businessClassShowAll">瀏覽全部64類</button></div>
@@ -656,7 +656,6 @@
     bindBusinessClassification(i);
   }
   function bindBusinessClassification(i){
-    const home=document.getElementById('businessClassHome');if(home)home.onclick=()=>{if(state.businessLookup?.standalone&&$businessToolExit){const exit=$businessToolExit;$businessToolExit=null;state.businessLookup.standalone=false;state.view='home';exit();return;}setView('home');};
     const query=document.getElementById('businessClassQuery');if(query)query.oninput=e=>state.businessLookup.query=e.target.value;
     const search=document.getElementById('businessClassSearch');if(search)search.onclick=()=>{state.businessLookup.showAll=false;renderBusinessClassification();};
     const all=document.getElementById('businessClassShowAll');if(all)all.onclick=()=>{state.businessLookup.query='';state.businessLookup.showAll=true;renderBusinessClassification();};

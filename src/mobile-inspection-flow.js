@@ -61,7 +61,10 @@ function makeButton(label,className,action){
 function makeHeader(info,hasSteps){
   const header=document.createElement('header');header.className='ia-mobile-flow-header';
   const top=document.createElement('div');top.className='ia-mobile-flow-top';
-  const home=makeButton('首頁','ia-mobile-home',()=>findGlobalHomeButton()?.click());
+  const home=makeButton('首頁','ia-mobile-home',()=>{
+    if(info.module==='water'&&root.InspectionApp?.openModuleHome?.('water'))return;
+    findGlobalHomeButton()?.click();
+  });
   const brand=document.createElement('div');brand.className='ia-mobile-flow-brand';
   brand.innerHTML=`<strong>${info.moduleTitle}</strong><span>${cleanTitle(info.viewTitle)||info.moduleTitle}</span>`;
   top.append(home,brand);header.append(top);

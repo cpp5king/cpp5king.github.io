@@ -168,11 +168,12 @@
     function navigation(state) {
       const nav = el('nav', '', 'actions'); nav.setAttribute('aria-label', '案件選擇導覽');
       const category=config.categories.find(item=>item.id===state.categoryId);
-      if (viewMode!=='home') nav.append(button('首頁／案件大類', () => { viewMode='home'; render(); }, true));
+      const standaloneWaterTool=state.categoryId==='water'&&['water-business-classification','water-sampling'].includes(viewMode);
+      if(standaloneWaterTool) nav.append(button('首頁',()=>{viewMode='category';render();},true));
+      else if (viewMode!=='home') nav.append(button('首頁／案件大類', () => { viewMode='home'; render(); }, true));
       if (state.categoryId && viewMode==='case') nav.append(button(`返回${category?.title||'模組'}首頁`, () => { viewMode='category'; render(); }, true));
       if (state.templateId && viewMode==='case' && !config.caseTypes.find(item => item.id === state.caseTypeId)?.directTemplateId) nav.append(button('返回紀錄範本', () => { viewMode='template'; render(); }, true));
-      if(viewMode==='water-business-classification'&&state.categoryId==='water') nav.append(button('返回水污染功能',()=>{viewMode='category';render();},true));
-      else if (viewMode!=='case' && state.categoryId) nav.append(button('返回目前案件', () => { viewMode='case'; render(); }, true));
+      if (!standaloneWaterTool && viewMode!=='case' && state.categoryId) nav.append(button('返回目前案件', () => { viewMode='case'; render(); }, true));
       if (state.categoryId || hasInput()) nav.append(button('新增案件', clearCurrentCase, true));
       if (['water','noise','waste','air'].includes(state.categoryId) && root.LawReferenceUI?.open && viewMode!=='home') nav.append(button('法規', () => root.LawReferenceUI.open(state.categoryId,lawContext(state)), true));
       if (viewMode==='case' && (state.templateId || root.WasteV1UI?.hasData?.() || root.AirV1UI?.hasData?.())) nav.append(button('匯出案件', () => exportCase(), true));
@@ -335,7 +336,8 @@
       }
 
       const mobileIntermediary=isMobileViewport()&&['category','template'].includes(viewMode);
-      if(!mobileIntermediary&&!['water-business-classification','water-sampling'].includes(viewMode))app.append(navigation(state));
+      const standaloneWaterTool=['water-business-classification','water-sampling'].includes(viewMode);
+      if(!mobileIntermediary&&!(standaloneWaterTool&&isMobileViewport()))app.append(navigation(state));
 
       if(viewMode==='water-business-classification'){
         if(!category||category.id!=='water'||!root.WaterV2UI?.mountBusinessClassification){viewMode='category';render();return;}
@@ -366,7 +368,7 @@
         const isWaterFunctions=category.id==='water';
         const openWaterBusinessTool=()=>{viewMode='water-business-classification';render();};
         const openWaterSampling=()=>{viewMode='water-sampling';render();};
-        const types=config.caseTypes.filter(item=>item.categoryId===category.id);
+        const types=config.caseTypes.filter(item=>item.categoryId===category.id&&!item.hiddenFromCategory);
         const selectType=item=>{
           const isCurrent=item.id===state.caseTypeId;
           if(isCurrent){
@@ -651,7 +653,16 @@
     }
   }
   // 可供 DOM 整合測試呼叫，同一個入口在實際頁面自動啟動。
-  root.InspectionApp = { start };
+  root.InspectionApp = {
+    start,
+    openModuleHome(categoryId){
+      const current=session.snapshot();
+      if(!categoryId||current.categoryId!==categoryId)return false;
+      viewMode='category';
+      render();
+      return true;
+    }
+  };
   const homeInstructions=document.querySelector?.('#home-instructions');
   if(homeInstructions)homeInstructions.textContent=root.NOISE_TEXTS.ui.homeInstructions;
   start();
