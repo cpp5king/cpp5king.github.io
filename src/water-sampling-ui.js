@@ -44,7 +44,7 @@
   }
   function header(){
     const pct=Math.round(((step+1)/STEP_TITLES.length)*100);
-    return '<div class="sampling-head"><div><h2>事業放流水採樣</h2><p>NIEA W109.54B｜113年12月15日生效</p></div><button type="button" class="btn btn-ghost" data-action="exit">返回水污染功能</button></div>'+
+    return '<div class="section-title sampling-head"><div><h2>事業放流水採樣</h2><p>NIEA W109.54B｜113年12月15日生效</p></div><button type="button" class="btn btn-ghost" data-action="exit">返回水污染功能</button></div>'+
       '<div class="sampling-progress"><div class="sampling-progress-meta"><strong>'+(step+1)+'／'+STEP_TITLES.length+' '+esc(STEP_TITLES[step])+'</strong><span>'+pct+'%</span></div><div class="sampling-progress-track"><i style="width:'+pct+'%"></i></div></div>';
   }
   function stepPlan(){
@@ -215,7 +215,7 @@
   }
   function render(){
     if(!app)return;
-    app.classList.add('water-sampling-shell');
+    app.classList.add('water-sampling-shell','water-v2-shell');
     app.innerHTML=header()+body()+footer();
     bind();
   }
@@ -277,13 +277,14 @@
   function reset(){state=rules().empty();step=0;if(app)render();}
 
   root.WaterSamplingUI=Object.freeze({
-    version:'5.2.12',
+    version:'5.2.13',
     method:'NIEA W109.54B',
     mount,
     hasData,
     snapshot,
     restore,
     reset,
+    showSummary:function(){step=STEP_TITLES.length-1;if(app){render();root.scrollTo?.({top:0,behavior:'smooth'});}},
     evaluate:function(){return rules().evaluate(state);}
   });
 })(window);

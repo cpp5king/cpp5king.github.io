@@ -27,6 +27,10 @@ function moduleInfo(host){
     const steps=wizard?[...host.children].filter(x=>x.matches?.('section.card')):[];
     return {module:'water',moduleTitle:'水污染',viewTitle:title,steps,accent:'水污染'};
   }
+  if(host.classList.contains('water-sampling-host')){
+    const title=textOf(host.querySelector('.sampling-head h2'))||'事業放流水採樣';
+    return {module:'water',moduleTitle:'水污染',viewTitle:title,steps:[],accent:'水污染'};
+  }
   if(host.classList.contains('waste-v1-host')){
     const title=textOf(host.querySelector('.section-title h2'))||textOf(host.querySelector('.hero h2'))||'廢棄物';
     const wizard=/來源待查|稽查對象已知/.test(title);
@@ -139,7 +143,7 @@ function enhance(host){
 function run(){
   scheduled=false;
   if(!isMobile())return;
-  document.querySelectorAll('.water-v2-host,.waste-v1-host,.air-v1-host').forEach(enhance);
+  document.querySelectorAll('.water-v2-host,.water-sampling-host,.waste-v1-host,.air-v1-host').forEach(enhance);
 }
 function schedule(){
   if(scheduled)return;scheduled=true;

@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.2.12');
+importScripts('./data/law-offline-assets.js?v=5.2.13');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
-const VERSION='5.2.12';
-const CACHE_REVISION='water-sampling-5.2.12-1';
-const CACHE_NAME='inspection-assistant-5.2.12-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.13';
+const CACHE_REVISION='water-ui-5.2.13-1';
+const CACHE_NAME='inspection-assistant-5.2.13-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[

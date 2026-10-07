@@ -341,6 +341,11 @@
         if(!category||category.id!=='water'||!root.WaterV2UI?.mountBusinessClassification){viewMode='category';render();return;}
         const host=el('section','','water-v2-host');app.append(host);
         root.WaterV2UI.mountBusinessClassification(host,{onExit:()=>{viewMode='category';render();}});
+        app.append(moduleStickyActions([
+          {label:'法規研判',action:()=>root.LawReferenceUI?.open?.('water',lawContext(session.snapshot()))},
+          {label:'整理目前內容',action:()=>actionModal('整理目前內容',body=>body.append(el('p','此頁為純查詢模式，不建立或改寫案件事實；若要整理案件內容，請返回案件流程後使用「整理目前內容」。','ia-action-note')))},
+          {label:'回到最上面',action:scrollToTop}
+        ]));
         return;
       }
 
@@ -348,6 +353,11 @@
         if(!category||category.id!=='water'||!root.WaterSamplingUI?.mount){viewMode='category';render();return;}
         const host=el('section','','water-sampling-host');app.append(host);
         root.WaterSamplingUI.mount(host,{onExit:()=>{viewMode='category';render();}});
+        app.append(moduleStickyActions([
+          {label:'法規研判',action:()=>root.LawReferenceUI?.open?.('water',lawContext(session.snapshot()))},
+          {label:'整理目前內容',action:()=>root.WaterSamplingUI?.showSummary?.()},
+          {label:'回到最上面',action:scrollToTop}
+        ]));
         return;
       }
 

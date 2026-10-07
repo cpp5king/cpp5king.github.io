@@ -931,22 +931,30 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
 @media(max-width:760px){
   body[data-view="category"]>header,
   body[data-view="template"]>header,
+  body[data-view="water-business-classification"]>header,
+  body[data-view="water-sampling"]>header,
   body[data-view="category"] main>.mobile-install,
   body[data-view="template"] main>.mobile-install,
+  body[data-view="water-business-classification"] main>.mobile-install,
+  body[data-view="water-sampling"] main>.mobile-install,
   body[data-view="category"]>footer,
-  body[data-view="template"]>footer{
+  body[data-view="template"]>footer,
+  body[data-view="water-business-classification"]>footer,
+  body[data-view="water-sampling"]>footer{
     display:none!important
   }
   body[data-view="category"] main,
   body[data-view="template"] main,
-  body[data-view="water-business-classification"] main{
+  body[data-view="water-business-classification"] main,
+  body[data-view="water-sampling"] main{
     max-width:none;
     margin:0;
     padding:8px 10px 18px!important
   }
   body[data-view="category"] #app,
   body[data-view="template"] #app,
-  body[data-view="water-business-classification"] #app{
+  body[data-view="water-business-classification"] #app,
+  body[data-view="water-sampling"] #app{
     max-width:none;
     margin:0;
     padding:0
