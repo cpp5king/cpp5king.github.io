@@ -2,7 +2,7 @@ importScripts('./data/law-offline-assets.js?v=5.2.10');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
 const VERSION='5.2.10';
 const CACHE_REVISION='noise-law-5.2.10-1';
-const CACHE_NAME='inspection-assistant-5.2.9-pp-7f3c9a21-'+CACHE_REVISION;
+const CACHE_NAME='inspection-assistant-5.2.10-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
