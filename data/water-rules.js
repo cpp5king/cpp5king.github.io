@@ -4,14 +4,14 @@
     packId:'WATER-CORE-TW',
     name:'Water Core Rules',
     lawName:'水污染防治法',
-    packVersion:'2026.09.21.4',
+    packVersion:'2026.10.07.1',
     status:'active',
     createdAt:'2026-09-21',
-    updatedAt:'2026-09-21',
-    lastVerifiedAt:'2026-09-21',
+    updatedAt:'2026-10-07',
+    lastVerifiedAt:'2026-10-07',
     compatibleApp:{min:'4.9.43'},
     provenance:'PP-IA-41-7F3C9A21',
-    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'579d6184'}),
+    integrity:Object.freeze({algorithm:'fnv1a32-json',value:'521bd703'}),
     officialSources:Object.freeze([
       Object.freeze({
         authority:'環境部',
@@ -420,7 +420,8 @@
   R.article181Bypass=rule(
     'WATER-V2-A181-BYPASS','第18條之1第1項－非核准最終出口','水污染防治法第18條之1第1項',[
       e('subject_regulated','屬事業或污水下水道系統'),
-      e('non_approved_final_outlet','由非核准最終放流口／非核准納管口排出')
+      e('non_approved_final_outlet','由非核准最終放流口／非核准納管口排出'),
+      e('bypass_exception_absent','已確認不符合第18條之1第3項急迫搶救例外')
     ]
   );
   R.article181Dilution=rule(
@@ -429,7 +430,8 @@
       e('dilution_needs_treatment','廢污水需處理才能符合標準'),
       e('mixed_water','排放／納管前與其他水混合'),
       e('mixed_water_clean','混入水無需處理即可符合標準'),
-      e('mixed_before_discharge','混合發生於排放／納管前')
+      e('mixed_before_discharge','混合發生於排放／納管前'),
+      e('dilution_exception_absent','已確認不符合第18條之1第3項急迫搶救例外')
     ]
   );
   R.article181Treatment=rule(
@@ -475,7 +477,6 @@
 
   R.article30Direction=rule(
     'WATER-V2-A30-DIRECTION','第30條－水污染管制區禁止行為方向','水污染防治法第30條方向',[
-      e('subject_other','非上述管制主體'),
       e('article30_action_any','已記錄第30條相關行為'),
       e('control_zone_yes','行為地點位於公告水污染管制區')
     ]
@@ -617,6 +618,8 @@
     routeMismatchSewer:'{subject}：實際最終去向為納管，路徑與核准內容不一致時，不直接套用第14條；需釐清是否屬第18條之1繞流、下水道核准排放口差異或其他水措義務。',
     routeMismatchGroundPrerequisite:'{subject}：排放路徑與許可／核准內容不一致，但尚缺「排放許可類型」及「排放至地面水體」等第14條前提，暫不直接指定第14條。',
     finalOutletUnknown:'{subject}：排放路徑與許可不一致時，需確認是否屬非核准最終放流口／非核准納管口，以區分第18條之1第1項與其他許可差異。',
+    bypassEmergencyException:'{subject}：已記錄非核准最終出口；尚需確認是否因情況急迫為搶救人員或重大處理設施，及符合時是否於3小時內通知主管機關，以判斷第18條之1第3項例外。',
+    dilutionEmergencyException:'{subject}：禁止稀釋之基礎事實已記錄；尚需確認是否因情況急迫為搶救人員或重大處理設施，及符合時是否於3小時內通知主管機關，以判斷第18條之1第3項例外。',
     alternativeTreatmentUnknown:'{subject}：處理設施應運轉但未正常運轉時，尚需確認是否有有效替代處理方式，以判斷第18條之1第4項方向。',
     meterDuty:'{subject}：確認該水量計測設施之適用水措規定、法定設置位置及具體義務。',
     recordDuty:'{subject}：確認本案應保存／提供之具體水措紀錄種類、頻率及保存義務。',

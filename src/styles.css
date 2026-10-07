@@ -938,13 +938,15 @@ body[data-module="noise"] .mobile-wizard-nav button.secondary{color:var(--module
     display:none!important
   }
   body[data-view="category"] main,
-  body[data-view="template"] main{
+  body[data-view="template"] main,
+  body[data-view="water-business-classification"] main{
     max-width:none;
     margin:0;
     padding:8px 10px 18px!important
   }
   body[data-view="category"] #app,
-  body[data-view="template"] #app{
+  body[data-view="template"] #app,
+  body[data-view="water-business-classification"] #app{
     max-width:none;
     margin:0;
     padding:0
@@ -1241,4 +1243,15 @@ body[data-module="home"] .mobile-home-module-grid button[data-module="waste"]{
   }
   .home-law-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .home-law-grid button{width:100%;min-height:50px}
+}
+.water-function-group-title{
+  margin:22px 0 8px;
+  color:var(--module-text,#173a63);
+  font-size:1rem;
+  font-weight:900
+}
+.water-function-tools{margin-top:8px}
+@media(max-width:760px){
+  .water-function-group-title{margin:8px 2px 2px;font-size:.82rem;letter-spacing:.02em}
+  .water-function-tools{margin-top:0}
 }

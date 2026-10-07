@@ -29,3 +29,11 @@
 .law-ref-original>summary{cursor:pointer;padding:10px 12px;font-weight:800;color:#315d43}
 .law-ref-original-text{margin:0 12px 12px;overflow-x:auto;white-space:pre;font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;font-size:.9rem;line-height:1.55}
 @media(max-width:700px){.law-ref-data-table{min-width:620px}.law-ref-data-table th,.law-ref-data-table td{padding:8px 9px}.law-ref-readable-note{font-size:.86rem}}
+
+.law-ref-effective-note{margin:10px 0;padding:10px 12px;border:1px solid var(--line,#d7e0e3);border-radius:10px;background:#fff8e7;line-height:1.55}
+.law-ref-effective-note strong{display:block;margin-bottom:3px}
+
+.law-ref-quick-original{margin-top:10px;border-top:1px dashed var(--line,#d7e0e3);padding-top:8px}
+.law-ref-quick-original>summary{cursor:pointer;font-weight:750;color:#315b68;padding:4px 0}
+.law-ref-quick-original[open]>summary{margin-bottom:8px}
+

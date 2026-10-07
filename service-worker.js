@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.2.10');
+importScripts('./data/law-offline-assets.js?v=5.2.11');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
-const VERSION='5.2.10';
-const CACHE_REVISION='noise-law-5.2.10-1';
-const CACHE_NAME='inspection-assistant-5.2.10-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.11';
+const CACHE_REVISION='water-law-5.2.11-1';
+const CACHE_NAME='inspection-assistant-5.2.11-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -53,6 +53,7 @@ const APP_SHELL=[
   './data/water-permit-rules.js'+V,
   './data/water-standard-rules.js'+V,
   './data/water-local-rules.js'+V,
+  './data/water-business-classification.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,
   './src/noise-method-guidance.js'+V,
@@ -66,6 +67,7 @@ const APP_SHELL=[
   './src/water-permit-law.js'+V,
   './src/water-standard-law.js'+V,
   './src/water-local-law.js'+V,
+  './src/water-business-classification.js'+V,
   './src/water-review.js'+V,
   './src/water-law-versions.js'+V,
   './src/water-facts.js'+V,

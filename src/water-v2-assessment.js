@@ -66,6 +66,7 @@
         }
 
         if(established('article181Bypass'))pushDirection('article181Bypass');
+        else if(f.non_approved_final_outlet==='yes'&&f.bypass_exception_absent==='unknown')addPending('bypassEmergencyException');
 
         if(established('article14RouteMismatch')){
           pushDirection('article14RouteMismatch');
@@ -77,6 +78,7 @@
         }
 
         if(established('article181Dilution'))pushDirection('article181Dilution');
+        else if(f.dilution_needs_treatment==='yes'&&f.mixed_water==='yes'&&f.mixed_water_clean==='yes'&&f.mixed_before_discharge==='yes'&&f.dilution_exception_absent==='unknown')addPending('dilutionEmergencyException');
 
         if(established('article181Treatment'))pushDirection('article181Treatment');
         else if(item.E.needsTreatment==='yes'&&item.E.shouldOperate==='yes'&&item.E.actuallyRunning==='no'&&item.E.alternativeTreatment!=='yes'&&item.E.alternativeTreatment!=='no')addPending('alternativeTreatmentUnknown');
@@ -105,17 +107,19 @@
 
       if(established('article25Building'))pushDirection('article25Building');
 
-      if(item.subjectType==='other'){
+      if(item.article30.length){
         if(established('article30Direction')){
           pushDirection('article30Direction',{actions:item.article30.map(a30Label).join('、')});
           if(item.article30.includes('pesticide'))addPending('a30Pesticide');
           if(item.article30.includes('discard'))addPending('a30Discard');
           if(item.article30.includes('livestock'))addPending('a30Livestock');
           if(item.article30.includes('other'))addPending('a30Other');
-        }else if(item.article30.length&&item.controlZone!=='no'){
+        }else if(item.controlZone!=='no'){
           addPending('controlZone');
         }
+      }
 
+      if(item.subjectType==='other'){
         if(established('article32Groundwater'))pushDirection('article32Groundwater');
         if(established('article32SoilNoException'))pushDirection('article32SoilNoException');
         else if(established('article32SoilPending')){

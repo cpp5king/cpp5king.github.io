@@ -4,6 +4,7 @@
   const VERSION = '5.1.0';
   const PROVENANCE = 'PP-IA-41-7F3C9A21';
   let $app = null;
+  let $businessToolExit = null;
 
   const state = {
     view: 'home',
@@ -18,7 +19,8 @@
     currentInspection: null,
     inspections: [],
     draftText: '',
-    legalReviews: []
+    legalReviews: [],
+    businessLookup: { query:'', showAll:false, standalone:false }
   };
 
   const phenomenaOptions = [
@@ -271,6 +273,7 @@
     if(state.view==='home') renderHome();
     else if(state.view==='pollution') renderPollution();
     else if(state.view==='subject') renderSubject();
+    else if(state.view==='business-classification') renderBusinessClassification();
     else if(state.view==='summary') renderSummary();
     else if(state.view==='law') renderLawAssessment();
     else if(state.view==='draft') renderDraft();
@@ -544,6 +547,7 @@
   function createInspection(prefill={}){
     return {
       id:newId('inspection'),sourceRelationId:prefill.sourceRelationId||'',sourceNodeId:prefill.sourceNodeId||'',name:prefill.name||'',subjectType:'',permitStatus:'',permitType:'',permitNotes:'',methods:[],
+      businessClassificationQuery:'',businessClassificationLookupOpen:false,businessClassifications:[],
       topics:{B:newTopic(),C:newTopic(),D:newTopic(),E:newTopic(),F:newTopic()},
       details:{
         // 舊欄位暫留，讓 4.9.38 匯出案件仍可讀取；4.9.43 UI 不再逐題要求填寫。
@@ -551,7 +555,7 @@
         C:{shouldOperate:'',powerNormal:'',actuallyRunning:'',recordMatch:''},
         D:{recordRequired:'',recordAvailable:'',recordComplete:'',recordMatch:''},
         E:{needsTreatment:'',shouldOperate:'',actuallyRunning:'',alternativeTreatment:'',internalFlowMatch:''},
-        F:{approvedRoute:'',routeMatch:'',actualDischarge:'',destinationKnown:'',destination:'',nonApprovedFinalOutlet:'',soilTreatmentAuthorized:'',sampled:'',sampleNote:'',dilutionNeedsTreatment:'',mixedWater:'',mixedWaterClean:'',mixedBeforeDischarge:''}
+        F:{approvedRoute:'',routeMatch:'',actualDischarge:'',destinationKnown:'',destination:'',nonApprovedFinalOutlet:'',bypassEmergencyRescue:'',bypassEmergencyNotice:'',soilTreatmentAuthorized:'',sampled:'',sampleNote:'',dilutionNeedsTreatment:'',mixedWater:'',mixedWaterClean:'',mixedBeforeDischarge:'',dilutionEmergencyRescue:'',dilutionEmergencyNotice:''}
       },
       building:{facility:newTopic(),management:newTopic(),records:newTopic(),discharge:newTopic()},
       other:{article30:[],controlZone:'',soilDischarge:'',soilTreatmentAuthorized:'',groundwaterInjection:'',notes:''},
@@ -592,15 +596,77 @@
     const has=v=>t.doubtTypes.includes(v);
     if(code==='E'&&!has('treatment_not_running'))d.alternativeTreatment='';
     if(code==='F'){
-      if(!has('permit_mismatch'))d.nonApprovedFinalOutlet='';
+      if(!has('permit_mismatch')&&!has('nonapproved_outlet'))d.nonApprovedFinalOutlet='';
+      if(!has('nonapproved_outlet')&&d.nonApprovedFinalOutlet!=='yes'){d.bypassEmergencyRescue='';d.bypassEmergencyNotice='';}
+      if(d.bypassEmergencyRescue!=='yes')d.bypassEmergencyNotice='';
       if(!has('dilution')){
-        d.dilutionNeedsTreatment='';d.mixedWater='';d.mixedWaterClean='';d.mixedBeforeDischarge='';
+        d.dilutionNeedsTreatment='';d.mixedWater='';d.mixedWaterClean='';d.mixedBeforeDischarge='';d.dilutionEmergencyRescue='';d.dilutionEmergencyNotice='';
       }
+      if(d.dilutionEmergencyRescue!=='yes')d.dilutionEmergencyNotice='';
       if(has('soil_discharge')){d.actualDischarge='yes';d.destinationKnown='yes';d.destination='soil';}
       else if(has('groundwater_discharge')){d.actualDischarge='yes';d.destinationKnown='yes';d.destination='groundwater';d.soilTreatmentAuthorized='';}
       else if(has('destination_unknown')){d.actualDischarge='yes';d.destinationKnown='unknown';d.destination='';d.soilTreatmentAuthorized='';}
       else if(d.destination!=='soil')d.soilTreatmentAuthorized='';
     }
+  }
+
+  function classificationModule(){return root.WaterBusinessClassification||null;}
+  function classificationStatusLabel(value){return ({candidate:'候選／待查證',confirmed:'已確認符合',rejected:'已排除',unknown:'尚無法確認'})[value]||'候選／待查證';}
+  function normalizeBusinessClassifications(i){
+    if(!i)return;
+    const mod=classificationModule();
+    i.businessClassifications=mod?.normalizeSelections?mod.normalizeSelections(i.businessClassifications||[]):Array.isArray(i.businessClassifications)?i.businessClassifications:[];
+  }
+  function classificationOfficialField(label,value){
+    if(!String(value||'').trim())return '';
+    return `<div class="business-class-official-section"><div class="law-ref-meta">${esc(label)}</div><div class="business-class-official">${esc(value)}</div></div>`;
+  }
+  function renderBusinessClassificationSummary(i){
+    normalizeBusinessClassifications(i);
+    const mod=classificationModule();
+    const rows=(i.businessClassifications||[]).map(sel=>{const row=mod?.get?.(sel.id);return row?`<div class="business-class-summary-row"><strong>${esc(row.no+'. '+row.name)}</strong><span class="tag ${sel.status==='confirmed'?'confirmed':sel.status==='unknown'?'unknown':''}">${esc(classificationStatusLabel(sel.status))}</span></div>`:'';}).join('');
+    return `<div class="business-class-summary"><div class="topic-title">事業分類</div>${rows||'<div class="small muted">尚未確認事業分類。</div>'}<div class="btn-row"><button type="button" class="btn btn-ghost" id="businessClassReopen">${rows?'重新查詢事業分類及定義':'查詢事業分類及定義'}</button></div></div>`;
+  }
+  function renderBusinessClassification(){
+    const mod=classificationModule();
+    const i=state.businessLookup?.standalone?null:(state.currentInspection||null);
+    if(i)normalizeBusinessClassifications(i);
+    if(!state.businessLookup||typeof state.businessLookup!=='object')state.businessLookup={query:'',showAll:false,standalone:false};
+    const q=String(state.businessLookup.query||'');
+    const rows=!mod?[]:(state.businessLookup.showAll?(mod.all?.()||[]):q.trim()?mod.search(q,{limit:64}):[]);
+    const selected=new Map((i?.businessClassifications||[]).map(x=>[x.id,x]));
+    const results=rows.length?rows.map(row=>{
+      const added=selected.has(row.id);
+      const action=i?`<button type="button" class="btn ${added?'btn-ghost':'btn-primary'}" data-business-class-add="${esc(row.id)}" ${added?'disabled':''}>${added?'已加入':'加入候選'}</button>`:'';
+      return `<div class="business-class-result"><div class="business-class-result-head"><strong>${esc(row.no+'. '+row.name)}</strong>${action}</div>${classificationOfficialField('官方定義',row.officialDefinition)}${classificationOfficialField('適用條件',row.applicability)}${classificationOfficialField('備註',row.notes)}<div class="small muted">搜尋關鍵字僅供查找，不作事業身分認定。</div></div>`;
+    }).join(''):(q.trim()?'<div class="empty compact">沒有符合搜尋條件的分類。</div>':'<div class="muted small">輸入場所、製程或俗稱，例如「瀝青」、「豆腐」、「洗車」；也可瀏覽全部64類。</div>');
+    const selectionHtml=i?(i.businessClassifications.length?i.businessClassifications.map(sel=>{
+      const row=mod?.get?.(sel.id);if(!row)return '';
+      return `<div class="business-class-selected"><div><strong>${esc(row.no+'. '+row.name)}</strong><div class="small muted">${esc(classificationStatusLabel(sel.status))}</div></div><select class="select-input business-class-status" data-business-class-status="${esc(sel.id)}">${selectValue([['candidate','候選／待查證'],['confirmed','已確認符合'],['rejected','已排除'],['unknown','尚無法確認']],sel.status)}</select><input class="text-input" data-business-class-evidence="${esc(sel.id)}" value="${esc(sel.evidence||'')}" placeholder="確認依據／待查事項（選填）"><button type="button" class="btn btn-ghost" data-business-class-remove="${esc(sel.id)}">移除</button></div>`;
+    }).join(''):'<div class="muted small">目前案件尚未加入候選分類。</div>'):'';
+    const anyConfirmed=!!i?.businessClassifications?.some(x=>x.status==='confirmed');
+    $app.innerHTML=`
+      <div class="section-title"><div><h2>事業分類及定義</h2><p>《水污染防治法事業分類及定義》現行64類完整附表查詢。</p></div><button class="btn btn-ghost" id="businessClassHome">${state.businessLookup?.standalone?'返回水污染功能':'返回水污首頁'}</button></div>
+      <section class="card">
+        <div class="notice info"><strong>官方附表</strong><br>分類名稱、定義、適用條件及備註依現行公告附件整理；搜尋關鍵字僅供查找。搜尋命中不代表已認定屬水污法事業。</div>
+        <div class="business-class-search"><input class="text-input" id="businessClassQuery" value="${esc(q)}" placeholder="輸入業別、製程或關鍵字"><button type="button" class="btn btn-primary" id="businessClassSearch">搜尋</button><button type="button" class="btn btn-ghost" id="businessClassShowAll">瀏覽全部64類</button></div>
+        <div class="business-class-results">${results}</div>
+      </section>
+      ${i?`<section class="card"><h3>目前案件的事業分類</h3><p class="small">可保留多個候選或已確認分類；未知不等於否定。</p><div class="business-class-selected-list">${selectionHtml}</div>${anyConfirmed&&i.subjectType!=='industry'?'<div class="notice warn">已有分類標記為「已確認符合」，但目前主體尚未選為水污法事業。系統不會自動改寫主體。</div><button type="button" class="btn btn-primary" id="confirmBusinessFromClass">確認並設定為水污法事業</button>':''}<div class="btn-row"><button type="button" class="btn btn-secondary" id="businessClassBackSubject">返回對象查核</button></div></section>`:'<section class="card"><h3>純查詢模式</h3><p>目前沒有正在編輯的查核對象，因此此頁只提供法規附表查詢，不建立或改寫案件事實。</p></section>'}`;
+    bindBusinessClassification(i);
+  }
+  function bindBusinessClassification(i){
+    const home=document.getElementById('businessClassHome');if(home)home.onclick=()=>{if(state.businessLookup?.standalone&&$businessToolExit){const exit=$businessToolExit;$businessToolExit=null;state.businessLookup.standalone=false;state.view='home';exit();return;}setView('home');};
+    const query=document.getElementById('businessClassQuery');if(query)query.oninput=e=>state.businessLookup.query=e.target.value;
+    const search=document.getElementById('businessClassSearch');if(search)search.onclick=()=>{state.businessLookup.showAll=false;renderBusinessClassification();};
+    const all=document.getElementById('businessClassShowAll');if(all)all.onclick=()=>{state.businessLookup.query='';state.businessLookup.showAll=true;renderBusinessClassification();};
+    if(!i)return;
+    document.querySelectorAll('[data-business-class-add]').forEach(el=>el.onclick=()=>{normalizeBusinessClassifications(i);if(!i.businessClassifications.some(x=>x.id===el.dataset.businessClassAdd))i.businessClassifications.push({id:el.dataset.businessClassAdd,status:'candidate',evidence:''});renderBusinessClassification();});
+    document.querySelectorAll('[data-business-class-status]').forEach(el=>el.onchange=e=>{const row=i.businessClassifications.find(x=>x.id===e.target.dataset.businessClassStatus);if(row)row.status=e.target.value;renderBusinessClassification();});
+    document.querySelectorAll('[data-business-class-evidence]').forEach(el=>el.oninput=e=>{const row=i.businessClassifications.find(x=>x.id===e.target.dataset.businessClassEvidence);if(row)row.evidence=e.target.value;});
+    document.querySelectorAll('[data-business-class-remove]').forEach(el=>el.onclick=()=>{i.businessClassifications=i.businessClassifications.filter(x=>x.id!==el.dataset.businessClassRemove);renderBusinessClassification();});
+    const confirmBusiness=document.getElementById('confirmBusinessFromClass');if(confirmBusiness)confirmBusiness.onclick=()=>{if(i.businessClassifications.some(x=>x.status==='confirmed')){i.subjectType='industry';saveInspection();renderBusinessClassification();}};
+    const back=document.getElementById('businessClassBackSubject');if(back)back.onclick=()=>{saveInspection();setView('subject');};
   }
 
   function renderSubject(){
@@ -617,10 +683,13 @@
         <h3>確認管制主體</h3>
         <label class="field"><span class="field-label">稽查對象名稱／場所</span><input class="text-input" id="subjectName" value="${esc(i.name)}" placeholder="可先留白"></label>
         <div class="grid-2">${subjectTypes.map(([v,l,d])=>`<label class="entry-card card" style="margin:0"><div class="topic-title">${l}</div><p class="small">${d}</p><div class="choice-row"><label class="choice"><input type="radio" name="subjectType" value="${v}" ${i.subjectType===v?'checked':''}><span>選擇</span></label></div></label>`).join('')}</div>
+        <div class="divider"></div>
+        ${renderBusinessClassificationSummary(i)}
       </section>
       ${i.subjectType==='industry'||i.subjectType==='sewer'?renderAF(i):''}
       ${i.subjectType==='building'?renderBuilding(i):''}
       ${i.subjectType==='other'?renderOther(i):''}
+      ${i.subjectType?renderArticle30(i):''}
       ${!i.subjectType?`<div class="empty">先選擇管制主體，後續查核內容才會展開。</div>`:''}
       <div class="sticky-actions"><button class="btn btn-ghost" id="subjectBack">返回</button><button class="btn btn-primary" id="subjectSummary">整理目前內容</button></div>`;
     bindSubject(i);
@@ -662,8 +731,12 @@
         html+=`<label class="field"><span class="field-label">實際最終去向</span><select class="select-input" data-detail-code="F" data-detail-key="destination">${selectValue([['ground','地面水體'],['sewer','納管'],['soil','排放於土壤'],['groundwater','注入地下水體'],['other','其他'],['unknown','無法確認']],d.destination)}</select></label>`;
       }
       if(has('permit_mismatch')&&!has('nonapproved_outlet')) html+=f('是否確認由非核准最終放流口／非核准納管口排出','nonApprovedFinalOutlet');
+      if(has('nonapproved_outlet')||d.nonApprovedFinalOutlet==='yes'){
+        html+='<div class="divider"></div><h4>急迫搶救例外事實</h4>'+f('是否因情況急迫，為搶救人員或重大處理設施而採取該排放？','bypassEmergencyRescue');
+        if(d.bypassEmergencyRescue==='yes')html+=f(root.WaterLaw?.uiText?.('threeHourNotice')||'是否已依法完成主管機關通知？','bypassEmergencyNotice');
+      }
       if((has('soil_discharge')||d.destination==='soil')) html+=f('是否已確認符合土壤處理標準，且具有有效土壤處理許可','soilTreatmentAuthorized');
-      if(has('dilution')) html+=`<div class="divider"></div><h4>稀釋事實</h4>${f('廢污水是否需處理才能符合標準','dilutionNeedsTreatment')}${f('是否與其他水混合','mixedWater')}${f('混入水是否無需處理即可符合標準','mixedWaterClean')}${f('是否在排放／納管前混合','mixedBeforeDischarge')}`;
+      if(has('dilution')) { html+=`<div class="divider"></div><h4>稀釋事實</h4>${f('廢污水是否需處理才能符合標準','dilutionNeedsTreatment')}${f('是否與其他水混合','mixedWater')}${f('混入水是否無需處理即可符合標準','mixedWaterClean')}${f('是否在排放／納管前混合','mixedBeforeDischarge')}`; if(d.dilutionNeedsTreatment==='yes'&&d.mixedWater==='yes'&&d.mixedWaterClean==='yes'&&d.mixedBeforeDischarge==='yes'){html+='<div class="divider"></div><h4>急迫搶救例外事實</h4>'+f('是否因情況急迫，為搶救人員或重大處理設施而採取該稀釋？','dilutionEmergencyRescue');if(d.dilutionEmergencyRescue==='yes')html+=f(root.WaterLaw?.uiText?.('threeHourNotice')||'是否已依法完成主管機關通知？','dilutionEmergencyNotice');}}
       html+=f('本次是否現場採樣','sampled');
       if(d.sampled==='yes')html+=`<label class="field"><span class="field-label">採樣補充</span><input class="text-input" data-detail-code="F" data-detail-key="sampleNote" value="${esc(d.sampleNote)}" placeholder="採樣點／樣品資訊（不做實驗室結果判定）"></label>`;
       return html;
@@ -675,9 +748,12 @@
     return `<section class="card"><h3>建築物污水處理設施</h3><p>不套 A～F，改以四個主題快速查核。</p>${buildingTopic('facility','1｜設施狀態',i)}${buildingTopic('management','2｜管理／清理',i)}${buildingTopic('records','3｜紀錄',i)}${buildingTopic('discharge','4｜排放情形',i)}</section>`;
   }
   function buildingTopic(key,title,i){const t=i.building[key];return `<div class="topic"><div class="topic-head"><div class="topic-title">${title}</div>${ynu(t.status,`building_${key}`,{none:'無疑點',doubt:'有疑點',unchecked:'本次未查'})}</div>${t.status==='doubt'?`<div class="details"><label class="field"><span class="field-label">現場查核事實</span><textarea class="text-area" data-building="${key}" data-building-field="factText">${esc(t.factText)}</textarea></label><label class="field"><span class="field-label">補充</span><textarea class="text-area" data-building="${key}" data-building-field="notes">${esc(t.notes)}</textarea></label></div>`:''}</div>`;}
-  function renderOther(i){
+  function renderArticle30(i){
     const a30=[['pesticide','農藥／肥料'],['discard','棄置污染物'],['kill_aquatic','捕殺水生物'],['livestock','飼養禽畜'],['other','其他污染水體行為']];
-    return `<section class="card"><h3>非上述管制主體</h3><p>先記現場行為，不要求稽查員自己選第幾款。</p><label class="field"><span class="field-label">現場行為（可複選）</span>${checkboxList(i.other.article30,a30,'otherA30')}</label>${i.other.article30.length?`<label class="field"><span class="field-label">行為地點是否位於公告之水污染管制區？</span>${ynu(i.other.controlZone,'controlZone')}</label>`:''}<label class="field"><span class="field-label">是否有排放於土壤？</span>${ynu(i.other.soilDischarge,'soilDischarge')}</label>${i.other.soilDischarge==='yes'?`<label class="field"><span class="field-label">是否已確認符合土壤處理標準，且具有有效土壤處理許可？</span>${ynu(i.other.soilTreatmentAuthorized,'otherSoilTreatmentAuthorized')}</label>`:''}<label class="field"><span class="field-label">是否有注入地下水體？</span>${ynu(i.other.groundwaterInjection,'groundwaterInjection')}</label><label class="field"><span class="field-label">其他現場事實</span><textarea class="text-area" id="otherNotes">${esc(i.other.notes)}</textarea></label></section>`;
+    return `<section class="card"><h3>跨主體事實｜水污染管制區行為</h3><p>此類行為依行為與管制區等要件判斷，不因目前選為水污法事業或其他主體而先排除。</p><label class="field"><span class="field-label">現場是否有下列行為（可複選）</span>${checkboxList(i.other.article30,a30,'otherA30')}</label>${i.other.article30.length?`<label class="field"><span class="field-label">行為地點是否位於公告之水污染管制區？</span>${ynu(i.other.controlZone,'controlZone')}</label>`:''}</section>`;
+  }
+  function renderOther(i){
+    return `<section class="card"><h3>非上述管制主體</h3><p>先記現場事實，不要求稽查員自己選法條。</p><label class="field"><span class="field-label">是否有排放於土壤？</span>${ynu(i.other.soilDischarge,'soilDischarge')}</label>${i.other.soilDischarge==='yes'?`<label class="field"><span class="field-label">是否已確認符合土壤處理標準，且具有有效土壤處理許可？</span>${ynu(i.other.soilTreatmentAuthorized,'otherSoilTreatmentAuthorized')}</label>`:''}<label class="field"><span class="field-label">是否有注入地下水體？</span>${ynu(i.other.groundwaterInjection,'groundwaterInjection')}</label><label class="field"><span class="field-label">其他現場事實</span><textarea class="text-area" id="otherNotes">${esc(i.other.notes)}</textarea></label></section>`;
   }
 
   function bindSubject(i){
@@ -694,6 +770,7 @@
       const relation=relationById(i.sourceRelationId);
       if(relation)updateRelationSourceField(relation,'sourceName',e.target.value);
     };
+    const classReopen=document.getElementById('businessClassReopen');if(classReopen)classReopen.onclick=()=>{saveInspection();state.businessLookup.standalone=false;$businessToolExit=null;setView('business-classification');};
     document.querySelectorAll('input[name="subjectType"]').forEach(el=>el.onchange=e=>{i.subjectType=e.target.value;saveInspection();renderSubject();});
     document.querySelectorAll('input[name="permitStatus"]').forEach(el=>el.onchange=e=>{i.permitStatus=e.target.value;if(e.target.value!=='no')i.methods=[];if(e.target.value!=='yes')i.permitType='';renderSubject();});
     const permitType=document.getElementById('permitType');if(permitType)permitType.onchange=e=>i.permitType=e.target.value;
@@ -713,7 +790,7 @@
       document.querySelectorAll(`[data-topic="${code}"]`).forEach(el=>el.oninput=e=>{i.topics[code][e.target.dataset.topicField]=e.target.value;});
       Object.keys(i.details[code]||{}).forEach(key=>document.querySelectorAll(`input[name="${code}_${key}"]`).forEach(el=>el.onchange=e=>{
         i.details[code][key]=e.target.value;
-        if(code==='F'&&['actualDischarge','soilTreatmentAuthorized','sampled'].includes(key))renderSubject();
+        if(code==='F'&&['actualDischarge','soilTreatmentAuthorized','sampled','bypassEmergencyRescue','dilutionEmergencyRescue'].includes(key))renderSubject();
       }));
     });
     document.querySelectorAll('[data-detail-code]').forEach(el=>el.onchange=e=>{
@@ -788,13 +865,15 @@
     inspections.forEach(i=>{
       if(i.name) out.push(`【查核】稽查對象：${i.name}。`);
       const st=(subjectTypes.find(x=>x[0]===i.subjectType)||[])[1];if(st)out.push(`【查核】管制主體判斷：${st}。`);
+      (i.businessClassifications||[]).forEach(sel=>{const row=classificationModule()?.get(sel.id);if(row)out.push(`【文件／查核】事業分類：${row.no}. ${row.name}（${classificationStatusLabel(sel.status)}）${sel.evidence?'；依據／待查：'+sel.evidence:''}。`);});
       if((i.subjectType==='industry'||i.subjectType==='sewer')&&i.permitStatus) out.push(`【文件／查核】有效水許可／核准資料：${i.permitStatus==='yes'?'有':i.permitStatus==='no'?'無':'無法確認'}。`);
       if((i.subjectType==='industry'||i.subjectType==='sewer')&&i.permitStatus==='yes'&&i.permitType)out.push(`【文件／查核】目前核對之許可／核准類型：${permitTypeLabel(i.permitType)}。`);
       if(i.permitStatus==='no'&&i.methods.length) out.push(`【查核】現場實際處理方式：${i.methods.map(methodLabel).join('、')}。`);
       if((i.subjectType==='industry'||i.subjectType==='sewer')&&i.permitNotes)out.push(`【文件／查核】許可／核准補充：${i.permitNotes}`);
       if(i.subjectType==='industry'||i.subjectType==='sewer') ['B','C','D','E','F'].forEach(code=>{const t=i.topics[code];if(t.status==='doubt'&&t.doubtTypes.length)out.push(`【查核】${code} 項結構化事實：${issueLabels(code,t.doubtTypes).join('、')}。`);if(t.status==='doubt'&&t.factText)out.push(`【查核】${code} 項補充：${t.factText}`);if(t.status==='unchecked')out.push(`【查核】${code} 項本次未查。`);});
-      const F=i.details.F;if(F.actualDischarge==='yes')out.push('【目視】現場有廢污水實際排放。');if(F.destinationKnown==='yes'&&F.destination)out.push(`【目視】最終去向：${destLabel(F.destination)}。`);if(F.destination==='soil'&&F.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${F.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':F.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(F.nonApprovedFinalOutlet==='yes')out.push('【目視】廢污水由非核准最終放流口／非核准納管口排出。');if(F.sampled==='yes')out.push(`【採樣】本次已進行現場採樣${F.sampleNote?`：${F.sampleNote}`:''}。`);
-      if(i.subjectType==='other'){if(i.other.article30.length)out.push(`【目視】現場行為：${i.other.article30.map(a30Label).join('、')}。`);if(i.other.article30.length&&i.other.controlZone)out.push(`【文件／查核】行為地點${i.other.controlZone==='yes'?'位於':i.other.controlZone==='no'?'不位於':'尚無法確認是否位於'}公告水污染管制區。`);if(i.other.soilDischarge==='yes')out.push('【目視】現場有排放於土壤情形。');if(i.other.soilDischarge==='yes'&&i.other.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${i.other.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':i.other.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(i.other.groundwaterInjection==='yes')out.push('【目視】現場有注入地下水體情形。');if(i.other.notes)out.push(`【目視】其他事實：${i.other.notes}`);}
+      const F=i.details.F;if(F.actualDischarge==='yes')out.push('【目視】現場有廢污水實際排放。');if(F.destinationKnown==='yes'&&F.destination)out.push(`【目視】最終去向：${destLabel(F.destination)}。`);if(F.destination==='soil'&&F.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${F.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':F.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(F.nonApprovedFinalOutlet==='yes')out.push('【目視】廢污水由非核准最終放流口／非核准納管口排出。');if(F.bypassEmergencyRescue)out.push(`【查核】繞流之急迫搶救情形：${F.bypassEmergencyRescue==='yes'?'是':F.bypassEmergencyRescue==='no'?'否':'無法確認'}。`);if(F.bypassEmergencyRescue==='yes'&&F.bypassEmergencyNotice)out.push(`【查核】繞流急迫搶救之法定通知：${F.bypassEmergencyNotice==='yes'?'已通知':F.bypassEmergencyNotice==='no'?'未通知':'無法確認'}。`);if(F.dilutionEmergencyRescue)out.push(`【查核】稀釋之急迫搶救情形：${F.dilutionEmergencyRescue==='yes'?'是':F.dilutionEmergencyRescue==='no'?'否':'無法確認'}。`);if(F.dilutionEmergencyRescue==='yes'&&F.dilutionEmergencyNotice)out.push(`【查核】稀釋急迫搶救之法定通知：${F.dilutionEmergencyNotice==='yes'?'已通知':F.dilutionEmergencyNotice==='no'?'未通知':'無法確認'}。`);if(F.sampled==='yes')out.push(`【採樣】本次已進行現場採樣${F.sampleNote?`：${F.sampleNote}`:''}。`);
+      if(i.other.article30.length)out.push(`【目視】水污染管制區相關現場行為：${i.other.article30.map(a30Label).join('、')}。`);if(i.other.article30.length&&i.other.controlZone)out.push(`【文件／查核】行為地點${i.other.controlZone==='yes'?'位於':i.other.controlZone==='no'?'不位於':'尚無法確認是否位於'}公告水污染管制區。`);
+      if(i.subjectType==='other'){if(i.other.soilDischarge==='yes')out.push('【目視】現場有排放於土壤情形。');if(i.other.soilDischarge==='yes'&&i.other.soilTreatmentAuthorized)out.push(`【文件／查核】土壤處理合法例外：${i.other.soilTreatmentAuthorized==='yes'?'已確認符合土壤處理標準且具有有效土壤處理許可':i.other.soilTreatmentAuthorized==='no'?'未具備完整合法例外條件':'尚無法確認'}。`);if(i.other.groundwaterInjection==='yes')out.push('【目視】現場有注入地下水體情形。');if(i.other.notes)out.push(`【目視】其他事實：${i.other.notes}`);}
     });
     return out;
   }
@@ -891,6 +970,8 @@
     state.inspections=[];
     state.draftText='';
     state.legalReviews=[];
+    state.businessLookup={query:'',showAll:false,standalone:false};
+    $businessToolExit=null;
     if($app) render();
   }
   const cloneState=value=>JSON.parse(JSON.stringify(value));
@@ -1034,8 +1115,24 @@
   function mount(container){
     if(!container) throw new Error('WaterV2UI mount target is required.');
     $app=container;
+    const wasStandalone=!!state.businessLookup?.standalone;
+    $businessToolExit=null;
+    if(wasStandalone&&state.view==='business-classification')state.view='home';
+    state.businessLookup.standalone=false;
     $app.classList.add('water-v2-shell');
     if(!state.caseInfo.inspectionDate)state.caseInfo.inspectionDate=localDateTimeValue();
+    render();
+  }
+  function mountBusinessClassification(container,{onExit=null}={}){
+    if(!container) throw new Error('WaterV2UI business classification mount target is required.');
+    $app=container;
+    $businessToolExit=typeof onExit==='function'?onExit:null;
+    state.businessLookup=state.businessLookup&&typeof state.businessLookup==='object'?state.businessLookup:{query:'',showAll:false,standalone:true};
+    state.businessLookup.standalone=true;
+    state.businessLookup.query='';
+    state.businessLookup.showAll=false;
+    state.view='business-classification';
+    $app.classList.add('water-v2-shell');
     render();
   }
   function showLaw(){saveInspection();setView('law');}
@@ -1044,6 +1141,7 @@
     version:VERSION,
     provenance:PROVENANCE,
     mount,
+    mountBusinessClassification,
     hasData,
     snapshot,
     restore,

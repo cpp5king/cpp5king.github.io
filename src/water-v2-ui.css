@@ -207,3 +207,29 @@
 
 /* RC8: 原流程內返回／整理列改為頁內操作；固定底列由四大模組共通操作列負責。 */
 .water-v2-shell .sticky-actions{position:static!important;bottom:auto!important;backdrop-filter:none!important;background:transparent!important;border:0!important;padding:0!important}
+
+/* 5.2.11: 水污法事業分類及定義查詢。搜尋結果不等於事業身分認定。 */
+.water-v2-shell .business-class-lookup{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbfcfc}
+.water-v2-shell .business-class-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
+.water-v2-shell .business-class-results,.water-v2-shell .business-class-selected-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.water-v2-shell .business-class-result{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff}
+.water-v2-shell .business-class-result-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:8px}
+.water-v2-shell .business-class-selected{display:grid;grid-template-columns:minmax(160px,.9fr) minmax(150px,.7fr) minmax(220px,1.3fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}
+@media(max-width:760px){
+  .water-v2-shell .business-class-search{grid-template-columns:1fr}
+  .water-v2-shell .business-class-search .btn{width:100%}
+  .water-v2-shell .business-class-result-head{flex-direction:column}
+  .water-v2-shell .business-class-result-head .btn{width:100%}
+  .water-v2-shell .business-class-selected{grid-template-columns:1fr}
+  .water-v2-shell .business-class-selected .btn{width:100%}
+}
+
+.water-v2-shell .business-class-official-section{margin:10px 0}
+.water-v2-shell .business-class-official{white-space:pre-line;line-height:1.65;font-size:13px;color:var(--text)}
+.water-v2-shell .business-class-summary{margin-top:8px}
+.water-v2-shell .business-class-summary-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.water-v2-shell .business-class-summary-row:last-of-type{border-bottom:0}
+@media(max-width:760px){
+  .water-v2-shell .business-class-summary-row{align-items:flex-start;flex-direction:column}
+}
+

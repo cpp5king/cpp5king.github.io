@@ -169,7 +169,8 @@
       if (viewMode!=='home') nav.append(button('首頁／案件大類', () => { viewMode='home'; render(); }, true));
       if (state.categoryId && viewMode==='case') nav.append(button(`返回${category?.title||'模組'}首頁`, () => { viewMode='category'; render(); }, true));
       if (state.templateId && viewMode==='case' && !config.caseTypes.find(item => item.id === state.caseTypeId)?.directTemplateId) nav.append(button('返回紀錄範本', () => { viewMode='template'; render(); }, true));
-      if (viewMode!=='case' && state.categoryId) nav.append(button('返回目前案件', () => { viewMode='case'; render(); }, true));
+      if(viewMode==='water-business-classification'&&state.categoryId==='water') nav.append(button('返回水污染功能',()=>{viewMode='category';render();},true));
+      else if (viewMode!=='case' && state.categoryId) nav.append(button('返回目前案件', () => { viewMode='case'; render(); }, true));
       if (state.categoryId || hasInput()) nav.append(button('新增案件', clearCurrentCase, true));
       if (['water','noise','waste','air'].includes(state.categoryId) && root.LawReferenceUI?.open && viewMode!=='home') nav.append(button('法規', () => root.LawReferenceUI.open(state.categoryId,lawContext(state)), true));
       if (viewMode==='case' && (state.templateId || root.WasteV1UI?.hasData?.() || root.AirV1UI?.hasData?.())) nav.append(button('匯出案件', () => exportCase(), true));
@@ -326,10 +327,19 @@
       }
 
       const mobileIntermediary=isMobileViewport()&&['category','template'].includes(viewMode);
-      if(!mobileIntermediary)app.append(navigation(state));
+      if(!mobileIntermediary&&viewMode!=='water-business-classification')app.append(navigation(state));
+
+      if(viewMode==='water-business-classification'){
+        if(!category||category.id!=='water'||!root.WaterV2UI?.mountBusinessClassification){viewMode='category';render();return;}
+        const host=el('section','','water-v2-host');app.append(host);
+        root.WaterV2UI.mountBusinessClassification(host,{onExit:()=>{viewMode='category';render();}});
+        return;
+      }
 
       if(viewMode==='category'){
         if(!category){viewMode='home';render();return;}
+        const isWaterFunctions=category.id==='water';
+        const openWaterBusinessTool=()=>{viewMode='water-business-classification';render();};
         const types=config.caseTypes.filter(item=>item.categoryId===category.id);
         const selectType=item=>{
           const isCurrent=item.id===state.caseTypeId;
@@ -341,7 +351,8 @@
           destructiveNavigate(()=>{session.selectCaseType(item.id);if(item.directTemplateId)session.selectTemplate(item.directTemplateId);},isDirectCaseType(item)?'case':'template');
         };
         if(mobileIntermediary){
-          const shell=mobileIntermediaryHeader(state,category,`選擇${category.title}案件類型`,'案件類型');
+          const shell=mobileIntermediaryHeader(state,category,isWaterFunctions?'選擇水污染功能':`選擇${category.title}案件類型`,isWaterFunctions?'功能':'案件類型');
+          if(isWaterFunctions)shell.append(el('h3','案件作業','water-function-group-title'));
           const list=el('div','', 'mobile-stage-choice-grid');
           for(const item of types){
             const isCurrent=item.id===state.caseTypeId;
@@ -351,9 +362,16 @@
             list.append(entry);
           }
           if(!types.length)list.append(el('p','目前尚無可用案件類型。','mobile-stage-empty'));
-          shell.append(list);app.append(shell);return;
+          shell.append(list);
+          if(isWaterFunctions){
+            shell.append(el('h3','查詢工具','water-function-group-title'));
+            const tools=el('div','', 'mobile-stage-choice-grid water-function-tools');
+            const lookup=button('事業分類及定義',openWaterBusinessTool,true);lookup.setAttribute('data-water-tool','business-classification');tools.append(lookup);shell.append(tools);
+          }
+          app.append(shell);return;
         }
-        app.append(el('p',category.title),el('h2',`選擇${category.title}案件類型`));
+        app.append(el('p',category.title),el('h2',isWaterFunctions?'選擇水污染功能':`選擇${category.title}案件類型`));
+        if(isWaterFunctions)app.append(el('h3','案件作業','water-function-group-title'));
         const list=el('div','', 'actions');
         for(const item of types){
           const isCurrent=item.id===state.caseTypeId;
@@ -362,6 +380,11 @@
         }
         if(!types.length)list.append(el('p','目前尚無可用案件類型。'));
         app.append(list);
+        if(isWaterFunctions){
+          app.append(el('h3','查詢工具','water-function-group-title'));
+          const tools=el('div','', 'actions water-function-tools');
+          const lookup=button('事業分類及定義',openWaterBusinessTool,true);lookup.setAttribute('data-water-tool','business-classification');tools.append(lookup);app.append(tools);
+        }
         return;
       }
 

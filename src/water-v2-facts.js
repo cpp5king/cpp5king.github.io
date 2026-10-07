@@ -6,6 +6,12 @@
   const yesNo=value=>value==='yes'?'yes':value==='no'?'no':'unknown';
   const flag=condition=>condition?'yes':'no';
   const text=value=>String(value||'').trim();
+  function exceptionAbsence(rescue,notice){
+    if(rescue==='no')return 'yes';
+    if(rescue==='yes'&&notice==='no')return 'yes';
+    if(rescue==='yes'&&notice==='yes')return 'no';
+    return 'unknown';
+  }
 
   function issueSet(inspection,code){
     const topic=inspection?.topics?.[code]||{};
@@ -94,6 +100,8 @@
       mixed_water:yesNo(F.mixedWater),
       mixed_water_clean:yesNo(F.mixedWaterClean),
       mixed_before_discharge:yesNo(F.mixedBeforeDischarge),
+      bypass_exception_absent:exceptionAbsence(F.bypassEmergencyRescue,F.bypassEmergencyNotice),
+      dilution_exception_absent:exceptionAbsence(F.dilutionEmergencyRescue,F.dilutionEmergencyNotice),
 
       treatment_needed:yesNo(treatmentNeeded),
       treatment_should_operate:yesNo(treatmentShouldOperate),
@@ -112,10 +120,10 @@
       soil_exception_no:flag((fSoil||otherSoil)&&soilStatus==='no'),
       soil_exception_unknown:flag((fSoil||otherSoil)&&soilStatus!=='yes'&&soilStatus!=='no'),
 
-      article30_action_any:flag(subjectType==='other'&&article30.length>0),
+      article30_action_any:flag(article30.length>0),
       control_zone_yes:flag(other.controlZone==='yes'),
       control_zone_no:flag(other.controlZone==='no'),
-      control_zone_unknown:flag(subjectType==='other'&&article30.length>0&&other.controlZone!=='yes'&&other.controlZone!=='no'),
+      control_zone_unknown:flag(article30.length>0&&other.controlZone!=='yes'&&other.controlZone!=='no'),
 
       sampled:flag(F.sampled==='yes')
     };
@@ -134,7 +142,7 @@
       F:{
         actualDischarge:actualDischarge||'',routeMatch:routeMatch||'',nonApprovedFinalOutlet:nonApprovedFinalOutlet||'',
         destinationKnown:destinationKnown||'',destination:derivedDestination||'',sampled:F.sampled||'',
-        dilutionNeedsTreatment:F.dilutionNeedsTreatment||'',mixedWater:F.mixedWater||'',mixedWaterClean:F.mixedWaterClean||'',mixedBeforeDischarge:F.mixedBeforeDischarge||''
+        dilutionNeedsTreatment:F.dilutionNeedsTreatment||'',mixedWater:F.mixedWater||'',mixedWaterClean:F.mixedWaterClean||'',mixedBeforeDischarge:F.mixedBeforeDischarge||'',bypassEmergencyRescue:F.bypassEmergencyRescue||'',bypassEmergencyNotice:F.bypassEmergencyNotice||'',dilutionEmergencyRescue:F.dilutionEmergencyRescue||'',dilutionEmergencyNotice:F.dilutionEmergencyNotice||''
       },
       E:{needsTreatment:treatmentNeeded||'',shouldOperate:treatmentShouldOperate||'',actuallyRunning:treatmentActuallyRunning||'',alternativeTreatment:E.alternativeTreatment||''},
       B:{meterRequired:meterRequired||'',meterInstalled:meterInstalled||'',meterWorking:meterWorking||''},

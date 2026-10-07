@@ -3,10 +3,11 @@
 const VERIFIED='2026-10-07';
 const MOJ='全國法規資料庫（法務部）';
 const URL=pcode=>`https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=${encodeURIComponent(pcode)}`;
-const E=(id,pcode,name,amended,notes,articles=[])=>Object.freeze({id,pcode,name,amended,sourceUrl:URL(pcode),sourceName:MOJ,notes,verifiedAt:VERIFIED,articles:Object.freeze(articles)});
+const E=(id,pcode,name,amended,notes,articles=[],extra={})=>Object.freeze({id,pcode,name,amended,sourceUrl:URL(pcode),sourceName:MOJ,notes,verifiedAt:VERIFIED,articles:Object.freeze(articles),...extra});
 const A=(label,summary)=>Object.freeze({label,summary});
 const L=(id,name,amended,sourceUrl,notes,articles=[])=>Object.freeze({id,name,amended,sourceUrl,sourceName:'新北市政府環境保護局',notes,verifiedAt:VERIFIED,local:true,articles:Object.freeze(articles)});
 const O=(label,text,summary='')=>Object.freeze({label,text,summary,official:true});
+const N=(id,name,amended,sourceUrl,sourceName,notes,articles=[],extra={})=>Object.freeze({id,name,amended,sourceUrl,sourceName,notes,verifiedAt:VERIFIED,notice:true,articles:Object.freeze(articles),...extra});
 root.INSPECTION_LAW_LIBRARY=Object.freeze({
   provenance:'PP-IA-41-7F3C9A21',
   version:'2026.10.07-law-library-v3-official-text',
@@ -18,21 +19,38 @@ root.INSPECTION_LAW_LIBRARY=Object.freeze({
       title:'水污染法規',
       entries:Object.freeze([
         E('water-act','O0040001','水污染防治法','107.06.13','實際適用仍須依行為日期及當時有效法規版本判斷。',[
-          A('第7條','事業等排放廢（污）水於地面水體，須符合放流水標準。'),
-          A('第14條','事業排放廢（污）水於地面水體，應取得排放許可證或簡易排放許可文件，並依登記事項運作。'),
-          A('第18條','事業應依規定採行水污染防治措施；細部義務由相關管理辦法規範。'),
-          A('第30條','特定水污染行為受禁止或限制，現場仍須先確認實際行為與水體關係。')
+          A('第7條','事業、污水下水道系統及建築物污水處理設施排放廢（污）水於地面水體之放流水標準方向。'),
+          A('第13條','指定事業於設立或變更前之水污染防治措施計畫查核方向。'),
+          A('第14條','事業排放廢（污）水於地面水體之排放許可及依登記事項運作方向。'),
+          A('第18條','事業水污染防治措施之授權規定；具體義務須回到相關管理辦法確認。'),
+          A('第18條之1','繞流、特定稀釋、緊急例外及處理設施功能／操作等查核方向。'),
+          A('第19條','污水下水道系統對第14、15、18條等規定之準用關係。'),
+          A('第20條','事業或污水下水道系統採貯留、稀釋等水污染防治措施之許可方向。'),
+          A('第22條','檢測申報義務方向；格式、內容、頻率及方式仍依相關規定確認。'),
+          A('第26條','主管機關查證及規避、妨礙或拒絕查證方向。'),
+          A('第27條','排放有嚴重危害之虞時之緊急應變與通知方向。'),
+          A('第28條','輸送或貯存設備疏漏風險、污染後應變及通知方向。'),
+          A('第30條','水污染管制區內特定禁止行為；不以是否為水污法事業作為前置排除條件。'),
+          A('第32條','廢（污）水排放於土壤或注入地下水體之禁止及例外方向。'),
+          A('第35條','依法申報資料不實或業務文書虛偽記載之刑事疑義方向。'),
+          A('第59條','廢（污）水處理設施故障時放流水標準例外之條件。'),
+          A('第71條','地面水體污染事件之清除、處理及代履行方向。')
         ]),
+        N('water-business-classification','水污染防治法事業分類及定義','110.04.16','https://oaout.moenv.gov.tw/law/LawContent.aspx?id=GL005353','環境部主管法規共用系統','依水污染防治法第2條第7款公告；完整64類可於水污「查詢事業分類及定義」離線搜尋。搜尋摘要與同義詞只供查找，不作自動認定。',[
+          O('公告事項一至三',`一、水污染防治法第二條第七款所稱之公司、工廠、礦場、廢水代處理業、畜牧業或其他中央主管機關指定之事業分類、定義，詳如附件。
+二、事業位於自來水水質水量保護區內、區外之認定，以放流口所在位址為準；無放流口者，以事業所在位址為準。
+三、事業同時符合二以上之事業分類及定義者，應分別符合水污染防治法及其相關法規對各該業別之規定。`,'完整分類與定義另由本機事業分類查詢工具提供；個案仍須核對現行正式附件及適用條件。')
+        ],{lookupModule:'WaterBusinessClassification'}),
         E('water-measure-reg','O0040054','水污染防治措施及檢測申報管理辦法','115.04.20','用於水措設施、操作、逕流、貯留、回收、放流口、計測、紀錄與檢測申報等現場查核；須依行為日期確認當時有效條文。',[
           A('第4條','事業或污水下水道系統應依核准水措內容運作。'),
           A('第7～11條','雨污分流、逕流廢水收集處理及營建工地逕流污染削減等要求。'),
           A('第31、39～41條','委託處理、貯留與回收使用等水措之設施、計測、紀錄及水質要求。'),
           A('第53條','放流口位置、採樣、告示牌、水量計測等現場查核方向。'),
           A('第65、89-1條','水量計校正維護，以及檢測申報資料與現場／證明文件一致性等查核方向。')
-        ]),
+        ],{effectiveNote:'115年4月20日修正內容含另定施行日期項目；本系統版本引擎區分115年4月20日起已施行規定與118年4月20日起之延後施行時點，個案仍須依行為日期及個別條文／附表確認。'}),
         E('water-permit-reg','O0040055','水污染防治措施計畫及許可申請審查管理辦法','115.03.24','修正條文有分階段施行情形時，系統不得用稽查日取代行為日選版本。',[
           A('許可／水措核對','用於比對核准製程、廢水來源、水措設施、排放／貯留／納管等內容與現場事實。')
-        ]),
+        ],{effectiveNote:'115年3月24日修正之第57條自發布日施行；第31、46條及第4條附表二等自115年10月1日施行。'}),
         E('effluent-standard','O0040004','放流水標準','113.12.18','各業別與水質項目限值須依實際業別、排放型態及當時有效附表確認。',[
           A('第2條及附表','事業、污水下水道系統及建築物污水處理設施之放流水水質項目與限值。')
         ])
