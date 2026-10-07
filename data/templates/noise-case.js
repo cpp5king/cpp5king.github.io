@@ -581,6 +581,24 @@ window.INSPECTION_CONFIG.templates.push({
   "replyVariants": [
     {
       "when": {
+        "field": "hasCommittee",
+        "value": "yes"
+      },
+      "text": [
+        window.NOISE_TEXTS.templates.committeeReply
+      ]
+    },
+    {
+      "when": {
+        "field": "hasCommittee",
+        "value": "no"
+      },
+      "text": [
+        window.NOISE_TEXTS.templates.policeReply
+      ]
+    },
+    {
+      "when": {
         "field": "scenario",
         "value": "neighbor"
       },
