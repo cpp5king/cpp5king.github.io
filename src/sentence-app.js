@@ -21,12 +21,14 @@
     function hasInput() {
       const state = session.snapshot();
       const waterHasData = !!root.WaterV2UI?.hasData?.();
+      const waterSamplingHasData = !!root.WaterSamplingUI?.hasData?.();
       const wasteHasData = !!root.WasteV1UI?.hasData?.();
       const airHasData = !!root.AirV1UI?.hasData?.();
-      return waterHasData || wasteHasData || airHasData || !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
+      return waterHasData || waterSamplingHasData || wasteHasData || airHasData || !!state.outputs || Object.values(state.inputs).some(value => Array.isArray(value) ? value.length : value !== '');
     }
     function resetModuleDrafts() {
       if (root.WaterV2UI?.hasData?.()) root.WaterV2UI.reset();
+      if (root.WaterSamplingUI?.hasData?.()) root.WaterSamplingUI.reset();
       if (root.WasteV1UI?.hasData?.()) root.WasteV1UI.reset();
       if (root.AirV1UI?.hasData?.()) root.AirV1UI.reset();
     }
@@ -209,12 +211,14 @@
     if(document.body?.append)document.body.append(importInput);
     function exportCase(){
       const state=session.snapshot();
+      const waterSamplingHasData=state.categoryId==='water'&&root.WaterSamplingUI?.hasData?.()&&root.WaterSamplingUI?.snapshot;
       const wasteHasData=state.categoryId==='waste'&&root.WasteV1UI?.hasData?.()&&root.WasteV1UI?.snapshot;
       const airHasData=state.categoryId==='air'&&root.AirV1UI?.hasData?.()&&root.AirV1UI?.snapshot;
-      if(!state.templateId&&!wasteHasData&&!airHasData){window.alert?.('目前沒有可匯出的案件。');return;}
+      if(!state.templateId&&!waterSamplingHasData&&!wasteHasData&&!airHasData){window.alert?.('目前沒有可匯出的案件。');return;}
       if(state.categoryId==='water'&&root.WaterV2UI?.hasData?.()&&root.WaterV2UI?.snapshot){
         state.waterV2State=root.WaterV2UI.snapshot();
       }
+      if(waterSamplingHasData)state.waterSamplingState=root.WaterSamplingUI.snapshot();
       if(wasteHasData)state.wasteV1State=root.WasteV1UI.snapshot();
       if(airHasData)state.airV1State=root.AirV1UI.snapshot();
       const text=root.CaseFile.serialize(state,root.INSPECTION_APP_META);
@@ -231,6 +235,10 @@
         if(root.WaterV2UI){
           if(parsed.state.waterV2State&&root.WaterV2UI.restore)root.WaterV2UI.restore(parsed.state.waterV2State);
           else root.WaterV2UI.reset?.();
+        }
+        if(root.WaterSamplingUI){
+          if(parsed.state.waterSamplingState&&root.WaterSamplingUI.restore)root.WaterSamplingUI.restore(parsed.state.waterSamplingState);
+          else root.WaterSamplingUI.reset?.();
         }
         if(root.WasteV1UI){
           if(parsed.state.wasteV1State&&root.WasteV1UI.restore)root.WasteV1UI.restore(parsed.state.wasteV1State);
@@ -327,7 +335,7 @@
       }
 
       const mobileIntermediary=isMobileViewport()&&['category','template'].includes(viewMode);
-      if(!mobileIntermediary&&viewMode!=='water-business-classification')app.append(navigation(state));
+      if(!mobileIntermediary&&!['water-business-classification','water-sampling'].includes(viewMode))app.append(navigation(state));
 
       if(viewMode==='water-business-classification'){
         if(!category||category.id!=='water'||!root.WaterV2UI?.mountBusinessClassification){viewMode='category';render();return;}
@@ -336,10 +344,18 @@
         return;
       }
 
+      if(viewMode==='water-sampling'){
+        if(!category||category.id!=='water'||!root.WaterSamplingUI?.mount){viewMode='category';render();return;}
+        const host=el('section','','water-sampling-host');app.append(host);
+        root.WaterSamplingUI.mount(host,{onExit:()=>{viewMode='category';render();}});
+        return;
+      }
+
       if(viewMode==='category'){
         if(!category){viewMode='home';render();return;}
         const isWaterFunctions=category.id==='water';
         const openWaterBusinessTool=()=>{viewMode='water-business-classification';render();};
+        const openWaterSampling=()=>{viewMode='water-sampling';render();};
         const types=config.caseTypes.filter(item=>item.categoryId===category.id);
         const selectType=item=>{
           const isCurrent=item.id===state.caseTypeId;
@@ -364,6 +380,9 @@
           if(!types.length)list.append(el('p','目前尚無可用案件類型。','mobile-stage-empty'));
           shell.append(list);
           if(isWaterFunctions){
+            shell.append(el('h3','作業模組','water-function-group-title'));
+            const modules=el('div','', 'mobile-stage-choice-grid water-function-tools');
+            const sampling=button('事業放流水採樣（NIEA W109.54B）',openWaterSampling,true);sampling.setAttribute('data-water-tool','sampling-w10954b');modules.append(sampling);shell.append(modules);
             shell.append(el('h3','查詢工具','water-function-group-title'));
             const tools=el('div','', 'mobile-stage-choice-grid water-function-tools');
             const lookup=button('事業分類及定義',openWaterBusinessTool,true);lookup.setAttribute('data-water-tool','business-classification');tools.append(lookup);shell.append(tools);
@@ -381,6 +400,9 @@
         if(!types.length)list.append(el('p','目前尚無可用案件類型。'));
         app.append(list);
         if(isWaterFunctions){
+          app.append(el('h3','作業模組','water-function-group-title'));
+          const modules=el('div','', 'actions water-function-tools');
+          const sampling=button('事業放流水採樣（NIEA W109.54B）',openWaterSampling,true);sampling.setAttribute('data-water-tool','sampling-w10954b');modules.append(sampling);app.append(modules);
           app.append(el('h3','查詢工具','water-function-group-title'));
           const tools=el('div','', 'actions water-function-tools');
           const lookup=button('事業分類及定義',openWaterBusinessTool,true);lookup.setAttribute('data-water-tool','business-classification');tools.append(lookup);app.append(tools);

@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.2.11');
+importScripts('./data/law-offline-assets.js?v=5.2.12');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
-const VERSION='5.2.11';
-const CACHE_REVISION='water-law-5.2.11-1';
-const CACHE_NAME='inspection-assistant-5.2.11-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.12';
+const CACHE_REVISION='water-sampling-5.2.12-1';
+const CACHE_NAME='inspection-assistant-5.2.12-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -14,6 +14,7 @@ const APP_SHELL=[
   './src/choice-cards.css'+V,
   './src/mobile-multiselect.css'+V,
   './src/water-v2-ui.css'+V,
+  './src/water-sampling-ui.css'+V,
   './src/waste-v1-ui.css'+V,
   './src/air-v1-ui.css'+V,
   './src/law-reference-ui.css'+V,
@@ -54,6 +55,7 @@ const APP_SHELL=[
   './data/water-standard-rules.js'+V,
   './data/water-local-rules.js'+V,
   './data/water-business-classification.js'+V,
+  './data/water-sampling-w10954b.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,
   './src/noise-method-guidance.js'+V,
@@ -100,6 +102,7 @@ const APP_SHELL=[
   './src/water-industry-v485-final.js'+V,
   './src/inspection-flow-ui.js'+V,
   './src/water-v2-ui.js'+V,
+  './src/water-sampling-ui.js'+V,
   './src/waste-v1-ui.js'+V,
   './src/law-reference-ui.js'+V,
   './src/air-rule-ui.js'+V,
@@ -125,7 +128,7 @@ self.addEventListener('install',event=>{
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
-    await Promise.all(keys.filter(key=>key.startsWith('inspection-assistant-')&&!key.startsWith('inspection-assistant-test-')&&key!==CACHE_NAME).map(key=>caches.delete(key));
+    await Promise.all(keys.filter(key=>key.startsWith('inspection-assistant-')&&!key.startsWith('inspection-assistant-test-')&&key!==CACHE_NAME).map(key=>caches.delete(key)));
     await self.clients.claim();
   })());
 });
