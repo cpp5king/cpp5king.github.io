@@ -1,8 +1,8 @@
-importScripts('./data/law-offline-assets.js?v=5.2.15');
+importScripts('./data/law-offline-assets.js?v=5.2.16');
 const PROVENANCE='PP5-IA-41-7F3C9A21';
-const VERSION='5.2.15';
-const CACHE_REVISION='water-home-5.2.15-1';
-const CACHE_NAME='inspection-assistant-5.2.15-pp-7f3c9a21-'+CACHE_REVISION;
+const VERSION='5.2.16';
+const CACHE_REVISION='water-sampling-standard-5.2.16-1';
+const CACHE_NAME='inspection-assistant-5.2.16-pp-7f3c9a21-'+CACHE_REVISION;
 const V='?v='+VERSION;
 const NAVIGATION_TIMEOUT_MS=6000;
 const APP_SHELL=[
@@ -55,6 +55,7 @@ const APP_SHELL=[
   './data/water-standard-rules.js'+V,
   './data/water-local-rules.js'+V,
   './data/water-business-classification.js'+V,
+  './data/water-discharge-sampling-items.js'+V,
   './data/water-sampling-w10954b.js'+V,
   './src/noise-zone.js'+V,
   './src/noise-main.js'+V,

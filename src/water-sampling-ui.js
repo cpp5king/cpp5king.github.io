@@ -1,290 +1,109 @@
 (function(root){
-  'use strict';
-
-  const rules=()=>root.WaterSamplingW10954B;
-  let app=null;
-  let exitHandler=null;
-  let step=0;
-  let state=rules()?.empty?.()||{};
-  const STEP_TITLES=['採樣規劃','採樣前確認','執行採樣','保存與紀錄','標籤封條與品管','最終檢核'];
-
-  function esc(value){
-    return String(value??'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
-  }
-  function get(path){
-    return path.split('.').reduce(function(obj,key){return obj==null?undefined:obj[key];},state);
-  }
-  function set(path,value){
-    const parts=path.split('.');let obj=state;
-    for(let i=0;i<parts.length-1;i++){if(!obj[parts[i]]||typeof obj[parts[i]]!=='object')obj[parts[i]]={};obj=obj[parts[i]];}
-    obj[parts[parts.length-1]]=value;
-  }
-  function options(items,value,placeholder){
-    let out='<option value="">'+esc(placeholder||'請選擇')+'</option>';
-    for(const item of items)out+='<option value="'+esc(item[0])+'" '+(item[0]===value?'selected':'')+'>'+esc(item[1])+'</option>';
-    return out;
-  }
-  function selectField(label,path,items,hint){
-    return '<label class="field"><span class="field-label">'+esc(label)+'</span><select class="select-input" data-path="'+esc(path)+'">'+options(items,get(path))+'</select>'+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';
-  }
-  function textField(label,path,placeholder,hint,type){
-    return '<label class="field"><span class="field-label">'+esc(label)+'</span><input class="text-input" type="'+esc(type||'text')+'" data-path="'+esc(path)+'" value="'+esc(get(path)||'')+'" placeholder="'+esc(placeholder||'')+'">'+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';
-  }
-  function areaField(label,path,placeholder,hint){
-    return '<label class="field"><span class="field-label">'+esc(label)+'</span><textarea class="text-input sampling-textarea" data-path="'+esc(path)+'" placeholder="'+esc(placeholder||'')+'">'+esc(get(path)||'')+'</textarea>'+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';
-  }
-  function check(label,path,hint){
-    return '<label class="sampling-check"><input type="checkbox" data-check="'+esc(path)+'" '+(get(path)?'checked':'')+'><span><strong>'+esc(label)+'</strong>'+(hint?'<small>'+esc(hint)+'</small>':'')+'</span></label>';
-  }
-  function tri(label,path,hint){
-    return selectField(label,path,rules().tri(),hint);
-  }
-  function notice(type,title,text){
-    return '<div class="notice '+esc(type||'info')+'"><strong>'+esc(title)+'</strong><br>'+esc(text)+'</div>';
-  }
-  function header(){
-    const pct=Math.round(((step+1)/STEP_TITLES.length)*100);
-    return '<div class="section-title sampling-head"><div><h2>事業放流水採樣</h2><p>NIEA W109.54B｜113年12月15日生效</p></div></div>'+
-      '<div class="sampling-progress"><div class="sampling-progress-meta"><strong>'+(step+1)+'／'+STEP_TITLES.length+' '+esc(STEP_TITLES[step])+'</strong><span>'+pct+'%</span></div><div class="sampling-progress-track"><i style="width:'+pct+'%"></i></div></div>';
-  }
-  function stepPlan(){
-    const sp=state.special||{};
-    return '<section class="card sampling-card"><h3>1. 採樣規劃與樣品識別</h3>'+
-      notice('info','適用範圍','本流程僅供事業、污水下水道系統及建築物污水處理設施放流水採集。')+
-      '<div class="grid-2">'+
-      selectField('適用對象','subjectType',rules().subjects())+
-      selectField('採樣點性質','outletType',rules().outlets())+
-      textField('採樣地點','samplingLocation','例如：D01 放流口／廠區東側排放口')+
-      textField('座標','coordinates','例如：25.000000, 121.000000','採樣地點或座標至少記錄一項。')+
-      textField('樣品編號','sampleId','例如：1151007-W01')+
-      textField('樣品種類','sampleDescription','例如：放流水')+
-      textField('採樣日期','sampleDate','','','date')+
-      textField('採樣時間','sampleTime','','','time')+
-      textField('樣品數量','sampleCount','例如：6 瓶／1 組')+
-      selectField('採樣方式','samplingMode',rules().samplingModes(),'抓樣反映當時瞬間濃度；混樣反映一段時間平均濃度。')+
-      '</div><div class="btn-row"><button type="button" class="btn btn-secondary" data-action="now">帶入現在日期時間</button></div>'+
-      areaField('分析／檢測項目','analysisItems','例如：pH、COD、SS、氨氮、重金屬…','請依實際送驗項目記錄；本模組不自行推定應驗項目。')+
-      '<div class="divider"></div><h4>待測項目特性</h4><p class="small muted">以下只用來觸發 W109.54B 的採樣方式、容器、現場處理與品管提醒；不是放流水標準判定。</p>'+
-      '<div class="sampling-check-grid">'+
-      check('總餘氯','special.totalResidualChlorine','屬須現場檢測項目；一般不適宜混樣。')+
-      check('水溫','special.temperature','屬須現場檢測項目；一般不適宜混樣。')+
-      check('pH','special.ph','屬須現場檢測項目；一般不適宜混樣。')+
-      check('六價鉻','special.chromiumVI','方法列為最長保存期限24小時以下之例。')+
-      check('氨氮（電極法）','special.ammoniaElectrode','方法列為最長保存期限24小時以下之例。')+
-      check('鹼度','special.alkalinity','方法列為最長保存期限24小時以下之例。')+
-      check('導電度','special.conductivity','不可攪動和混樣之項目。')+
-      check('溶氧','special.dissolvedOxygen','不可攪動和混樣之項目。')+
-      check('硫化物','special.sulfide','不可攪動和混樣之項目。')+
-      check('油脂','special.oilGrease','不可攪動和混樣之項目。')+
-      check('總有機碳','special.toc','不可攪動和混樣之項目。')+
-      check('揮發性有機化合物 VOC','special.voc','影響混樣、容器、留空間及現場／運送空白。')+
-      check('微生物樣品','special.microbiology','一般不適宜混樣，且需運送空白。')+
-      check('溶解性鐵／錳等','special.dissolvedFeMn','須於採樣現場過濾。')+
-      check('其他保存期限≤24小時項目','special.otherShortHolding','依個別檢測方法判斷。')+
-      check('其他不穩定／不易混合均勻項目','special.otherNoMix','依個別檢測方法判斷。')+
-      '</div></section>';
-  }
-  function stepPreflight(){
-    let extra='';
-    if(state.special?.temperature)extra+=tri('溫度計最小刻度可達0.1℃','preflight.temperatureMeter');
-    if(state.special?.ph)extra+=tri('pH計最小刻度可達0.01 pH且附溫度補償','preflight.phMeter');
-    if(state.special?.voc)extra+=tri('VOC使用約40 mL棕（褐）色玻璃瓶、中空螺旋蓋及鐵氟龍墊片','preflight.vocContainer');
-    if(state.special?.microbiology)extra+=tri('微生物使用120 mL以上無菌硼矽玻璃瓶／無菌塑膠瓶或市售無菌容器','preflight.microbiologyContainer');
-    if(state.special?.dissolvedFeMn)extra+=tri('已備妥0.4～0.45 μm適用現場過濾裝置','preflight.filterReady');
-    return '<section class="card sampling-card"><h3>2. 採樣前確認</h3>'+
-      notice('warn','不要由本模組猜保存條件','樣品容器、水樣需要量、保存劑、保存條件及期限應依各待測物檢測方法或 NIEA W102.5 確認。')+
-      '<div class="grid-2">'+
-      tri('已依採樣目的與待測物要求規劃代表性水樣','preflight.representativePlan')+
-      tri('採樣器材／樣品容器已依適用方法完成清洗','preflight.equipmentClean','可依待測物方法、W102.5或NIEA PA-106；未使用過容器可依方法以試劑水淋洗後晾乾。')+
-      tri('已依待測物方法確認正確樣品容器','preflight.containerConfirmed')+
-      tri('已依待測物方法確認保存方式與保存劑','preflight.preservativeConfirmed')+
-      tri('已規劃採集足量水樣','preflight.sufficientVolume')+
-      tri('已評估採樣安全','preflight.safetyChecked','樣品可能具有毒性，安全優先。')+
-      extra+
-      '</div>'+
-      '<details class="sampling-method-note"><summary>交互污染提醒</summary><p>採樣器材應避免交互污染；塑膠瓶可能造成鄰苯二甲酸酯污染；重金屬項目應避免使用含重金屬襯裏之蓋子。</p></details>'+
-      '</section>';
-  }
-  function stepExecution(){
-    let auto='';
-    if(state.samplingEquipment==='autoGrab'||state.samplingEquipment==='autoComposite'){
-      auto='<div class="divider"></div><h4>自動採水設備</h4><div class="grid-2">'+
-        tri('採樣管已放置於採樣放流水中','execution.autoTubeInEffluent')+
-        tri('收集管已放置於不受污染位置','execution.autoCollectionProtected')+
-        tri('採樣瓶連結及自動取樣／混樣條件已確認','execution.autoSettingsConfirmed')+
-        tri('採樣後已取出樣品瓶並蓋緊瓶蓋','execution.bottleTight')+'</div>';
-    }
-    let composite='';
-    if(state.samplingMode==='composite'){
-      const groups=rules().compositeRestrictions(state);
-      composite='<div class="divider"></div><h4>混樣專項</h4>'+
-        (groups.length?notice('warn','目前有不適宜混樣項目',groups.join('、')+'。請依方法改採適當採樣方式或再核對個別檢測方法。'):'')+
-        '<div class="grid-2">'+tri('各子樣品均已冷藏','execution.compositeSubsamplesCold')+
-        textField('最後一個子樣品採集時間','execution.compositeLastSampleTime','','本方法以此時間作為混樣樣品採樣時間。','time')+'</div>';
-    }
-    let special='';
-    if(state.special?.voc)special+=tri('VOC樣品未預留運送膨脹空間','execution.vocNoHeadspace','本方法僅允許非VOC樣品容器預留適當緩衝空間。');
-    if(state.special?.dissolvedFeMn)special+=tri('溶解性鐵／錳等水樣已於採樣現場過濾','execution.dissolvedFiltered');
-    const split=get('execution.splitRequired');
-    return '<section class="card sampling-card"><h3>3. 執行採樣</h3><div class="grid-2">'+
-      selectField('採樣器材','samplingEquipment',rules().equipment())+
-      tri('本次是否需要分裝樣品？','execution.splitRequired','需要分裝時，應先採取足量水樣混合均勻後再分裝。')+
-      (split==='yes'?tri('分裝前已將足量水樣混合均勻','execution.splitMixed'):'')+
-      special+'</div>'+auto+composite+
-      '<div class="divider"></div><h4>現場檢測結果</h4><div class="grid-2">'+
-      (state.special?.temperature?textField('水溫（℃）','execution.fieldTemperature','例如：26.4'):'')+
-      (state.special?.ph?textField('pH','execution.fieldPh','例如：7.12'):'')+
-      (state.special?.conductivity?textField('導電度','execution.fieldConductivity','依儀器單位記錄'):'')+
-      (state.special?.dissolvedOxygen?textField('溶氧','execution.fieldDo','依儀器單位記錄'):'')+
-      (state.special?.totalResidualChlorine?textField('總餘氯','execution.fieldResidualChlorine','依檢測方法單位記錄'):'')+
-      ((!state.special?.temperature&&!state.special?.ph&&!state.special?.conductivity&&!state.special?.dissolvedOxygen&&!state.special?.totalResidualChlorine)?'<p class="muted">目前未勾選需記錄的現場檢測項目。</p>':'')+
-      '</div></section>';
-  }
-  function stepPreservation(){
-    return '<section class="card sampling-card"><h3>4. 樣品保存、運送與採樣紀錄</h3>'+
-      '<div class="grid-2">'+
-      textField('採樣人員姓名','samplerName','姓名')+
-      textField('所屬單位','samplerUnit','單位名稱')+
-      textField('實際樣品容器','preservation.sampleContainer','例如：棕色玻璃瓶／塑膠瓶','需依待測物檢測方法或W102.5確認。')+
-      textField('實際保存方式','preservation.preservationMethod','例如：冷藏；另依檢測方法處理')+
-      textField('添加保存劑情形','preservation.preservativeAdded','例如：未添加／已依方法添加…','未添加也要記錄。')+
-      selectField('運送冷藏方式','preservation.coolingMode',[['iceWaterBath','足量冰塊＋水形成冰水浴'],['other','其他適當方法']])+
-      (state.preservation?.coolingMode==='other'?textField('其他冷藏方式','preservation.coolingOther','請記錄實際方式'):'')+
-      tri('樣品已移入冷藏設備保存及運送','preservation.chilled')+
-      tri('運送時已包裝完妥置於適當容器','preservation.transportPackaged')+
-      tri('確認未使用乾冰','preservation.noDryIce','方法註記應避免乾冰，以免冷凍樣品並影響pH。')+
-      '</div>'+
-      notice('info','採樣紀錄必備內容','採樣地點或座標、樣品編號、日期時間、樣品種類與數量、分析項目、採樣方式、採樣器材、樣品容器、保存方式、採樣人員及現場檢測結果等，應留下紀錄。')+
-      '</section>';
-  }
-  function stepLabelQc(){
-    const req=rules().requiredQc(state);
-    let qc='';
-    if(req.length){
-      qc=req.map(function(item){return tri(item.label+'是否已製備？','qc.'+item.key,item.reason);}).join('');
-    }else qc='<p class="muted">依目前勾選的待測項目與設備使用情形，未觸發 W109.54B 的特定空白樣品要求。</p>';
-    return '<section class="card sampling-card"><h3>5. 樣品標籤、封條與現場品管</h3>'+
-      '<h4>樣品標籤至少應包含</h4><div class="sampling-check-grid">'+
-      check('樣品編號','label.sampleId')+
-      check('採樣者姓名及所屬單位','label.samplerUnit')+
-      check('採樣日期及時間','label.dateTime')+
-      check('採樣地點','label.location')+
-      check('添加保存劑','label.preservative')+
-      check('檢測項目','label.analysisItems')+
-      '</div><div class="divider"></div><h4>樣品封條</h4><div class="sampling-check-grid">'+
-      check('樣品容器已加上封條','seal.attached')+
-      check('開啟容器後會撕毀／改變封條原狀或留下開封記號','seal.tamperEvident')+
-      check('現場採樣人員已於封條簽章','seal.signed')+
-      '</div><div class="divider"></div><h4>現場品管樣品</h4>'+
-      check('同一採樣行程有重複使用採樣容器或圓筒，且過程無法依規定清洗','qc.equipmentReused','勾選後會要求設備空白樣品。')+
-      '<div class="grid-2">'+qc+'</div>'+
-      notice('info','後續檢驗提醒','除檢測方法另有規定外，放流水檢測值介於法規標準值100%至120%時，應執行已製備空白樣品檢測。')+
-      '</section>';
-  }
-  function listBlock(title,items,cls){
-    if(!items?.length)return '';
-    return '<section class="sampling-result-block '+esc(cls||'')+'"><h4>'+esc(title)+'</h4><ul>'+items.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></section>';
-  }
-  function stepSummary(){
-    const result=rules().evaluate(state);
-    const label=result.status==='complete'?'程序檢核完整':result.status==='risk'?'有已確認程序風險':'尚有程序事項待確認';
-    const cls=result.status==='complete'?'sampling-status-ok':result.status==='risk'?'sampling-status-risk':'sampling-status-pending';
-    return '<section class="card sampling-card"><h3>6. 最終程序檢核</h3>'+
-      '<div class="sampling-status '+cls+'"><strong>'+esc(label)+'</strong><span>此狀態只反映 NIEA W109.54B 程序檢核，不代表檢驗結果、違規成立或證據效力之法律結論。</span></div>'+
-      listBlock('已確認程序風險',result.issues,'risk')+
-      listBlock('尚待確認',result.missing,'pending')+
-      listBlock('方法提醒',result.warnings,'warn')+
-      listBlock('後續提醒',result.reminders,'info')+
-      '<div class="divider"></div><h4>採樣作業摘要</h4><pre class="sampling-summary">'+esc(rules().summary(state))+'</pre>'+
-      '<div class="btn-row"><button type="button" class="btn btn-secondary" data-action="copy">複製採樣摘要</button><button type="button" class="btn btn-ghost" data-action="reset">重新開始</button></div>'+
-      '</section>';
-  }
-  function body(){
-    if(step===0)return stepPlan();
-    if(step===1)return stepPreflight();
-    if(step===2)return stepExecution();
-    if(step===3)return stepPreservation();
-    if(step===4)return stepLabelQc();
-    return stepSummary();
-  }
-  function footer(){
-    return '<div class="sampling-sticky">'+
-      '<button type="button" class="btn btn-ghost" data-action="prev" '+(step===0?'disabled':'')+'>上一步</button>'+
-      (step<STEP_TITLES.length-1?'<button type="button" class="btn btn-primary" data-action="next">下一步</button>':'<button type="button" class="btn btn-primary" data-action="exit">完成／返回</button>')+
-      '</div>';
-  }
-  function render(){
-    if(!app)return;
-    app.classList.add('water-sampling-shell','water-v2-shell');
-    app.innerHTML=header()+body()+footer();
-    bind();
-  }
-  function bind(){
-    app.querySelectorAll('[data-path]').forEach(function(node){
-      const event=node.tagName==='SELECT'?'change':'input';
-      node.addEventListener(event,function(e){set(node.dataset.path,e.target.value);if(node.dataset.path==='samplingMode'||node.dataset.path==='samplingEquipment'||node.dataset.path==='execution.splitRequired'||node.dataset.path==='preservation.coolingMode')render();});
-    });
-    app.querySelectorAll('[data-check]').forEach(function(node){
-      node.addEventListener('change',function(e){set(node.dataset.check,!!e.target.checked);render();});
-    });
-    app.querySelectorAll('[data-action]').forEach(function(node){
-      node.addEventListener('click',async function(){
-        const action=node.dataset.action;
-        if(action==='next'){step=Math.min(STEP_TITLES.length-1,step+1);render();root.scrollTo?.({top:0,behavior:'smooth'});}
-        else if(action==='prev'){step=Math.max(0,step-1);render();root.scrollTo?.({top:0,behavior:'smooth'});}
-        else if(action==='exit'){exitHandler?.();}
-        else if(action==='now'){
-          const d=new Date(),pad=function(n){return String(n).padStart(2,'0');};
-          state.sampleDate=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-          state.sampleTime=pad(d.getHours())+':'+pad(d.getMinutes());render();
-        }else if(action==='reset'){
-          if(root.confirm?.('重新開始會清除目前採樣流程輸入，是否繼續？')===false)return;
-          state=rules().empty();step=0;render();
-        }else if(action==='copy'){
-          const txt=rules().summary(state);
-          try{await root.navigator?.clipboard?.writeText?.(txt);root.alert?.('採樣摘要已複製。');}
-          catch(_){root.prompt?.('請複製以下採樣摘要：',txt);}
-        }
-      });
-    });
-  }
-  function mount(container,opts){
-    if(!container)throw new Error('WaterSamplingUI mount target is required.');
-    app=container;exitHandler=typeof opts?.onExit==='function'?opts.onExit:null;render();
-  }
-  function hasData(){
-    const copy=JSON.parse(JSON.stringify(state||{}));
-    const base=rules().empty();
-    copy.sampleDescription='放流水';base.sampleDescription='放流水';
-    return JSON.stringify(copy)!==JSON.stringify(base);
-  }
-  function snapshot(){return JSON.parse(JSON.stringify(state));}
-  function restore(value){
-    const base=rules().empty();
-    if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('事業放流水採樣資料格式無效。');
-    const copy=JSON.parse(JSON.stringify(value));
-    state=Object.assign({},base,copy,{
-      special:Object.assign({},base.special,copy.special||{}),
-      preflight:Object.assign({},base.preflight,copy.preflight||{}),
-      execution:Object.assign({},base.execution,copy.execution||{}),
-      preservation:Object.assign({},base.preservation,copy.preservation||{}),
-      label:Object.assign({},base.label,copy.label||{}),
-      seal:Object.assign({},base.seal,copy.seal||{}),
-      qc:Object.assign({},base.qc,copy.qc||{})
-    });
-    if(app)render();
-  }
-  function reset(){state=rules().empty();step=0;if(app)render();}
-
-  root.WaterSamplingUI=Object.freeze({
-    version:'5.2.15',
-    method:'NIEA W109.54B',
-    mount,
-    hasData,
-    snapshot,
-    restore,
-    reset,
-    showSummary:function(){step=STEP_TITLES.length-1;if(app){render();root.scrollTo?.({top:0,behavior:'smooth'});}},
-    evaluate:function(){return rules().evaluate(state);}
-  });
+'use strict';
+const rules=()=>root.WaterSamplingW10954B, catalog=()=>root.WaterDischargeSamplingItems;
+let app=null,exitHandler=null,step=0,state=rules()?.empty?.()||{};
+const TITLES=['本次檢測項目','採樣前確認','實際採樣','樣品處理','離場前檢核'];
+const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const get=p=>p.split('.').reduce((o,k)=>o==null?undefined:o[k],state);
+function set(p,v){const a=p.split('.');let o=state;for(let i=0;i<a.length-1;i++){if(!o[a[i]]||typeof o[a[i]]!=='object')o[a[i]]={};o=o[a[i]];}o[a.at(-1)]=v;}
+function options(items,value,ph='請選擇'){return '<option value="">'+esc(ph)+'</option>'+items.map(x=>'<option value="'+esc(x[0])+'" '+(x[0]===value?'selected':'')+'>'+esc(x[1])+'</option>').join('');}
+function sel(label,path,items,hint=''){return '<label class="field"><span class="field-label">'+esc(label)+'</span><select class="select-input" data-path="'+esc(path)+'">'+options(items,get(path))+'</select>'+(hint?'<span class="hint">'+esc(hint)+'</span>':'')+'</label>';}
+function txt(label,path,ph='',type='text'){return '<label class="field"><span class="field-label">'+esc(label)+'</span><input class="text-input" type="'+type+'" data-path="'+esc(path)+'" value="'+esc(get(path)||'')+'" placeholder="'+esc(ph)+'"></label>';}
+function tri(label,path){return sel(label,path,rules().tri());}
+function notice(cls,title,text){return '<div class="notice '+cls+'"><strong>'+esc(title)+'</strong><br>'+esc(text)+'</div>';}
+function header(){const pct=Math.round((step+1)/TITLES.length*100);return '<div class="section-title sampling-head"><div><h2>事業放流水採樣</h2><p>放流水標準 → 本次檢測項目 → 實際樣品｜NIEA W109.54B</p></div></div><div class="sampling-progress"><div class="sampling-progress-meta"><strong>'+(step+1)+'／'+TITLES.length+' '+esc(TITLES[step])+'</strong><span>'+pct+'%</span></div><div class="sampling-progress-track"><i style="width:'+pct+'%"></i></div></div>';}
+function standardContext(){
+ const route=catalog()?.appendixFor?.(state)||{};
+ let h='<div class="grid-2">'+sel('適用對象','subjectType',rules().subjects());
+ if(state.subjectType==='industry')h+=sel('事業類型','industryType',catalog().industries());
+ if(state.subjectType==='sewer')h+=sel('下水道系統類型','sewerType',catalog().sewerTypes());
+ h+='</div>';
+ if(route.appendix)h+=notice('info','放流水標準路由','目前基礎路由：附表'+route.appendix+'。'+(route.message||''));
+ else if(state.subjectType)h+=notice('warn','附表尚待確認',route.message||'請先完成主體／類型選擇。');
+ return h;
+}
+function itemCheck(item,field){
+ const arr=field==='fieldItems'?(state.fieldItems||[]):(state.selectedItems||[]);
+ return '<label class="sampling-check"><input type="checkbox" data-item="'+esc(item.id)+'" data-item-field="'+field+'" '+(arr.includes(item.id)?'checked':'')+'><span><strong>'+esc(item.label)+'</strong></span></label>';
+}
+function stepItems(){
+ const c=catalog().candidates(state),lab=c.items.filter(x=>x.group==='lab'),field=c.items.filter(x=>x.group==='field');
+ return '<section class="card sampling-card"><h3>1. 本次檢測項目</h3>'+standardContext()+
+ notice('info','目前版本的範圍',c.note)+
+ '<h4>送實驗室檢測</h4><div class="sampling-check-grid">'+lab.map(x=>itemCheck(x,'selectedItems')).join('')+'</div>'+
+ '<div class="btn-row"><button class="btn btn-secondary" type="button" data-action="metals">八大重金屬一鍵選取</button></div>'+
+ '<h4>現場檢測</h4><div class="sampling-check-grid">'+field.map(x=>itemCheck(x,'fieldItems')).join('')+'</div>'+
+ txt('其他／自訂檢測項目','otherItems','例如：六價鉻、VOC、微生物…')+
+ '</section>';
+}
+function stepPre(){
+ return '<section class="card sampling-card"><h3>2. 採樣前確認</h3><div class="grid-2">'+
+ txt('採樣地點','samplingLocation','例如：D01 放流口')+txt('座標','coordinates','例如：25.000000, 121.000000')+
+ txt('採樣日期','sampleDate','','date')+txt('採樣時間','sampleTime','','time')+
+ sel('採樣點性質','outletType',rules().outlets())+sel('採樣方式','samplingMode',rules().samplingModes())+
+ sel('採樣器材','samplingEquipment',rules().equipment())+
+ tri('已依採樣目的規劃代表性水樣','preflight.representativePlan')+
+ tri('採樣器材已依適用方法完成清洗','preflight.equipmentClean')+
+ tri('已評估採樣安全','preflight.safetyChecked')+
+ '</div><div class="btn-row"><button class="btn btn-secondary" type="button" data-action="now">帶入現在日期時間</button></div>'+
+ notice('warn','容器與保存條件','不由系統推定瓶數；容器、樣品量、保存劑、保存條件與期限依 W102.5 或各待測物方法確認。')+'</section>';
+}
+function sampleCard(s,i){
+ const all=(state.selectedItems||[]),items=catalog().basicItems().filter(x=>x.group==='lab');
+ return '<div class="card sampling-card" style="margin-top:12px"><div class="section-title"><h4>樣品 '+(i+1)+'</h4><button class="btn btn-ghost" type="button" data-remove-sample="'+i+'">刪除</button></div>'+
+ '<div class="grid-2"><label class="field"><span class="field-label">樣品編號</span><input class="text-input" data-sample-index="'+i+'" data-sample-key="id" value="'+esc(s.id||'')+'"></label>'+
+ '<label class="field"><span class="field-label">樣品種類</span><input class="text-input" data-sample-index="'+i+'" data-sample-key="description" value="'+esc(s.description||'放流水')+'"></label></div>'+
+ '<div class="sampling-check-grid">'+items.map(x=>'<label class="sampling-check"><input type="checkbox" data-sample-item="'+esc(x.id)+'" data-sample-index="'+i+'" '+((s.items||[]).includes(x.id)?'checked':'')+'><span><strong>'+esc(x.label)+'</strong></span></label>').join('')+'</div>'+
+ (all.length?'<p class="hint">本次已選送驗：'+esc(all.join('、'))+'</p>':'')+'</div>';
+}
+function stepSampling(){
+ return '<section class="card sampling-card"><h3>3. 實際採樣</h3>'+notice('info','實際用了幾個容器，就建立幾個樣品','系統不計算「應採幾瓶」。同一檢測項目可分配到多個樣品。')+
+ '<div class="btn-row"><button class="btn btn-primary" type="button" data-action="addSample">＋新增樣品</button></div></section>'+
+ (state.samples||[]).map(sampleCard).join('')+
+ '<section class="card sampling-card"><h4>現場檢測結果</h4><div class="grid-2">'+
+ ((state.fieldItems||[]).includes('ph')?txt('pH','execution.fieldPh','例如：7.12'):'')+
+ ((state.fieldItems||[]).includes('temperature')?txt('水溫（℃）','execution.fieldTemperature','例如：26.4'):'')+
+ ((state.fieldItems||[]).includes('do')?txt('DO（mg/L）','execution.fieldDo','例如：6.5'):'')+
+ '</div></section>';
+}
+function stepHandling(){
+ if(!(state.samples||[]).length)return '<section class="card sampling-card"><h3>4. 樣品處理</h3>'+notice('warn','尚無實際樣品','請先回到上一步新增樣品。')+'</section>';
+ return '<section class="card sampling-card"><h3>4. 樣品處理、標籤、封條及保存</h3><div class="grid-2">'+txt('採樣人員姓名','samplerName','姓名')+txt('所屬單位','samplerUnit','單位名稱')+'</div></section>'+
+ state.samples.map((s,i)=>'<section class="card sampling-card"><h4>'+esc(s.id||('樣品 '+(i+1)))+'</h4><div class="grid-2">'+
+ '<label class="field"><span class="field-label">實際樣品容器</span><input class="text-input" data-sample-index="'+i+'" data-sample-key="container" value="'+esc(s.container||'')+'" placeholder="依實際使用容器記錄"></label>'+
+ '<label class="field"><span class="field-label">保存方式／保存劑</span><input class="text-input" data-sample-index="'+i+'" data-sample-key="preservation" value="'+esc(s.preservation||'')+'" placeholder="依實際情形記錄"></label>'+
+ sampleTri(i,'chilled','已冷藏保存／運送')+sampleTri(i,'label','標籤已完成')+sampleTri(i,'seal','封條已完成')+
+ '</div></section>').join('');
+}
+function sampleTri(i,key,label){const v=state.samples[i]?.[key]||'';return '<label class="field"><span class="field-label">'+esc(label)+'</span><select class="select-input" data-sample-index="'+i+'" data-sample-key="'+key+'">'+options(rules().tri(),v)+'</select></label>';}
+function stepSummary(){
+ const r=rules().evaluate(state),cls=r.status==='complete'?'sampling-status-ok':r.status==='risk'?'sampling-status-risk':'sampling-status-pending';
+ return '<section class="card sampling-card"><h3>5. 離場前檢核</h3><div class="sampling-status '+cls+'"><strong>'+(r.status==='complete'?'目前無待確認事項':r.status==='risk'?'有已確認程序風險':'尚有待確認事項')+'</strong><span>只做防漏，不判定樣品有效或無效。</span></div>'+
+ block('已確認程序風險',r.issues)+block('待確認／遺漏',r.missing)+block('方法提醒',r.warnings)+
+ '<h4>採樣作業摘要</h4><pre class="sampling-summary">'+esc(rules().summary(state))+'</pre><div class="btn-row"><button class="btn btn-secondary" type="button" data-action="copy">複製採樣摘要</button></div></section>';
+}
+function block(t,a){return a?.length?'<div class="sampling-result-block"><h4>'+esc(t)+'</h4><ul>'+a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'';}
+function body(){return [stepItems,stepPre,stepSampling,stepHandling,stepSummary][step]();}
+function footer(){return '<div class="sampling-sticky"><button class="btn btn-ghost" data-action="prev" '+(step===0?'disabled':'')+'>上一步</button>'+(step<4?'<button class="btn btn-primary" data-action="next">下一步</button>':'<button class="btn btn-primary" data-action="exit">完成／返回</button>')+'</div>';}
+function syncSpecial(){
+ const ids=new Set([...(state.selectedItems||[]),...(state.fieldItems||[])]);
+ state.special.ph=ids.has('ph');state.special.temperature=ids.has('temperature');state.special.dissolvedOxygen=ids.has('do');
+ state.special.oilGrease=ids.has('mineralOil')||ids.has('totalOil');
+}
+function render(){if(!app)return;syncSpecial();app.classList.add('water-sampling-shell','water-v2-shell');app.innerHTML=header()+body()+footer();bind();}
+function bind(){
+ app.querySelectorAll('[data-path]').forEach(n=>n.addEventListener(n.tagName==='SELECT'?'change':'input',e=>{set(n.dataset.path,e.target.value);if(['subjectType','industryType','sewerType','samplingMode','samplingEquipment'].includes(n.dataset.path))render();}));
+ app.querySelectorAll('[data-item]').forEach(n=>n.onchange=e=>{const k=n.dataset.itemField,a=[...(state[k]||[])],id=n.dataset.item;if(e.target.checked&&!a.includes(id))a.push(id);if(!e.target.checked)state[k]=a.filter(x=>x!==id);else state[k]=a;render();});
+ app.querySelectorAll('[data-sample-index][data-sample-key]').forEach(n=>n.addEventListener(n.tagName==='SELECT'?'change':'input',e=>{state.samples[+n.dataset.sampleIndex][n.dataset.sampleKey]=e.target.value;}));
+ app.querySelectorAll('[data-sample-item]').forEach(n=>n.onchange=e=>{const s=state.samples[+n.dataset.sampleIndex],id=n.dataset.sampleItem,a=[...(s.items||[])];s.items=e.target.checked?(a.includes(id)?a:[...a,id]):a.filter(x=>x!==id);});
+ app.querySelectorAll('[data-remove-sample]').forEach(n=>n.onclick=()=>{state.samples.splice(+n.dataset.removeSample,1);render();});
+ app.querySelectorAll('[data-action]').forEach(n=>n.onclick=async()=>{const a=n.dataset.action;if(a==='next'){step=Math.min(4,step+1);render();scrollTo(0,0);}else if(a==='prev'){step=Math.max(0,step-1);render();scrollTo(0,0);}else if(a==='exit')exitHandler?.();else if(a==='addSample'){state.samples.push({id:'',description:'放流水',items:[],container:'',preservation:'',chilled:'',label:'',seal:''});render();}else if(a==='metals'){const m=['copper','zinc','nickel','chromium','cadmium','arsenic','lead','mercury'];state.selectedItems=Array.from(new Set([...(state.selectedItems||[]),...m]));render();}else if(a==='now'){const d=new Date(),p=x=>String(x).padStart(2,'0');state.sampleDate=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());state.sampleTime=p(d.getHours())+':'+p(d.getMinutes());render();}else if(a==='copy'){const t=rules().summary(state);try{await navigator.clipboard.writeText(t);alert('採樣摘要已複製。');}catch{prompt('請複製以下採樣摘要：',t);}}};
+ }
+}
+function mount(container,opts){if(!container)throw new Error('WaterSamplingUI mount target is required.');app=container;exitHandler=typeof opts?.onExit==='function'?opts.onExit:null;render();}
+function hasData(){return JSON.stringify(state)!==JSON.stringify(rules().empty());}
+function snapshot(){return JSON.parse(JSON.stringify(state));}
+function restore(v){if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('事業放流水採樣資料格式無效。');state=Object.assign(rules().empty(),JSON.parse(JSON.stringify(v)));state.samples=Array.isArray(v.samples)?JSON.parse(JSON.stringify(v.samples)):[];render();}
+function reset(){state=rules().empty();step=0;render();}
+function showSummary(){step=4;render();root.scrollTo?.({top:0,behavior:'smooth'});}\nroot.WaterSamplingUI=Object.freeze({version:'5.2.16',mount,hasData,snapshot,restore,reset,showSummary});
 })(window);
